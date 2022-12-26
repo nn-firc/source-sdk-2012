@@ -1,0 +1,57 @@
+#! /usr/bin/env python
+# encoding: utf-8
+
+from waflib import Utils
+import os
+
+top = '.'
+PROJECT_NAME = 'bitmap_client'
+
+def options(opt):
+	# stub
+	return
+
+def configure(conf):
+	return
+
+def build(bld):
+	source = [
+		'bitmap.cpp',
+		'colorconversion.cpp',
+		'floatbitmap.cpp',
+		'floatbitmap2.cpp',
+		'floatbitmap3.cpp',
+		'floatbitmap_bilateralfilter.cpp',
+		'floatcubemap.cpp',
+		'imageformat.cpp',
+		'psd.cpp',
+		'psheet.cpp',
+		'resample.cpp',
+		'tgaloader.cpp',
+		'texturepacker.cpp',
+		'tgawriter.cpp'
+	]
+
+	includes = [
+		'.',
+		'../public',
+		'../public/tier0',
+		'../public/tier1'
+	]
+
+	defines = []
+
+	libs = []
+
+	bld.stlib(
+		source   = source,
+		target   = PROJECT_NAME,
+		name     = PROJECT_NAME,
+		features = 'c cxx',
+		includes = includes,
+		defines  = defines,
+		use      = libs,
+		subsystem = bld.env.MSVC_SUBSYSTEM,
+		idx      = bld.get_taskgen_count()
+	)
+
