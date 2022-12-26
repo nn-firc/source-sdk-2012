@@ -32,6 +32,7 @@ projects={
 		'appframework',
 		'bitmap',
 		'bonesetup',
+		'datacache',
 		'choreoobjects',
 		'interfaces',
 		'mathlib',
