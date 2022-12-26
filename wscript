@@ -30,6 +30,7 @@ Context.Context.line_just = 55 # should fit for everything on 80x26
 projects={
 	'game': [
 		'appframework',
+		'bitmap',
 		'interfaces',
 		'mathlib',
 		'tier0',
