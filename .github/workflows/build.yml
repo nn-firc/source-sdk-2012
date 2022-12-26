@@ -22,7 +22,31 @@ jobs:
         find ./build -type f -name "*.o" -delete
         find ./build -type d -empty -delete
         zip -r build-hl2-32.zip build
-    - uses: actions/upload-artifact@v3
+        zip -9 -r build.zip build
+    - name: Create tag version
+      if: github.event_name != 'pull_request'
+      id: tag_version
+      uses: mathieudutour/github-tag-action@v6.0
       with:
-        name: CS:GO SDK 2017
-        path: ./*.zip
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+    - name: Create release
+      if: github.event_name != 'pull_request'
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
+      uses: actions/create-release@v1
+      id: create_release
+      with:
+        draft: false
+        prerelease: false
+        release_name: AutoRelease ${{ steps.tag_version.outputs.new_tag }}
+        tag_name: ${{ steps.tag_version.outputs.new_tag }}
+    - name: Publish game client artifact
+      if: github.event_name != 'pull_request'
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: build.zip
+        asset_name: build.zip
+        asset_content_type: application/zip
