@@ -31,6 +31,7 @@ projects={
 	'game': [
 		'appframework',
 		'bitmap',
+		'bonesetup',
 		'interfaces',
 		'mathlib',
 		'tier0',
