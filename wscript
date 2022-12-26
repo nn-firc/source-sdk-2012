@@ -33,7 +33,6 @@ projects={
 		'bitmap',
 		'bonesetup',
 		'datacache',
-		'datamodel',
 		'choreoobjects',
 		'interfaces',
 		'mathlib',
