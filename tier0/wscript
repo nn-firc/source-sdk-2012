@@ -1,0 +1,83 @@
+#! /usr/bin/env python
+# encoding: utf-8
+
+from waflib import Utils
+import os
+
+top = '.'
+PROJECT_NAME = 'tier0_client'
+
+def options(opt):
+	# stub
+	return
+
+def configure(conf):
+	conf.define('TIER0_DLL_EXPORT',1)
+#	conf.define('NO_HOOK_MALLOC',1)
+
+def build(bld):
+	source = [
+		'../unitlib/unitlib.cpp',
+		'assert_dialog.cpp',
+		'commandline.cpp',
+		'cpu.cpp',
+		'cpumonitoring.cpp',
+		'cputopology.cpp',
+		'cpu_posix.cpp',
+		'dbg.cpp',
+		'fasttimer.cpp',
+		'logging.cpp',
+		'mem.cpp',
+		'mem_helpers.cpp',
+		'memdbg.cpp',
+		'memvirt.cpp',
+		'memstd.cpp',
+		'memvalidate.cpp',
+		'dynfunction.cpp',
+		'minidump.cpp',
+		'tier0_strtools.cpp',
+		'miniprofiler.cpp',
+		'perfstats.cpp',
+		'platform_posix.cpp',
+		'platform_independent.cpp',
+		'platwindow.cpp',
+		'pme_posix.cpp',
+		'progressbar.cpp',
+		'security.cpp',
+		'stackstats.cpp',
+		'stacktools.cpp',
+		'systeminformation.cpp',
+		'threadtools.cpp',
+		'tslist.cpp',
+		'vatoms.cpp',
+		'vprof.cpp',
+		'vtuneinterface.cpp',
+		'win32consoleio.cpp'
+	]
+
+	includes = [
+		'.',
+		'../public',
+		'../public/tier0',
+		'../public/tier1',
+	] + bld.env.INCLUDES_SDL2
+
+	defines = []
+
+	libs = ['DL', 'M', 'LOG']
+
+	install_path = bld.env.LIBDIR
+
+	bld.shlib(
+		source   = source,
+		target   = PROJECT_NAME,
+		name     = PROJECT_NAME,
+		features = 'c cxx',
+		includes = includes,
+		defines  = defines,
+		use      = libs,
+		install_path = install_path,
+		subsystem = bld.env.MSVC_SUBSYSTEM,
+		idx      = bld.get_taskgen_count()
+	)
+

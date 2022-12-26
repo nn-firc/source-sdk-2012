@@ -1,0 +1,78 @@
+#! /usr/bin/env python
+# encoding: utf-8
+
+from waflib import Utils
+import os
+
+top = '.'
+PROJECT_NAME = 'mathlib_client'
+
+def options(opt):
+	# stub
+	return
+
+def configure(conf):
+	conf.define('MATHLIB_LIB',1)
+
+def build(bld):
+	source = [
+		'expressioncalculator.cpp',
+		'color_conversion.cpp',
+		'cholesky.cpp',
+		'halton.cpp',
+		'lightdesc.cpp',
+		'mathlib_base.cpp',
+		'powsse.cpp',
+		'sparse_convolution_noise.cpp',
+		'sseconst.cpp',
+		'sse.cpp',
+		'ssenoise.cpp',
+		'anorms.cpp',
+		'bumpvects.cpp',
+		'IceKey.cpp',
+		'kdop.cpp',
+		'imagequant.cpp',
+		'spherical.cpp',
+		'polyhedron.cpp',
+		'quantize.cpp',
+		'randsse.cpp',
+		'simdvectormatrix.cpp',
+		'vmatrix.cpp',
+		'almostequal.cpp',
+		'simplex.cpp',
+		'eigen.cpp',
+		'box_buoyancy.cpp', #[!$OSX32] // doesn't compile in debug under GCC 4.2.X)
+		'camera.cpp',
+		'planefit.cpp',
+		'polygon.cpp',
+		'volumeculler.cpp',
+		'transform.cpp',
+		'sphere.cpp',
+		'capsule.cpp'
+	]	
+
+	includes = [
+		'.',
+		'../common',
+		'../public',
+		'../public/tier0',
+		'../public/tier1',
+		'../public/mathlib'
+	]
+
+	defines = []
+
+	libs = []
+
+	bld.stlib(
+		source   = source,
+		target   = PROJECT_NAME,
+		name     = PROJECT_NAME,
+		features = 'c cxx',
+		includes = includes,
+		defines  = defines,
+		use      = libs,
+		subsystem = bld.env.MSVC_SUBSYSTEM,
+		idx      = bld.get_taskgen_count()
+	)
+

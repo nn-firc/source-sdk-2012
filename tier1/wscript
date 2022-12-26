@@ -1,0 +1,91 @@
+#! /usr/bin/env python
+# encoding: utf-8
+
+from waflib import Utils
+import os
+
+top = '.'
+PROJECT_NAME = 'tier1_client'
+
+def options(opt):
+	# stub
+	return
+
+def configure(conf):
+	conf.env.append_unique('DEFINES', ['TIER1_STATIC_LIB=1'])
+
+def build(bld):
+	print(bld)
+	source = [
+		'appinstance.cpp',
+		'bitbuf.cpp',
+		'newbitbuf.cpp',
+		'byteswap.cpp',
+		'characterset.cpp',
+		'checksum_crc.cpp',
+		'checksum_md5.cpp',
+		'checksum_sha1.cpp',
+		'circularbuffer.cpp',
+		'commandbuffer.cpp',
+		'convar.cpp',
+		'datamanager.cpp',
+		'diff.cpp',
+		'exprevaluator.cpp',
+		'generichash.cpp',
+		'interface.cpp',
+		'keyvalues.cpp',
+		'keyvaluesjson.cpp',
+		'kvpacker.cpp',
+		'lzmaDecoder.cpp',
+		'lzss.cpp',
+		'mempool.cpp',
+		'memstack.cpp',
+		'NetAdr.cpp',
+		'splitstring.cpp',
+    	'processor_detect_linux.cpp',
+    	'qsort_s.cpp',
+		'rangecheckedvar.cpp',
+		'stringpool.cpp',
+		'strtools.cpp',
+		'strtools_unicode.cpp',
+		'tier1.cpp',
+		'tier1_logging.cpp',
+		'timeutils.cpp',
+		'uniqueid.cpp',
+		'utlbuffer.cpp',
+		'utlbufferutil.cpp',
+		'utlsoacontainer.cpp',
+		'utlstring.cpp',
+		'utlstringtoken.cpp',
+		'utlsymbol.cpp',
+		'miniprofiler_hash.cpp',
+		'sparsematrix.cpp',
+		'memoverride_dummy.cpp',
+		'pathmatch.cpp'
+	]
+
+	includes = [
+		'.',
+		'../',
+		'../public',
+		'../public/tier1',
+		'../public/tier0',
+		'../common'
+	]
+
+	defines = []
+
+	libs = []
+
+	bld.stlib(
+		source   = source,
+		target   = PROJECT_NAME,
+		name     = PROJECT_NAME,
+		features = 'c cxx',
+		includes = includes,
+		defines  = defines,
+		use      = libs,
+		subsystem = bld.env.MSVC_SUBSYSTEM,
+		idx      = bld.get_taskgen_count()
+	)
+

@@ -1,0 +1,58 @@
+#! /usr/bin/env python
+# encoding: utf-8
+
+from waflib import Utils
+import os
+
+top = '.'
+PROJECT_NAME = 'togl_client'
+
+def options(opt):
+	# stub
+	return
+
+def configure(conf):
+	conf.define('TOGL_DLL_EXPORT',1)
+	conf.env.append_unique('DEFINES',['strncpy=use_Q_strncpy_instead',
+		'_snprintf=use_Q_snprintf_instead'])
+
+def build(bld):
+	source = [
+		'dx9asmtogl2.cpp',
+		'dxabstract.cpp',
+		'glentrypoints.cpp',	
+		'glmgr.cpp',			
+		'glmgrbasics.cpp',	
+		'cglmtex.cpp',		
+		'cglmfbo.cpp',		
+		'cglmprogram.cpp',	
+		'cglmbuffer.cpp',	
+		'cglmquery.cpp'
+	]
+
+	includes = [
+		'.',
+		'../public',
+		'../public/tier0',
+		'../public/tier1'
+	] + bld.env.INCLUDES_SDL2
+
+	defines = []
+
+	libs = ['tier0_client','tier1_client','interfaces_client','vstdlib_client','tier2_client','mathlib_client']
+
+	install_path = bld.env.LIBDIR
+
+	bld.shlib(
+		source   = source,
+		target   = PROJECT_NAME,
+		name     = PROJECT_NAME,
+		features = 'c cxx',
+		includes = includes,
+		defines  = defines,
+		use      = libs,
+		install_path = install_path,
+		subsystem = bld.env.MSVC_SUBSYSTEM,
+		idx      = bld.get_taskgen_count()
+	)
+
