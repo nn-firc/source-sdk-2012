@@ -1,0 +1,27 @@
+name: Build
+
+on:
+  push:
+    branches:
+      - "*"
+  pull_request:
+    branches:
+      - "*"
+
+jobs:
+  build:
+    runs-on: ubuntu-18.04
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Build
+      run: |
+        ./waf configure -T release --64bits
+        ./waf build -j2
+        find ./build -type f -name "*.o" -delete
+        find ./build -type d -empty -delete
+        zip -r build-hl2-32.zip build
+    - uses: actions/upload-artifact@v3
+      with:
+        name: CS:GO SDK 2017
+        path: ./*.zip
