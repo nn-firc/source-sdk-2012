@@ -145,9 +145,6 @@ def options(opt):
 	grp.add_option('--use-ccache', action = 'store_true', dest = 'CCACHE', default = False,
 		help = 'build using ccache [default: %default]')
 
-	grp.add_option('--disable-warns', action = 'store_true', dest = 'DISABLE_WARNS', default = False,
-		help = 'build using ccache [default: %default]')
-
 	grp.add_option('--togles', action = 'store_true', dest = 'TOGLES', default = False,
 		help = 'build engine with ToGLES [default: %default]')
 
@@ -190,23 +187,10 @@ def configure(conf):
 	conf.load('force_32bit')
 
 	compiler_optional_flags = [
-		'-Wall',
 		'-fdiagnostics-color=always',
-		'-Wcast-align',
-		'-Wuninitialized',
-		'-Winit-self',
-		'-Wstrict-aliasing',
-		'-Wno-reorder',
-		'-Wno-unknown-pragmas',
-		'-Wno-unused-function',
-		'-Wno-unused-but-set-variable',
-		'-Wno-unused-value',
-		'-Wno-unused-variable',
-		'-Wno-narrowing'
 		'-faligned-new',
+        '-w'
 	]
-	if conf.options.DISABLE_WARNS:
-		compiler_optional_flags += ['-w']
 
 	c_compiler_optional_flags = [
 		'-fnonconst-initializers' # owcc
