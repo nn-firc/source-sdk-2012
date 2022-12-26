@@ -5,7 +5,7 @@ from waflib import Utils
 import os
 
 top = '.'
-PROJECT_NAME = 'datacache'
+PROJECT_NAME = 'datacache_client'
 
 def options(opt):
 	# stub

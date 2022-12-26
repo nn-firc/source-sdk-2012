@@ -34,6 +34,7 @@ projects={
 		'bonesetup',
 		'datacache',
 		'choreoobjects',
+		'dmxloader',
 		'interfaces',
 		'mathlib',
 		'tier0',
