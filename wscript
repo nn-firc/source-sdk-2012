@@ -189,7 +189,7 @@ def configure(conf):
 	compiler_optional_flags = [
 		'-fdiagnostics-color=always',
 		'-faligned-new',
-        '-w'
+		'-w'
 	]
 
 	c_compiler_optional_flags = [
