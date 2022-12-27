@@ -36,6 +36,7 @@ projects={
 		'choreoobjects',
 		'dmxloader',
 		'engine',
+		'external/crypto++-5.61',
 		'fgdlib',
 		'interfaces',
 		'mathlib',
@@ -283,7 +284,6 @@ def configure(conf):
 			conf.check_cfg(package='libcurl', uselib_store='CURL', args=['--cflags', '--libs'])
 			conf.check_cfg(package='SDL2_mixer', uselib_store='sdl2_mixer', args=['--cflags', '--libs'])
 			conf.check(lib='protobuf', uselib_store='protobuf')
-			conf.check(lib='cryptopp', uselib_store='cryptopp')
 		conf.check_cfg(package='zlib', uselib_store='ZLIB', args=['--cflags', '--libs'])
 	else:
 		conf.check(lib='SDL2', uselib_store='SDL2')
