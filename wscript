@@ -36,6 +36,7 @@ projects={
 		'choreoobjects',
 		'dmxloader',
 		'engine',
+		'fgdlib',
 		'interfaces',
 		'mathlib',
 		'soundsystem/lowlevel',
