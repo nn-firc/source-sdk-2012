@@ -38,6 +38,7 @@ projects={
 		'engine',
 		'external/crypto++-5.61',
 		'fgdlib',
+		'filesystem',
 		'interfaces',
 		'mathlib',
 		'soundsystem/lowlevel',
@@ -50,6 +51,7 @@ projects={
 		'videocfg',
 		'vgui2/matsys_controls',
 		'vgui2/vgui_controls',
+		'vpklib',
 		'vstdlib',
 		'vtf'
 	],
