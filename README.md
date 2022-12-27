@@ -4,5 +4,5 @@
 
 ## Features:
 - [waf buildsystem](https://waf.io)
-- fixes
+- Fix bugs
 
