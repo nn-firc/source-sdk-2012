@@ -1320,12 +1320,14 @@ void Key_Event( const InputEvent_t &event )
 #endif
 	}
 #if defined ( CSTRIKE15 )
+#ifdef INCLUDE_SCALEFORM
 	else if ( g_ClientDLL->IsChatRaised() || g_ClientDLL->IsBindMenuRaised() )
 	{
 		if ( FilterKey( event, KEY_UP_SCALEFORM, HandleScaleformKey ) )
 			return;
 	}
 
+#endif
 #endif
 
 	// Let the new GameUI system have a whack at keys

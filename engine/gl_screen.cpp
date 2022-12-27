@@ -32,7 +32,9 @@
 #include "matchmaking/imatchframework.h"
 #include "cl_steamauth.h"
 
+#ifdef INCLUDE_SCALEFORM
 #include "scaleformui/scaleformui.h"
+#endif
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
@@ -265,7 +267,9 @@ void SCR_UpdateScreen( void )
 	CMatRenderContextPtr pRenderContext;
 	pRenderContext.GetFrom( materials );
 
+#ifdef INCLUDE_SCALEFORM
 	pRenderContext->RenderScaleformSlot(SF_RESERVED_BEGINFRAME_SLOT);
+#endif
 
 
 	if( EngineVGui()->IsGameUIVisible() || IsSteam3ClientGameOverlayActive() )
@@ -302,9 +306,11 @@ void SCR_UpdateScreen( void )
 	// Draw world, etc.
 	V_RenderView();
 
+#ifdef INCLUDE_SCALEFORM
 	pRenderContext.GetFrom( materials );
 	pRenderContext->RenderScaleformSlot(SF_RESERVED_ENDFRAME_SLOT);
 	pRenderContext.SafeRelease();
+#endif
 
 	CL_TakeSnapshotAndSwap();	   
 

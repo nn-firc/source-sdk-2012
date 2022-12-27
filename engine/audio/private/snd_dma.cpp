@@ -82,11 +82,6 @@ extern IBik *bik;
 ConVar snd_sos_show_client_rcv("snd_sos_show_client_rcv", "0", FCVAR_CHEAT);
 ConVar snd_sos_allow_dynamic_chantype( "snd_sos_allow_dynamic_chantype", IsPlatformX360() ? "1" : "1" );
 
-//Controls whether we use HRTF (phonon) audio for sounds marked to use it.
-ConVar snd_use_hrtf("snd_use_hrtf", "1", FCVAR_ARCHIVE);
-ConVar snd_hrtf_lerp_min_distance("snd_hrtf_lerp_min_distance", "0.0", FCVAR_CHEAT);
-ConVar snd_hrtf_lerp_max_distance("snd_hrtf_lerp_max_distance", "0.0", FCVAR_CHEAT);
-
 BEGIN_DEFINE_LOGGING_CHANNEL( LOG_SOUND_OPERATOR_SYSTEM, "SoundOperatorSystem", LCF_CONSOLE_ONLY, LS_MESSAGE );
 ADD_LOGGING_CHANNEL_TAG( "SoundOperatorSystem" );
 END_DEFINE_LOGGING_CHANNEL();
@@ -138,7 +133,6 @@ ConVar snd_report_loop_sound( "snd_report_loop_sound", "0", FCVAR_CHEAT, "If set
 ConVar snd_report_format_sound( "snd_report_format_sound", "0", FCVAR_CHEAT, "If set to 1, report all sound formats.\n" );
 ConVar snd_report_verbose_error( "snd_report_verbose_error", "0", FCVAR_CHEAT, "If set to 1, report more error found when playing sounds.\n" );
 
-static ConVar snd_hrtf_distance_behind("snd_hrtf_distance_behind", "100", FCVAR_ARCHIVE, "HRTF calculations will calculate the player as being this far behind the camera\n");
 
 
 // store all played sounds for eliminating unplayed sounds for optimizations
@@ -924,7 +918,6 @@ void S_Startup( void )
 }
 
 static ConCommand play("play", S_Play, "Play a sound.", FCVAR_SERVER_CAN_EXECUTE );
-static ConCommand play_hrtf("play_hrtf", S_PlayHRTF, "Play a sound with HRTF spatialization.", FCVAR_SERVER_CAN_EXECUTE);
 static ConCommand playflush( "playflush", S_Play, "Play a sound, reloading from disk in case of changes." );
 static ConCommand playvol( "playvol", S_PlayVol, "Play a sound at a specified volume." );
 static ConCommand speak( "speak", S_Say, "Play a constructed sentence." );
@@ -1121,7 +1114,6 @@ void S_Shutdown(void)
 
 		S_StopAllSounds( true );
 		S_ShutdownMixThread();
-		ShutdownPhononThread();
 
 
 
@@ -5300,82 +5292,6 @@ void SND_Spatialize(channel_t *ch)
 {
 	VPROF( "SND_Spatialize" );
 
-	if (ch->wavtype == CHAR_HRTF)
-	{
-		Vector origin;
-		IClientEntity *pEnt = ch->hrtf.follow_entity ? entitylist->GetClientEntity(ch->soundsource) : nullptr;
-		if (pEnt != nullptr)
-		{
-			origin = pEnt->GetRenderOrigin();
-		}
-		else
-		{
-			origin = ch->origin;
-		}
-
-		if (ch->hrtf.debug_lock_position == false)
-		{
-			QAngle listener_angles;
-
-			//Calculate the listener origin as some distance behind the camera ('snd_hrtf_distance_behind') as this
-			//gives better results for HRTF. For nearby sounds we want to make it closer to the camera position
-			//so sounds behind us don't sound like they are in front.
-			float distance_behind = snd_hrtf_distance_behind.GetFloat();
-			if ( distance_behind < 0.0f )
-			{
-				distance_behind = 0.0f;
-			}
-
-			if ( distance_behind > 100.0f )
-			{
-				distance_behind = 100.0f;
-			}
-
-			Vector listener_origin_modified = listener_origin[0] - distance_behind*listener_forward[0];
-			const float dist_to_sound = MIN((listener_origin_modified - origin).Length(), (listener_origin[0] - origin).Length());
-			if ( dist_to_sound < distance_behind )
-			{
-				listener_origin_modified = listener_origin[0] - dist_to_sound*listener_forward[0];
-			}
-
-			// sound_pos is really sound_pos_listener_relative
-			Vector sound_pos = listener_origin_modified - origin;
-			VectorAngles(listener_forward[0], listener_angles);
-
-			matrix3x4_t mat;
-
-			AngleMatrix(listener_angles, mat);
-			sound_pos = mat.TransformVectorByInverse(sound_pos);
-
-			VectorNormalize(sound_pos);
-
-			//Swizzle our co-ordinate system to Phonon's.
-			ch->hrtf.vec.x = sound_pos.y;
-			ch->hrtf.vec.y = -sound_pos.z;
-			ch->hrtf.vec.z = sound_pos.x;
-		}
-
-		//Give some reasonable default behavior for lerping off hrtf when
-		//close to the sound. Can always be overridden in operator stacks.
-		Vector diff = listener_origin[0] - origin;
-		float fDistance = sqrt(diff[0] * diff[0] + diff[1] * diff[1] + diff[2] * diff[2]);
-
-		const float fMinDistance = snd_hrtf_lerp_min_distance.GetFloat();
-		const float fMaxDistance = snd_hrtf_lerp_max_distance.GetFloat();
-		if (fDistance < fMinDistance)
-		{
-			ch->hrtf.lerp = 0.0f;
-		}
-		else if (fDistance > fMaxDistance)
-		{
-			ch->hrtf.lerp = 1.0f; //snd_hrtf_ratio.GetFloat();
-		}
-		else
-		{
-			ch->hrtf.lerp = 1.0f; //snd_hrtf_ratio.GetFloat() * (fDistance - fMinDistance) / (fMaxDistance - fMinDistance);
-		}
-	}
-
 	// process via operators only
 	if( ch->m_pStackList && ch->m_pStackList->HasStack( CSosOperatorStack::SOS_UPDATE ) )
 	{
@@ -6195,12 +6111,6 @@ void S_SetChannelWavtype( channel_t *target_chan, const char *pSndName )
 
 	if ( TestSoundChar( pSndName, CHAR_DIRSTEREO ) )
 		target_chan->wavtype = CHAR_DIRSTEREO;
-
-	if (snd_use_hrtf.GetBool() && TestSoundChar(pSndName, CHAR_HRTF) && (!IsSoundSourceViewEntity(target_chan->soundsource) || target_chan->hrtf.debug_lock_position))
-	{
-		target_chan->wavtype = CHAR_HRTF;
-		target_chan->hrtf.lerp = 1.0; //snd_hrtf_ratio.GetFloat();
-	}
 
 	if ( TestSoundChar( pSndName, CHAR_RADIO ) )
 		target_chan->wavtype = CHAR_RADIO;
@@ -8481,31 +8391,7 @@ void S_Update( const CAudioState *pAudioState )
 			bool bLooping = ch->sfx->pSource->IsLooped();
 			if (snd_show.GetInt())
 			{
-				if (ch->wavtype == CHAR_HRTF)
-				{
-					const float hdist = sqrt(ch->hrtf.vec.x*ch->hrtf.vec.x + ch->hrtf.vec.z*ch->hrtf.vec.z);
-					const float yaw = -VEC_RAD2DEG(atan2(-ch->hrtf.vec.x, -ch->hrtf.vec.z));
-					const float pitch = VEC_RAD2DEG(atan2(ch->hrtf.vec.y, hdist));
-					
-					Con_NXPrintf(&np, "%s %02i hrtf(%.2f %.2f %.2f) yaw(%.2f) pitch(%.2f) xfade(%.2f) vol(%.2f %.2f) ent(%03d) pos(%6d %6d %6d) timeleft(%f) looped(%d) %50s",
-						nSoundEntryName,
-						total + 1,
-						ch->hrtf.vec.x,
-						ch->hrtf.vec.y,
-						ch->hrtf.vec.z,
-						yaw,
-						pitch,
-						ch->hrtf.lerp,
-						ch->fvolume_target[0], ch->fvolume_target[1],
-						ch->soundsource,
-						(int)ch->origin[0],
-						(int)ch->origin[1],
-						(int)ch->origin[2],
-						timeleft,
-						bLooping,
-						ch->sfx->getname(nameBuf, sizeof(nameBuf)));
-				}
-				else if ( sndsurround < 4 )
+				if ( sndsurround < 4 )
 				{
 					Con_NXPrintf( &np, "%s %02i l(%.02f) r(%.02f) vol(%03d) ent(%03d) pos(%6d %6d %6d) timeleft(%f) looped(%d) %50s",
 						nSoundEntryName,
@@ -8569,28 +8455,6 @@ void S_Update( const CAudioState *pAudioState )
 
 				if ( bPrint )
 				{
-					if (ch->wavtype == CHAR_HRTF)
-					{
-						const float hdist = sqrt(ch->hrtf.vec.x*ch->hrtf.vec.x + ch->hrtf.vec.z*ch->hrtf.vec.z);
-						const float yaw = -VEC_RAD2DEG(atan2(-ch->hrtf.vec.x, -ch->hrtf.vec.z));
-						const float pitch = VEC_RAD2DEG(atan2(ch->hrtf.vec.y, hdist));
-
-						Msg( "%32s hrtf lerp(%.2f) yaw(%.2f) pitch(%.2f) %02i vol(%03d) ent(%03d) pos(%6d %6d %6d) timeleft(%f) looped(%d) %50s\n",
-							nSoundEntryName,
-							ch->hrtf.lerp,
-							yaw,
-							pitch,
-							total + 1,
-							ch->master_vol,
-							ch->soundsource,
-							( int )ch->origin[ 0 ],
-							( int )ch->origin[ 1 ],
-							( int )ch->origin[ 2 ],
-							timeleft,
-							bLooping,
-							ch->sfx->getname( nameBuf, sizeof( nameBuf ) ) );
-					}
-					else
 					if ( sndsurround < 4 )
 					{
 						Msg( "%s %02i l(%03d) r(%03d) vol(%03d) ent(%03d) pos(%6d %6d %6d) timeleft(%f) looped(%d) %50s\n",
@@ -9074,11 +8938,6 @@ void StartPhononThread();
 
 void S_Update_( float mixAheadTime )
 {
-	if (snd_use_hrtf.GetBool())
-	{
-		StartPhononThread();
-	}
-
 	if ( !snd_mix_async.GetBool() )
 	{
 		S_ShutdownMixThread();

@@ -262,7 +262,7 @@ void CSteam3Server::Activate()
 
 	#ifdef _PS3
 	extern SteamPS3Params_t g_EngineSteamPS3Params;
-	if ( !SteamGameServer_Init( &g_EngineSteamPS3Params,
+	if ( !SteamGameServer_InitSafe( &g_EngineSteamPS3Params,
 	#else
 	SteamAPI_SetTryCatchCallbacks( false ); // We don't use exceptions, so tell steam not to use try/catch in callback handlers
 	if ( !SteamGameServer_InitSafe( 

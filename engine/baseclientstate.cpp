@@ -366,11 +366,6 @@ void CServerMsg_CheckReservation::SendMsg( const ns_address &serverAdr, int sock
 	msg.WriteLongLong( 0 );
 #endif
 
-	#ifndef DEDICATED
-		if ( serverAdr.GetAddressType() == NSAT_PROXIED_GAMESERVER )
-			NET_InitSteamDatagramProxiedGameserverConnection( serverAdr );
-	#endif
-
 	NET_SendPacket( NULL, socket, serverAdr, msg.GetData(), msg.GetNumBytesWritten() );
 }
 
@@ -431,11 +426,6 @@ void CServerMsg_Ping::SendMsg( const ns_address &serverAdr, int socket, uint32 t
 	msg.WriteByte( A2S_PING );
 	msg.WriteLong( GetHostVersion() );
 	msg.WriteLong( token );
-
-	#ifndef DEDICATED
-		if ( serverAdr.GetAddressType() == NSAT_PROXIED_GAMESERVER )
-			NET_InitSteamDatagramProxiedGameserverConnection( serverAdr );
-	#endif
 
 	DevMsg( "Pinging %s\n", ns_address_render( serverAdr ).String() );
 	NET_SendPacket( NULL, socket, serverAdr, msg.GetData(), msg.GetNumBytesWritten() );
@@ -1493,16 +1483,7 @@ void CBaseClientState::CheckForResend ( bool bForceResendNow /* = false */ )
 					break;
 
 				case NSAT_PROXIED_GAMESERVER:
-					#ifdef DEDICATED
-						Assert( false );
-					#else
-
-						// Make sure we have a ticket, and are setup to talk to this guy
-						if ( !NET_InitSteamDatagramProxiedGameserverConnection( remote.m_adrRemote ) )
-							continue;
-
-						pszProtocol = "SteamDatagram";
-					#endif
+					Assert( false );
 					break;
 			}
 			if ( developer.GetInt() != 0 )
@@ -2390,6 +2371,7 @@ bool CBaseClientState::InternalProcessStringCmd( const CNETMsg_StringCmd& msg )
 
 
 #ifndef DEDICATED
+#ifdef INCLUDE_SCALEFORM
 class CScaleformAvatarImageProviderImpl : public IScaleformAvatarImageProvider
 {
 public:
@@ -2416,6 +2398,7 @@ public:
 	}
 } g_CScaleformAvatarImageProviderImpl;
 #endif
+#endif
 
 bool CBaseClientState::NETMsg_PlayerAvatarData( const CNETMsg_PlayerAvatarData& msg )
 {
@@ -2431,8 +2414,10 @@ bool CBaseClientState::NETMsg_PlayerAvatarData( const CNETMsg_PlayerAvatarData& 
 	m_mapPlayerAvatarData.Insert( pClientDataCopy->accountid(), pClientDataCopy );
 
 #ifndef DEDICATED
+#ifdef INCLUDE_SCALEFORM
 	if ( g_pScaleformUI )
 		g_pScaleformUI->AvatarImageReload( uint64( pClientDataCopy->accountid() ), &g_CScaleformAvatarImageProviderImpl );
+#endif
 #endif
 
 	return true;

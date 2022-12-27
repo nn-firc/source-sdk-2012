@@ -35,13 +35,21 @@ projects={
 		'datacache',
 		'choreoobjects',
 		'dmxloader',
+		'engine',
 		'interfaces',
 		'mathlib',
+		'soundsystem/lowlevel',
+		'StubSteamAPI',
+		'thirdparty/quickhull',
 		'tier0',
 		'tier1',
 		'tier2',
 		'tier3',
+		'videocfg',
+		'vgui2/matsys_controls',
+		'vgui2/vgui_controls',
 		'vstdlib',
+		'vtf'
 	],
 	'dedicated': [
 	]
@@ -123,6 +131,8 @@ def define_platform(conf):
 		conf.env.append_unique('DEFINES', [
 			'NDEBUG'
 		])
+
+	conf.define('RAD_TELEMETRY_DISABLED',0)
 
 def options(opt):
 	grp = opt.add_option_group('Common options')
@@ -213,6 +223,8 @@ def configure(conf):
 			'-llog',
 			'-lz'
 		]
+	else:
+		flags += ['-L'+os.path.abspath('.')+'/lib/linux64'] 
 
 	if conf.env.DEST_CPU == 'arm':
 		flags += ['-fsigned-char']
@@ -269,6 +281,8 @@ def configure(conf):
 			conf.check_cfg(package='libpng', uselib_store='PNG', args=['--cflags', '--libs'])
 			conf.check_cfg(package='libcurl', uselib_store='CURL', args=['--cflags', '--libs'])
 			conf.check_cfg(package='SDL2_mixer', uselib_store='sdl2_mixer', args=['--cflags', '--libs'])
+			conf.check_cfg(package='protobuf', uselib_store='protobuf', args=['--cflags', '--libs'])
+			conf.check_cfg(package='libcryptopp', uselib_store='cryptopp', args=['--cflags', '--libs'])
 		conf.check_cfg(package='zlib', uselib_store='ZLIB', args=['--cflags', '--libs'])
 	else:
 		conf.check(lib='SDL2', uselib_store='SDL2')

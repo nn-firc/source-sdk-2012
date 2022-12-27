@@ -287,10 +287,6 @@ int CNetSupportImpl::SendPacket (
 
 ISteamNetworkingUtils *CNetSupportImpl::GetSteamNetworkingUtils()
 {
-	#ifdef DEDICATED
-		Assert( false ); // why are we asking?
-		return nullptr;
-	#else
-		return ::SteamNetworkingUtils();
-	#endif
+	Assert( false ); // why are we asking?
+	return nullptr;
 }

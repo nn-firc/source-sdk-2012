@@ -1420,22 +1420,6 @@ static int NET_ReceiveRawPacket( int sock, void *buf, int len, ns_address *from 
 		}
 	}
 
-	// Still nothing?  Check proxied server
-	#ifndef DEDICATED
-		if ( sock == NS_CLIENT && ret <= 0 && g_pSteamDatagramClient && g_addrSteamDatagramProxiedGameServer.IsValid() )
-		{
-			//CSteamID remoteSteamID;
-			uint64 usecTimeRecv;
-			int ret = g_pSteamDatagramClient->RecvDatagram( buf, len, &usecTimeRecv, STEAM_P2P_GAME_CLIENT );
-			if ( ret > 0 )
-			{
-				*from = g_addrSteamDatagramProxiedGameServer;
-				//pReceiveData->usTime = usecTimeRecv;
-				return ret;
-			}
-		}
-	#endif
-
 	// nothing
 	return 0;
 }
@@ -2944,104 +2928,6 @@ private:
 static CBindAddressHelper g_BindAddressHelper;
 #endif
 
-#ifndef DEDICATED
-
-// Initialize steam client datagram lib if we haven't already
-static bool CheckInitSteamDatagramClientLib()
-{
-	static bool bInittedNetwork = false;
-	if ( bInittedNetwork )
-		return true;
-
-	if ( !Steam3Client().SteamHTTP() )
-	{
-		Warning( "Cannot init steam datagram client, no Steam HTTP interface\n" );
-		return false;
-	}
-
-	// Locate the first PLATFORM path
-	char szAbsPlatform[MAX_FILEPATH] = "";
-	const char *pszConfigDir = "config";
-	g_pFullFileSystem->GetSearchPath( "PLATFORM", false, szAbsPlatform, sizeof(szAbsPlatform) );
-
-	char *semi = strchr( szAbsPlatform, ';' );
-	if ( semi )
-		*semi = '\0';
-
-	// Set partner.  Running in china?
-	ESteamDatagramPartner ePartner = k_ESteamDatagramPartner_Steam;
-	if ( CommandLine()->HasParm( "-perfectworld" ) )
-		ePartner = k_ESteamDatagramPartner_China;
-	int iPartnerMark = -1; // CSGO doesn't prune the config based on partner!
-
-	char szAbsConfigDir[ MAX_FILEPATH];
-	V_ComposeFileName( szAbsPlatform, pszConfigDir, szAbsConfigDir, sizeof(szAbsConfigDir) );
-	SteamDatagramClient_Init( szAbsConfigDir, ePartner, iPartnerMark );
-	bInittedNetwork = true;
-
-	return true;
-}
-
-void NET_PrintSteamdatagramClientStatus()
-{
-	if ( !g_pSteamDatagramClient )
-	{
-		Msg( "No steam datagram client connection active\n" );
-		return;
-	}
-	ISteamDatagramTransportClient::ConnectionStatus status;
-	g_pSteamDatagramClient->GetConnectionStatus( status );
-	int sz = status.Print( NULL, 0 );
-	CUtlMemory<char> buf;
-	buf.EnsureCapacity( sz );
-	char *p = buf.Base();
-	status.Print( p, sz );
-	for (;;)
-	{
-		char *newline = strchr( p, '\n' );
-		if ( newline )
-			*newline = '\0';
-		Msg( "%s\n", p );
-		if ( !newline )
-			break;
-		p = newline+1;
-	}
-}
-CON_COMMAND( steamdatagram_client_status, "Print steam datagram client status" )
-{
-	NET_PrintSteamdatagramClientStatus();
-}
-
-bool NET_InitSteamDatagramProxiedGameserverConnection( const ns_address &adr )
-{
-	Assert( adr.GetAddressType() == NSAT_PROXIED_GAMESERVER );
-
-	// Most common case - talking to the same server as before
-	if ( g_pSteamDatagramClient )
-	{
-		if ( g_addrSteamDatagramProxiedGameServer.m_steamID.GetSteamID() == adr.m_steamID.GetSteamID() )
-		{
-			g_addrSteamDatagramProxiedGameServer.m_steamID.SetSteamChannel( adr.m_steamID.GetSteamChannel() );
-			return true;
-		}
-
-		// We have a client, but it was to talk to a different server.  Clear our ticket!
-		g_pSteamDatagramClient->Close();
-		g_addrSteamDatagramProxiedGameServer.Clear();
-	}
-
-	// Get a client to talk to this server
-	g_pSteamDatagramClient = SteamDatagramClient_Connect( adr.m_steamID.GetSteamID() );
-	if ( !g_pSteamDatagramClient )
-		return false;
-
-	// OK, remember who we're talking to
-	g_addrSteamDatagramProxiedGameServer = adr;
-	return true;
-}
-
-#endif
-
 static void OpenSocketInternal( int nModule, int nSetPort, int nDefaultPort, const char *pName, int nProtocol, bool bTryAny )
 {
 	CUtlVector< CUtlString > vecBindableAddresses;
@@ -3124,10 +3010,6 @@ static void OpenSocketInternal( int nModule, int nSetPort, int nDefaultPort, con
 	{
 		g_pSteamSocketMgr->OpenSocket( *handle, nModule, nSetPort, nDefaultPort, pName, nProtocol, bTryAny );
 	}
-	#ifndef DEDICATED
-		if ( nModule == NS_CLIENT )
-			CheckInitSteamDatagramClientLib();
-	#endif
 }
 
 /*
@@ -4160,15 +4042,6 @@ void NET_Init( bool bIsDedicated )
 	NET_InitParanoidMode();
 
 	NET_SetMultiplayer( !!( g_pMatchFramework->GetMatchTitle()->GetTitleSettingsFlags() & MATCHTITLE_SETTING_MULTIPLAYER ) );
-
-	// Go ahead and create steam datagram client, and start measuring pings to data centers
-	#ifndef DEDICATED
-	if ( CheckInitSteamDatagramClientLib() )
-	{
-		if ( ::SteamNetworkingUtils() )
-			::SteamNetworkingUtils()->CheckPingDataUpToDate( 0.0f );
-	}
-	#endif
 }
 
 /*
@@ -4193,9 +4066,6 @@ void NET_Shutdown (void)
 
 	NET_CloseAllSockets();
 	NET_ConfigLoopbackBuffers( false );
-#ifndef DEDICATED
-	SteamDatagramClient_Kill();
-#endif
 
 #if defined(_WIN32)
 	if ( !net_noip )
@@ -4447,31 +4317,7 @@ bool NET_GetPublicAdr( netadr_t &adr )
 	return bRet;
 }
 
-void NET_SteamDatagramServerListen()
-{
-	// Receiving on steam datagram transport?
-	// We only open one interface object (corresponding to one UDP port).
-	// The other "sockets" are different channels on this interface
-	if ( sv_steamdatagramtransport_port.GetInt() == 0 )
-		return;
-	if ( g_pSteamDatagramGameserver )
-		return;
-
-	SteamDatagramErrMsg errMsg;
-	EResult result;
-	g_pSteamDatagramGameserver = SteamDatagram_GameserverListen( GetSteamUniverse(), sv_steamdatagramtransport_port.GetInt(), &result, errMsg );
-	if ( g_pSteamDatagramGameserver )
-	{
-		Msg( "Listening for Steam datagram transport on port %d\n", sv_steamdatagramtransport_port.GetInt() );
-	}
-	else
-	{
-		Warning( "SteamDatagram_GameserverListen failed with error code %d.  %s\n", result, errMsg );
-
-		// Clear the convar so we don't advertise that we are listening!
-		sv_steamdatagramtransport_port.SetValue( 0 );
-	}
-}
+void NET_SteamDatagramServerListen(){}
 
 void NET_TerminateConnection( int sock, const ns_address &peer )
 {
@@ -4482,10 +4328,6 @@ void NET_TerminateConnection( int sock, const ns_address &peer )
 		NET_TerminateSteamConnection( steamIDRemote );
 	}
 #endif
-#ifndef DEDICATED
-	if ( peer == g_addrSteamDatagramProxiedGameServer )
-		CloseSteamDatagramClientConnection();
-#endif		
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -4575,16 +4417,7 @@ bool NET_CryptVerifyServerCertificateAndAllocateSessionKey( bool bOfficial, cons
 			unCertIP = from.AsType<netadr_t>().GetIPHostByteOrder();
 			break;
 		case NSAT_PROXIED_GAMESERVER:
-		{
-			unCertIP = SteamNetworkingUtils()->GetIPForServerSteamIDFromTicket( from.m_steamID.GetSteamID() );
-			if ( unCertIP == 0 )
-			{
-				Warning( "NET_CryptVerifyServerCertificateAndAllocateSessionKey - cannot check signature for proxied server '%s', because we don't have an SDR ticket to that server.\n", ns_address_render( from ).String() );
-				Assert(false);
-				return false;
-			}
 			break;
-		}
 	}
 	if ( unCertIP == 0 )
 	{

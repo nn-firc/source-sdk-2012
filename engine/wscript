@@ -1,0 +1,385 @@
+#! /usr/bin/env python
+# encoding: utf-8
+
+from waflib import Utils
+import os
+
+top = '.'
+PROJECT_NAME = 'engine_client'
+
+def options(opt):
+	# stub
+	return
+
+def configure(conf):
+	if conf.options.DEDICATED:
+		conf.define('SWDS', 1)
+		conf.define('NO_STEAM', 1)
+
+	conf.env.append_unique('DEFINES',[
+		'__USEA3D',
+		'_ADD_EAX_',
+		'ENGINE_DLL',
+		'VERSION_SAFE_STEAM_API_INTERFACES',
+		'USE_BREAKPAD_HANDLER',
+		'USE_CONVARS',
+		'VOICE_OVER_IP'
+	])
+
+def build(bld):
+	source = [
+		'cl_rcon.cpp',# 		[!$DEDICATED]
+		'rpt_engine.cpp',# 	[!$DEDICATED]
+		'cl_steamauth.cpp',# [!$DEDICATED]
+		'clientframe.cpp',
+		'decal_clip.cpp',
+		'demofile.cpp',
+		'demostreamhttp.cpp',
+		'demostream.cpp',
+		'demobuffer.cpp',
+		'DevShotGenerator.cpp',
+		'OcclusionSystem.cpp',
+		'tmessage.cpp',
+		'r_efx.cpp',# 	[!$DEDICATED]
+		'view.cpp',# 	[!$DEDICATED]
+		'baseclientstate.cpp',
+		'cbenchmark.cpp',#				[!$DEDICATED]
+		'cdll_engine_int.cpp',#  		[!$DEDICATED]
+		'cl_main.cpp',#					[!$DEDICATED]
+		'cl_demo.cpp',#					[!$DEDICATED]
+		'cl_broadcast.cpp',#					[!$DEDICATED]
+		'cl_null.cpp',#					[$DEDICATED]
+		'cl_demoaction.cpp',#			[!$DEDICATED]
+		'cl_demoaction_types.cpp',#		[!$DEDICATED]
+		'cl_demoactioneditors.cpp',#		[!$DEDICATED]
+		'cl_demoactionmanager.cpp',#		[!$DEDICATED]
+		'cl_demoeditorpanel.cpp',#		[!$DEDICATED]
+		'cl_demosmootherpanel.cpp',#		[!$DEDICATED]
+		'cl_demouipanel.cpp',#			[!$DEDICATED]
+		'cl_foguipanel.cpp',#			[!$DEDICATED]
+		'cl_txviewpanel.cpp',#			[!$DEDICATED]
+		'cl_entityreport.cpp',#			[!$DEDICATED]
+		'cl_ents_parse.cpp',#			[!$DEDICATED]
+		'cl_localnetworkbackdoor.cpp',#	[!$DEDICATED]
+		'cl_parse_event.cpp',#			[!$DEDICATED]
+		'cl_pluginhelpers.cpp',#			[!$DEDICATED]
+		'cl_pred.cpp',#					[!$DEDICATED]
+		'cl_splitscreen.cpp',#			[!$DEDICATED]
+		'cl_texturelistpanel.cpp',#		[!$DEDICATED]
+		'client.cpp',#					[!$DEDICATED]
+		'colorcorrectionpanel.cpp',#		[!$DEDICATED]
+		'console.cpp',
+		'render_pch.cpp',# [!$PS3]
+		'buildcubemaps.cpp',#		[!$DEDICATED]
+		'buildmodelforworld.cpp',#	[!$DEDICATED]
+		'debug_leafvis.cpp',#		[!$DEDICATED]
+		'debugoverlay.cpp',#			[!$DEDICATED]
+		'decals.cpp',
+		'disp.cpp',
+		'disp_interface.cpp',
+		'disp_mapload.cpp',
+		'gl_draw.cpp',
+		'gl_rsurf.cpp',
+		'brushbatchrender.cpp',#		[!$DEDICATED]
+		'gl_shader.cpp',
+		'gl_drawlights.cpp',#		[!$DEDICATED]
+		'gl_lightmap.cpp',#			[!$DEDICATED]
+		'gl_matsysiface.cpp',#		[!$DEDICATED]
+		'gl_rlight.cpp',#			[!$DEDICATED]
+		'gl_rmain.cpp',#				[!$DEDICATED]
+		'gl_rmisc.cpp',#				[!$DEDICATED]
+		'gl_screen.cpp',#			[!$DEDICATED]
+		'gl_warp.cpp',#				[!$DEDICATED]
+		'l_studio.cpp',
+		'matsys_interface.cpp',
+		'modelloader.cpp',
+		'Overlay.cpp',#				[!$DEDICATED]
+		'r_areaportal.cpp',#			[!$DEDICATED]
+		'r_decal.cpp',
+		'r_linefile.cpp',#			[!$DEDICATED]
+		'shadowmgr.cpp',#			[!$DEDICATED]
+		'server_pch.cpp',#	[!$PS3]
+		'sv_ipratelimit.cpp',
+		'sv_rcon.cpp',
+		'sv_steamauth.cpp',
+		'sv_uploaddata.cpp',
+		'sv_uploadgamestats.cpp',
+		'baseclient.cpp',
+		'sv_main.cpp',
+		'sv_client.cpp',
+		'sv_ents_write.cpp',
+		'sv_filter.cpp',
+		'sv_framesnapshot.cpp',
+		'sv_log.cpp',
+		'sv_master.cpp',
+		'sv_packedentities.cpp',
+		'sv_plugin.cpp',
+		'sv_precache.cpp',
+		'sv_redirect.cpp',
+		'sv_remoteaccess.cpp',
+		'vengineserver_impl.cpp',
+		'baseautocompletefilelist.cpp',
+		'baseserver.cpp',
+		'bitbuf_errorhandler.cpp',
+		'blackbox.cpp',
+		'../public/blockingudpsocket.cpp',
+		'../public/bsptreedata.cpp',
+		'../public/builddisp.cpp',
+		'buildnum.cpp',
+		'changeframelist.cpp',
+		'checksum_engine.cpp',
+		'clockdriftmgr.cpp',
+		'cl_bounded_cvars.cpp',# [!$DEDICATED]
+		'cmd.cpp',
+		'cmodel.cpp',
+		'cmodel_bsp.cpp',
+		'cmodel_disp.cpp',
+		'../public/collisionutils.cpp',
+		'common.cpp',
+		'../public/crtmemdebug.cpp',
+		'cvar.cpp',
+		'../public/disp_common.cpp',
+		'disp_defs.cpp',
+		'disp_helpers.cpp',
+		'../public/disp_powerinfo.cpp',
+		'../public/dispcoll_common.cpp',
+		'DownloadListGenerator.cpp',
+		'downloadthread.cpp',
+		'dt.cpp',
+		'dt_common_eng.cpp',
+		'dt_encode.cpp',
+		'dt_instrumentation.cpp',
+		'dt_instrumentation_server.cpp',
+		'dt_localtransfer.cpp',
+		'../public/dt_recv.cpp',
+		'dt_recv_decoder.cpp',
+		'dt_recv_eng.cpp',
+		'../public/dt_send.cpp',
+		'dt_send_eng.cpp',
+		'dt_stack.cpp',
+		'dt_test.cpp',
+		'../public/dt_utlvector_common.cpp',
+		'../public/dt_utlvector_recv.cpp',
+		'../public/dt_utlvector_send.cpp',
+		'enginesingleuserfilter.cpp',
+		'enginestats.cpp',
+		'enginethreads.cpp',
+		'enginetrace.cpp',
+		'filesystem_engine.cpp',
+		'../public/filesystem_helpers.cpp',
+		'../public/filesystem_init.cpp',
+		'filetransfermgr.cpp',
+		'GameEventManager.cpp',
+		'GameEventManagerOld.cpp',
+		'gameeventtransmitter.cpp',
+		'gametrace_engine.cpp',
+		'hltvclient.cpp',
+		'hltvclientstate.cpp',
+		'hltvdemo.cpp',
+		'hltvbroadcast.cpp',
+		'hltvserver.cpp',
+		'hltvtest.cpp',
+		'host.cpp',
+		'host_cmd.cpp',
+		'host_listmaps.cpp',
+		'host_phonehome.cpp',
+		'host_state.cpp',
+		'imagepacker.cpp',
+		'initmathlib.cpp',
+		'../common/language.cpp',
+		'LocalNetworkBackdoor.cpp',
+		'LoadScreenUpdate.cpp',# [!$DEDICATED]
+		'../public/lumpfiles.cpp',
+		'MapReslistGenerator.cpp',
+		'materialproxyfactory.cpp',
+		'mem_fgets.cpp',
+		'mod_vis.cpp',
+		'ModelInfo.cpp',
+		'netconsole.cpp',
+		'net_chan.cpp',
+		'net_support.cpp',
+		'net_synctags.cpp',
+		'net_ws.cpp',
+		'net_ws_queued_packet_sender.cpp',
+		'net_steamsocketmgr.cpp',
+		'../common/netmessages.cpp',
+		'../common/steamid.cpp',
+		'networkstringtable.cpp',
+		'NetworkStringTableItem.cpp',
+		'networkstringtableserver.cpp',
+		'../public/networkvar.cpp',
+		'packed_entity.cpp',
+		'pure_server.cpp',
+		'pr_edict.cpp',
+		'precache.cpp',
+		'quakedef.cpp',
+		'randomstream.cpp',
+		'../common/randoverride.cpp',
+		'../public/registry.cpp',
+		'replay.cpp',
+		'replayclient.cpp',
+		'replayhistorymanager.cpp',
+		'replaydemo.cpp',
+		'replayserver.cpp',
+		'../public/sentence.cpp',
+		'singleplayersharedmemory.cpp',
+		'sound_shared.cpp',
+		'spatialpartition.cpp',
+		'staticpropmgr.cpp',
+		'status.cpp',
+		'../public/studio.cpp',
+		'sys_dll.cpp',
+		'sys_dll2.cpp',
+		'sys_engine.cpp',
+		'sys_mainwind.cpp',# 	[!$DEDICATED]
+		'sys_linuxwind.cpp',# 	[$LINUX]
+		'testscriptmgr.cpp',
+		'traceinit.cpp',
+		'../public/vallocator.cpp',
+		'voiceserver_impl.cpp',
+		'vprof_engine.cpp',
+		'vprof_record.cpp',
+		'world.cpp',
+		'../public/XZip.cpp',
+		'../public/XUnzip.cpp',
+		'zone.cpp',
+		'bugreporter.cpp',# 	[!$DEDICATED]
+		'cheatcodes.cpp',
+		'download.cpp',
+		'../public/editor_sendcommand.cpp',
+		'host_saverestore.cpp',# [!$DEDICATED]
+		'keys.cpp',
+		'lightcache.cpp',# [!$DEDICATED]
+		'networkstringtableclient.cpp',
+		'saverestore_filesystem_passthrough.cpp',#  [!$DEDICATED]
+		'saverestore_filesystem.cpp',#  [!$DEDICATED]
+		'../public/scratchpad3d.cpp',
+		'servermsghandler.cpp',
+		'sys_getmodes.cpp',# [!$DEDICATED]
+		'vgui_askconnectpanel.cpp',# [!$DEDICATED]
+		'vgui_watermark.cpp',# [!$DEDICATED]
+		'xboxsystem.cpp',
+		'../common/SourceAppInfo.cpp',
+		'paint.cpp',
+		'../public/phonemeconverter.cpp',
+		'snd_io.cpp',
+		'EngineSoundServer.cpp',
+		'EngineSoundClient.cpp',# [!$DEDICATED]
+		'engsoundservice.cpp',#	  [!$DEDICATED]
+		'audio/private/voice_wavefile.cpp',
+		'audio/private/MPAFile.cpp',#			[!$DEDICATED&&!$X360]
+		'audio/private/MPAHeader.cpp',#		[!$DEDICATED&&!$X360]
+		'audio/private/snd_posix.cpp',# [$POSIX]
+		'audio/private/vox.cpp',
+		'audio/private/snd_dev_common.cpp',#	 							[!$DEDICATED]
+		'audio/private/snd_dma.cpp',#									[!$DEDICATED]
+		'audio/private/snd_mixgroups.cpp',#								[!$DEDICATED]
+		'audio/private/snd_dsp.cpp',#									[!$DEDICATED]
+		'audio/private/snd_mix.cpp',#									[!$DEDICATED]
+		'audio/private/snd_op_sys/sos_system.cpp',# 						[!$DEDICATED]
+		'audio/private/snd_op_sys/sos_entry_match_system.cpp',#			[!$DEDICATED]
+		'audio/private/snd_op_sys/sos_op.cpp',#							[!$DEDICATED]
+		'audio/private/snd_op_sys/sos_op_block_entry.cpp',#				[!$DEDICATED]
+		'audio/private/snd_op_sys/sos_op_convar.cpp',#					[!$DEDICATED]
+		'audio/private/snd_op_sys/sos_op_dashboard.cpp',#				[!$DEDICATED]
+		'audio/private/snd_op_sys/sos_op_delta.cpp',#					[!$DEDICATED]
+		'audio/private/snd_op_sys/sos_op_distant_dsp.cpp',#				[!$DEDICATED]
+		'audio/private/snd_op_sys/sos_op_entry_time.cpp',#				[!$DEDICATED]
+		'audio/private/snd_op_sys/sos_op_entity_info.cpp',#				[!$DEDICATED]
+		'audio/private/snd_op_sys/sos_op_falloff.cpp',#					[!$DEDICATED]
+		'audio/private/snd_op_sys/sos_op_filters.cpp',#					[!$DEDICATED]
+		'audio/private/snd_op_sys/sos_op_iterate_merge_speakers.cpp',# 	[!$DEDICATED]
+		'audio/private/snd_op_sys/sos_op_map_name.cpp',#					[!$DEDICATED]
+		'audio/private/snd_op_sys/sos_op_math.cpp',#						[!$DEDICATED]
+		'audio/private/snd_op_sys/sos_op_mixer.cpp',#					[!$DEDICATED]
+		'audio/private/snd_op_sys/sos_op_mixlayer.cpp',#					[!$DEDICATED]
+		'audio/private/snd_op_sys/sos_op_occlusion.cpp',#				[!$DEDICATED]
+		'audio/private/snd_op_sys/sos_op_opvar.cpp',#					[!$DEDICATED]
+		'audio/private/snd_op_sys/sos_op_output.cpp',#					[!$DEDICATED]
+		'audio/private/snd_op_sys/sos_op_platform.cpp',#					[!$DEDICATED]
+		'audio/private/snd_op_sys/sos_op_player_info.cpp',#				[!$DEDICATED]
+		'audio/private/snd_op_sys/sos_op_pos_vec8.cpp',#					[!$DEDICATED]
+		'audio/private/snd_op_sys/sos_op_source_info.cpp',#				[!$DEDICATED]
+		'audio/private/snd_op_sys/sos_op_spatialize.cpp',#				[!$DEDICATED]
+		'audio/private/snd_op_sys/sos_op_start_entry.cpp',#				[!$DEDICATED]
+		'audio/private/snd_op_sys/sos_op_stop_entry.cpp',#				[!$DEDICATED]
+		'audio/private/snd_op_sys/sos_op_sys_time.cpp',#					[!$DEDICATED]
+		'audio/private/snd_op_sys/sos_op_tracks.cpp',#					[!$DEDICATED]
+		'audio/private/snd_op_sys/sos_op_util.cpp',#						[!$DEDICATED]
+		'audio/private/snd_sentence_mixer.cpp',#							[!$DEDICATED]
+		'audio/private/snd_wave_data.cpp',#								[!$DEDICATED]
+		'audio/private/snd_wave_mixer.cpp',#								[!$DEDICATED]
+		'audio/private/snd_wave_mixer_adpcm.cpp',#						[!$DEDICATED]
+		'audio/private/snd_wave_source.cpp',#							[!$DEDICATED]
+		'audio/private/snd_wave_temp.cpp',#								[!$DEDICATED]
+		'audio/private/snd_win.cpp',#									[!$DEDICATED]
+		'audio/private/voice_gain.cpp',#									[!$DEDICATED]
+		'audio/private/snd_mp3_source.cpp',#					[$WINDOWS||$OSXALL||($LINUXALL&&!$DEDICATED)]
+		'audio/private/snd_wave_mixer_mp3.cpp',#				[$WINDOWS||$OSXALL||($LINUXALL&&!$DEDICATED)]
+		'audio/private/VBRHeader.cpp',#						[!$DEDICATED&&!$X360]
+		'audio/private/voice.cpp',#							[!$DEDICATED&&!$X360]
+		'audio/private/voice_sound_engine_interface.cpp',# [!$DEDICATED&&!$X360]
+		'audio/private/snd_stubs.cpp',
+		'audio/private/voice_mixer_controls_openal.cpp',#	[$OSXALL||($LINUXALL&&!$DEDICATED)]
+		'audio/private/voice_record_openal.cpp',#  [$OSXALL||($LINUXALL&&!$DEDICATED)]
+		'../public/vgui_controls/vgui_controls.cpp',
+		'../common/vgui/vgui_basebudgetpanel.cpp',
+		'../common/vgui/vgui_budgetbargraphpanel.cpp',
+		'../common/vgui/vgui_budgethistorypanel.cpp',
+		'../common/vgui/vgui_budgetpanelshared.cpp',
+		'perfuipanel.cpp',
+		'vgui_basepanel.cpp',
+		'vgui_baseui_interface.cpp',
+		'vgui_budgetpanel.cpp',
+		'vgui_DebugSystemPanel.cpp',
+		'vgui_drawtreepanel.cpp',
+		'vgui_helpers.cpp',
+		'vgui_texturebudgetpanel.cpp',
+		'vgui_vprofgraphpanel.cpp',
+		'vgui_vprofpanel.cpp',
+		'enginetool.cpp',
+		'toolframework.cpp',
+		'bsplog.cpp',
+		'serializedentity.cpp',
+		'generated_proto/engine_gcmessages.pb.cc',
+		'generated_proto/netmessages.pb.cc',
+		'generated_proto/network_connection.pb.cc'
+		]
+
+	includes = [
+		'.',
+		'../public',
+		'../public/tier0',
+		'../public/tier1',
+		'../common',
+		'audio',
+		'audio/public',
+		'audio/private',
+		'generated_proto',
+		'../thirdparty/protobuf-2.5.0/src',
+		'../external/crypto++-5.61',
+		'../thirdparty/quickhull'
+	]
+
+	defines = []
+
+	libs = ['tier0_client','vgui_controls_client','videocfg_client','dmxloader_client','tier1_client','interfaces_client','tier2_client','tier3_client','bitmap_client','vstdlib_client','appframework_client','datamodel_client','vtf_client','soundsystem_lowlevel','mathlib_client','steam_api','matsys_controls_client','BZ2','SDL2','JPEG','ZLIB','OPENAL','CURL','protobuf','cryptopp','quickhull']
+
+	if bld.env.DEST_OS == 'android':
+		libs += ['SSL', 'CRYPTO'] # android curl was built with openssl
+
+	install_path = bld.env.LIBDIR
+
+	bld.shlib(
+		source   = source,
+		target   = PROJECT_NAME,
+		name     = PROJECT_NAME,
+		features = 'c cxx',
+		includes = includes,
+		defines  = defines,
+		use      = libs,
+		install_path = install_path,
+		subsystem = bld.env.MSVC_SUBSYSTEM,
+		idx      = bld.get_taskgen_count()
+	)
+
