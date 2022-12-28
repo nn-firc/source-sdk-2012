@@ -41,6 +41,7 @@ projects={
 		'filesystem',
 		'interfaces',
 		'mathlib',
+		'mathlib/extended',
 		'particles',
 		'soundsystem/lowlevel',
 		'StubSteamAPI',
