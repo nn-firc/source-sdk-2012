@@ -43,6 +43,7 @@ projects={
 		'mathlib',
 		'mathlib/extended',
 		'particles',
+		'raytrace',
 		'soundsystem/lowlevel',
 		'StubSteamAPI',
 		'thirdparty/quickhull',
