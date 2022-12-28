@@ -41,6 +41,7 @@ projects={
 		'filesystem',
 		'interfaces',
 		'mathlib',
+		'particles',
 		'soundsystem/lowlevel',
 		'StubSteamAPI',
 		'thirdparty/quickhull',
