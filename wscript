@@ -52,6 +52,7 @@ projects={
 		'tier2',
 		'tier3',
 		'videocfg',
+		'utils/bzip2',
 		'vgui2/matsys_controls',
 		'vgui2/vgui_controls',
 		'vpklib',
