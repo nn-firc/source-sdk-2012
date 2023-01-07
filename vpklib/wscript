@@ -5,7 +5,7 @@ from waflib import Utils
 import os
 
 top = '.'
-PROJECT_NAME = 'vpklib_client'
+PROJECT_NAME = 'vpklib'
 
 def options(opt):
 	# stub

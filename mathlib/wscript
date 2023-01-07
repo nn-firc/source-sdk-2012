@@ -5,7 +5,7 @@ from waflib import Utils
 import os
 
 top = '.'
-PROJECT_NAME = 'mathlib_client'
+PROJECT_NAME = 'mathlib'
 
 def options(opt):
 	# stub

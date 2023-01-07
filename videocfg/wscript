@@ -5,7 +5,7 @@ from waflib import Utils
 import os
 
 top = '.'
-PROJECT_NAME = 'videocfg_client'
+PROJECT_NAME = 'videocfg'
 
 def options(opt):
 	# stub

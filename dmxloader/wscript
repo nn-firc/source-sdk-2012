@@ -5,7 +5,7 @@ from waflib import Utils
 import os
 
 top = '.'
-PROJECT_NAME = 'dmxloader_client'
+PROJECT_NAME = 'dmxloader'
 
 def options(opt):
 	# stub

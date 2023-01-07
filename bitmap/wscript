@@ -5,7 +5,7 @@ from waflib import Utils
 import os
 
 top = '.'
-PROJECT_NAME = 'bitmap_client'
+PROJECT_NAME = 'bitmap'
 
 def options(opt):
 	# stub

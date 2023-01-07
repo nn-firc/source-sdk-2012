@@ -5,7 +5,7 @@ from waflib import Utils
 import os
 
 top = '.'
-PROJECT_NAME = 'particles_client'
+PROJECT_NAME = 'particles'
 
 def options(opt):
 	# stub

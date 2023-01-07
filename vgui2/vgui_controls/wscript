@@ -5,7 +5,7 @@ from waflib import Utils
 import os
 
 top = '.'
-PROJECT_NAME = 'vgui_controls_client'
+PROJECT_NAME = 'vgui_controls'
 
 def options(opt):
 	# stub

@@ -5,7 +5,7 @@ from waflib import Utils
 import os
 
 top = '.'
-PROJECT_NAME = 'tier2_client'
+PROJECT_NAME = 'tier2'
 
 def options(opt):
 	# stub
