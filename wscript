@@ -40,6 +40,7 @@ projects={
 		'fgdlib',
 		'filesystem',
 		'interfaces',
+        'launcher',
 		'mathlib',
 		'mathlib/extended',
 		'particles',
