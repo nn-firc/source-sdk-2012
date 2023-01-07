@@ -18,11 +18,10 @@ jobs:
       run: |
         sudo apt update && sudo apt upgrade -y && sudo apt install -y git build-essential libsdl2-mixer-dev libsdl2-dev libopenal-dev libcurlpp-dev libssl-dev libfontconfig1-dev libcurl4-openssl-dev net-tools wget unzip zip
         ./waf configure -T release --64bits
-        ./waf build -j2
+        ./waf install --strip -j5 --prefix=$pwd/csgo
         find ./build -type f -name "*.o" -delete
         find ./build -type d -empty -delete
-        zip -r build-hl2-32.zip build
-        zip -9 -r build.zip build
+        zip -9 -r csgo.zip csgo
     - name: Create tag version
       if: github.event_name != 'pull_request'
       id: tag_version
@@ -47,6 +46,6 @@ jobs:
         GITHUB_TOKEN: ${{ github.token }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: build.zip
-        asset_name: build.zip
+        asset_path: csgo.zip
+        asset_name: csgo.zip
         asset_content_type: application/zip
