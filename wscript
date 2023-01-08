@@ -48,6 +48,7 @@ projects={
 		'resourcefile',
 		'soundsystem/lowlevel',
 		'StubSteamAPI',
+        'thirdparty/protobuf-2.5.0',
 		'thirdparty/quickhull',
 		'tier0',
 		'tier1',
