@@ -44,6 +44,10 @@
 #include "tier0/platform.h"
 #endif // _PS3
 
+#ifdef POSIX
+#include <sys/stat.h>
+#endif
+
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
@@ -428,6 +432,7 @@ CSysModule *Sys_LoadModule( const char *pModuleName )
 		hDLL = Sys_LoadLibrary( szAbsoluteModuleName );
 #else // !_PS3
 		char szCwd[1024];
+		char szModuleName[1024];
 		_getcwd( szCwd, sizeof( szCwd ) );
 		if ( IsX360() )
 		{
@@ -443,15 +448,20 @@ CSysModule *Sys_LoadModule( const char *pModuleName )
 		}
 
 		size_t cCwd = strlen( szCwd );
-		if ( strstr( pModuleName, "bin/") == pModuleName || ( szCwd[ cCwd - 1 ] == 'n'  && szCwd[ cCwd - 2 ] == 'i' && szCwd[ cCwd - 3 ] == 'b' )  )
-		{
-			// don't make bin/bin path
-			Q_snprintf( szAbsoluteModuleName, sizeof(szAbsoluteModuleName), "%s/%s", szCwd, pModuleName );
-		}
+
+		bool bUseLibPrefix = false;
+
+#ifdef POSIX
+		struct stat statBuf;
+		Q_snprintf(szModuleName, sizeof(szModuleName), "bin/lib%s", pModuleName);
+		bUseLibPrefix |= stat(szModuleName, &statBuf) == 0;
+#endif
+
+		if( bUseLibPrefix )
+			Q_snprintf( szAbsoluteModuleName, sizeof(szAbsoluteModuleName), "%s/bin/lib%s", szCwd, pModuleName );
 		else
-		{
 			Q_snprintf( szAbsoluteModuleName, sizeof(szAbsoluteModuleName), "%s/bin/%s", szCwd, pModuleName );
-		}
+
 		hDLL = Sys_LoadLibrary( szAbsoluteModuleName );
 #endif // _PS3
 	}

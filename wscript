@@ -41,6 +41,7 @@ projects={
 		'filesystem',
 		'interfaces',
         'launcher',
+        'launcher_main',
 		'mathlib',
 		'mathlib/extended',
 		'particles',
