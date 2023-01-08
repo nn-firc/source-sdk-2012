@@ -24,7 +24,7 @@ jobs:
       if: github.event_name != 'pull_request'
       id: tag_version
       uses: anothrNick/github-tag-action@1.61.0
-      with:
+      env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         WITH_V: true
     - name: Create release
