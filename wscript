@@ -39,6 +39,7 @@ projects={
 		'external/crypto++-5.61',
 		'fgdlib',
 		'filesystem',
+		'inputsystem',
 		'interfaces',
         'launcher',
         'launcher_main',
