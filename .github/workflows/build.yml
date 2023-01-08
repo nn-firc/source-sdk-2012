@@ -17,7 +17,7 @@ jobs:
     - name: Build
       run: |
         sudo apt update && sudo apt upgrade -y && sudo apt install -y git build-essential libsdl2-mixer-dev libsdl2-dev libopenal-dev libcurlpp-dev libssl-dev libfontconfig1-dev libcurl4-openssl-dev net-tools wget unzip zip
-        ./waf configure -T release --64bits --prefix=/home/runner/csgo-sdk-2017/csgo-sdk-2017/csgo
+        ./waf configure -T release --64bits --prefix=/home/runner/work/csgo-sdk-2017/csgo-sdk-2017/csgo
         ./waf install --strip -j3
         zip -9 -r csgo.zip csgo
     - name: Create tag version
