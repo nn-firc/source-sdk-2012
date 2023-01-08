@@ -1,4 +1,4 @@
-//===== Copyright © 1996-2005, Valve Corporation, All rights reserved. ======//
+//===== Copyright ï¿½ 1996-2005, Valve Corporation, All rights reserved. ======//
 //
 // Purpose: Public interfaces to vphysics DLL
 //
@@ -148,8 +148,8 @@ public:
 	// holds a cache of these by id.  So you can get by id to search for the previously created set
 	// UNDONE: Sets are currently limited to 32 elements.  More elements will return NULL in create.
 	// NOTE: id is not allowed to be zero.
-	virtual IPhysicsCollisionSet		*FindOrCreateCollisionSet( unsigned int id, int maxElementCount ) = 0;
-	virtual IPhysicsCollisionSet		*FindCollisionSet( unsigned int id ) = 0;
+	virtual IPhysicsCollisionSet		*FindOrCreateCollisionSet( uintptr_t id, int maxElementCount ) = 0;
+	virtual IPhysicsCollisionSet		*FindCollisionSet( uintptr_t id ) = 0;
 	virtual void						DestroyAllCollisionSets() = 0;
 };
 
@@ -711,6 +711,7 @@ enum collisionhints
 {
 	COLLISION_HINT_DEBRIS		= 0x0001,
 	COLLISION_HINT_STATICSOLID	= 0x0002,
+	COLLISION_HINT_RAGDOLL      = 0x0004, // lwss add
 };
 
 class IPredictedPhysicsObject;
@@ -1059,7 +1060,8 @@ public:
 	// NOTE: Same as GetPhysicsProperties, but maybe more convenient
 	virtual void	GetPhysicsParameters( int surfaceDataIndex, surfacephysicsparams_t *pParamsOut ) const = 0;
 
-	virtual ISaveRestoreOps* GetMaterialIndexDataOps() const = 0;
+	//lwss - commented this out, not used.
+	//virtual ISaveRestoreOps* GetMaterialIndexDataOps() const = 0;
 };
 
 abstract_class IPhysicsFluidController
