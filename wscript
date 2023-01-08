@@ -209,7 +209,6 @@ def configure(conf):
 
 	compiler_optional_flags = [
 		'-fdiagnostics-color=always',
-		'-faligned-new',
 		'-w'
 	]
 
@@ -234,8 +233,6 @@ def configure(conf):
 			'-llog',
 			'-lz'
 		]
-	else:
-		flags += ['-L'+os.path.abspath('.')+'/lib/linux64'] 
 
 	if conf.env.DEST_CPU == 'arm':
 		flags += ['-fsigned-char']
@@ -292,7 +289,6 @@ def configure(conf):
 			conf.check_cfg(package='libpng', uselib_store='PNG', args=['--cflags', '--libs'])
 			conf.check_cfg(package='libcurl', uselib_store='CURL', args=['--cflags', '--libs'])
 			conf.check_cfg(package='SDL2_mixer', uselib_store='sdl2_mixer', args=['--cflags', '--libs'])
-			conf.check(lib='protobuf', uselib_store='protobuf')
 		conf.check_cfg(package='zlib', uselib_store='ZLIB', args=['--cflags', '--libs'])
 	else:
 		conf.check(lib='SDL2', uselib_store='SDL2')
