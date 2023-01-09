@@ -48,6 +48,8 @@ projects={
 		'ivp/ivp_physics',
 		'launcher',
 		'launcher_main',
+		'materialsystem',
+        'materialsystem/shaderlib',
 		'mathlib',
 		'mathlib/extended',
 		'particles',

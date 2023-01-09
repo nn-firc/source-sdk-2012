@@ -7,8 +7,8 @@
 #pragma once
 
 #include "refcount.h"
+#include "imaterial.h"
 
-class IMaterial;
 class ICompositeTexture;
 
 class ICustomMaterial : public CRefCounted<>
