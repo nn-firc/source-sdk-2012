@@ -1,0 +1,44 @@
+#! /usr/bin/env python
+# encoding: utf-8
+
+from waflib import Utils
+import os
+
+top = '.'
+PROJECT_NAME = 'valve_avi'
+
+def options(opt):
+	# stub
+	return
+
+def configure(conf):
+	return
+
+def build(bld):
+	source = [
+		'bink.cpp'
+	]
+
+	includes = [
+		'.',
+		'../public',
+		'../public/tier0',
+		'../public/tier1'
+	]
+
+	defines = []
+
+	libs = ['SDL2','SDL2_mixer']
+
+	bld.stlib(
+		source   = source,
+		target   = PROJECT_NAME,
+		name     = PROJECT_NAME,
+		features = 'c cxx',
+		includes = includes,
+		defines  = defines,
+		use      = libs,
+		subsystem = bld.env.MSVC_SUBSYSTEM,
+		idx      = bld.get_taskgen_count()
+	)
+
