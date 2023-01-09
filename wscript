@@ -59,6 +59,7 @@ projects={
 		'StubSteamAPI',
 		'thirdparty/protobuf-2.5.0',
 		'thirdparty/quickhull',
+        'studiorender',
 		'tier0',
 		'tier1',
 		'tier2',
