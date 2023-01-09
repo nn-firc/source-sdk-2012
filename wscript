@@ -55,6 +55,7 @@ projects={
 		'particles',
 		'raytrace',
 		'resourcefile',
+        'soundemittersystem',
 		'soundsystem/lowlevel',
 		'StubSteamAPI',
 		'thirdparty/protobuf-2.5.0',
