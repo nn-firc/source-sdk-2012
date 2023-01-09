@@ -72,6 +72,7 @@ projects={
 		'vgui2/vgui_controls',
 		'vphysics',
 		'vpklib',
+		'vscript',
 		'vstdlib',
 		'vtf'
 	],
