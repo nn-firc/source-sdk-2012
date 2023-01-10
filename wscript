@@ -40,6 +40,7 @@ projects={
 		'external/crypto++-5.61',
 		'fgdlib',
 		'filesystem',
+		'game/client',
 		'inputsystem',
 		'interfaces',
 		'ivp/havana',
@@ -162,6 +163,7 @@ def define_platform(conf):
 		])
 
 	conf.define('RAD_TELEMETRY_DISABLED',0)
+	conf.define('CSTRIKE15',1)
 
 def options(opt):
 	grp = opt.add_option_group('Common options')
