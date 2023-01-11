@@ -233,7 +233,8 @@ def configure(conf):
 
 	compiler_optional_flags = [
 		'-fdiagnostics-color=always',
-		'-w'
+		'-w',
+		'-Wno-c++11-narrowing'
 	]
 
 	c_compiler_optional_flags = [

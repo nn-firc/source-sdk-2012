@@ -67,6 +67,10 @@
 #define COMPILER_GCC 1
 #endif
 
+#ifdef __clang__
+#define COMPILER_CLANG 1
+#endif
+
 #if defined( _X360 ) || defined( _PS3 )
 #define PLATFORM_PPC 1
 #endif
@@ -188,7 +192,7 @@
 #endif // ! ( _PS3 && COMPILER_SNC )
 
 #ifdef __cplusplus
-#if defined( COMPILER_GCC ) || defined( COMPILER_PS3 )
+#if defined( COMPILER_GCC ) || defined( COMPILER_PS3 ) || defined( COMPILER_CLANG )
 	#include <new>
 #else
 	#include <new.h>
@@ -827,7 +831,7 @@ typedef void * HINSTANCE;
 	#define DEFAULT_VC_WARNING( x ) __pragma(warning(default:4310) )
 
 
-#elif defined ( COMPILER_GCC ) || defined( COMPILER_SNC )
+#elif defined ( COMPILER_GCC ) || defined( COMPILER_SNC ) || defined( COMPILER_CLANG )
 
 	#if defined( COMPILER_SNC ) || defined( PLATFORM_64BITS )
 		#define  STDCALL
@@ -1088,7 +1092,7 @@ typedef void * HINSTANCE;
 //-----------------------------------------------------------------------------
 // Stack-based allocation related helpers
 //-----------------------------------------------------------------------------
-#if defined( COMPILER_GCC ) || defined( COMPILER_SNC )
+#if defined( COMPILER_GCC ) || defined( COMPILER_SNC ) || defined( COMPILER_CLANG )
 
 	#define stackalloc( _size )		alloca( ALIGN_VALUE( _size, 16 ) )
 
@@ -1137,6 +1141,8 @@ typedef void * HINSTANCE;
 	#else
 		#define DebuggerBreak()	raise(SIGTRAP)
 	#endif
+#elif defined( COMPILER_CLANG )
+	#define DebuggerBreak()  do { if ( Plat_IsInDebugSession() ) { __asm ( "int $3" ); } else { raise(SIGTRAP); } } while(0)
 #elif defined( COMPILER_SNC ) && defined( COMPILER_PS3 )
 static bool sPS3_SuppressAssertsInThisFile = false; // you can throw this in the debugger to temporarily disable asserts inside any particular .cpp module. 
 	#define DebuggerBreak() if (!sPS3_SuppressAssertsInThisFile) __builtin_snpause(); // <sergiy> from SNC Migration Guide, tw 31,1,1
@@ -2501,7 +2507,7 @@ int	_V_stricmp_NegativeForUnequal	  ( const char *s1, const char *s2 );
 // !!! NOTE: if you get a compile error here, you are using VALIGNOF on an abstract type :NOTE !!!
 #define VALIGNOF_PORTABLE( type ) ( sizeof( AlignOf_t<type> ) - sizeof( type ) )
 
-#if defined( COMPILER_GCC ) || defined( COMPILER_MSVC )
+#if defined( COMPILER_GCC ) || defined( COMPILER_MSVC ) || defined( COMPILER_CLANG )
 #define VALIGNOF( type ) __alignof( type )
 #define VALIGNOF_TEMPLATE_SAFE( type ) VALIGNOF_PORTABLE( type )
 #else

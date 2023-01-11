@@ -90,7 +90,7 @@ public:
 			uint nBaseLevel1 = nItLevel1 * 32;
 			while( nLevel1Bits )
 			{
-#ifdef COMPILER_GCC
+#if defined( COMPILER_GCC ) || defined( COMPILER_CLANG )
 				uint32 nOffsetLevel1 = __builtin_ctz( nLevel1Bits );
 #else
 				unsigned long nOffsetLevel1;
@@ -106,7 +106,7 @@ public:
 					uint nBaseLevel0 = nItLevel0 * 32;
 					do
 					{
-#ifdef COMPILER_GCC
+#if defined( COMPILER_GCC ) || defined( COMPILER_CLANG )
 						uint32 nOffsetLevel0 = __builtin_ctz( nLevel0Bits );
 #else
 						unsigned long nOffsetLevel0;

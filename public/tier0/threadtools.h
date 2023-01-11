@@ -234,7 +234,7 @@ inline void ThreadPause()
 {
 #if defined( COMPILER_PS3 )
 	__db16cyc();
-#elif defined( COMPILER_GCC )
+#elif defined( COMPILER_GCC ) || defined( COMPILER_CLANG )
 	__asm __volatile( "pause" );
 #elif defined ( COMPILER_MSVC64 )
 	_mm_pause();
@@ -279,7 +279,7 @@ PLATFORM_INTERFACE void ThreadSetAffinity( ThreadHandle_t hThread, int nAffinity
 // Prevent compiler reordering across this barrier. This is
 // sufficient for most purposes on x86/x64.
 #define ThreadMemoryBarrier() _ReadWriteBarrier()
-#elif defined(COMPILER_GCC)
+#elif defined(COMPILER_GCC) || defined( COMPILER_CLANG )
 // Prevent compiler reordering across this barrier. This is
 // sufficient for most purposes on x86/x64.
 // http://preshing.com/20120625/memory-ordering-at-compile-time

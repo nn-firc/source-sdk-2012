@@ -5943,30 +5943,4 @@ inline const fltx4 Normalized3SIMD (const fltx4 vec)
 	return AndSIMD(isSignificant, MulSIMD(vec, scLengthInv));
 }
 
-
-// Some convenience operator overloads, which are just aliasing the functions above.
-// Unneccessary on 360, as you already have them from xboxmath.h
-// Componentwise add
-#ifndef COMPILER_GCC
-
-FORCEINLINE fltx4 operator+=( fltx4 &a, FLTX4 b )
-{
-	a = AddSIMD( a, b );
-	return a;
-}
-
-FORCEINLINE fltx4 operator-=( fltx4 &a, FLTX4 b )
-{
-	a = SubSIMD( a, b );
-	return a;
-}
-
-
-FORCEINLINE fltx4 operator*=( fltx4 &a, FLTX4 b )
-{
-	a = MulSIMD( a, b );
-	return a;
-}
-
-#endif
 #endif // _ssemath_h
