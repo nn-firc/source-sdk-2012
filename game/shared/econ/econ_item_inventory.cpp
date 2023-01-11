@@ -1363,6 +1363,7 @@ void CPlayerInventory::PreSOUpdate(const CSteamID &steamIDOwner, GCSDK::ESOCache
 //-----------------------------------------------------------------------------
 void CPlayerInventory::SOUpdated( const CSteamID & steamIDOwner, const GCSDK::CSharedObject *pObject, GCSDK::ESOCacheEvent eEvent )
 {
+    GCSDK::SOID_t owner( steamIDOwner ); //lwss hack	
 #ifdef _DEBUG
 	{
 		CSteamID steamIDOwner( owner.ID() );
@@ -1383,7 +1384,6 @@ void CPlayerInventory::SOUpdated( const CSteamID & steamIDOwner, const GCSDK::CS
 		}
 	}
 #endif
-    GCSDK::SOID_t owner( steamIDOwner ); //lwss hack
 	if ( owner != m_OwnerID )
 		return;
 
