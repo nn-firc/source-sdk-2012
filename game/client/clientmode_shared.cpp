@@ -27,10 +27,14 @@
 #include "hltvcamera.h"
 #include "hud.h"
 #include "hud_element_helper.h"
+#if defined( INCLUDE_SCALEFORM )
 #include "Scaleform/HUD/sfhud_chat.h"
 #include "Scaleform/HUD/sfhudfreezepanel.h"
 #include "Scaleform/HUD/sfhud_teamcounter.h"
 #include "Scaleform/mapoverview.h"
+#elif defined( INCLUDE_ROCKETUI )
+#include "RocketUI/rkhud_chat.h"
+#endif
 #include "hltvreplaysystem.h"
 #include "netmessages.h"
 #if defined( REPLAY_ENABLED )
@@ -592,9 +596,13 @@ bool ContainsBinding( const char *pszBindingString, const char *pszBinding, bool
 	}
 	else
 	{
-		// Tokenize the binding name
-		CUtlVectorAutoPurge< char *> cmdStrings;
-		V_SplitString( pszBindingString, ";", cmdStrings );
+		//lwss: change this to a regular CUtlVector.
+		// This is the only use of this weird Vector class that calls the wrong delete operator instead of delete[] on destruction.
+		//CUtlVectorAutoPurge< char *> cmdStrings;
+		CUtlVector< char *> cmdStrings;
+		//lwss end
+        // Tokenize the binding name
+        V_SplitString( pszBindingString, ";", cmdStrings );
 		FOR_EACH_VEC( cmdStrings, i )
 		{
 			char* szCmd = cmdStrings[ i ];
@@ -755,12 +763,17 @@ void ClientModeShared::StartMessageMode( int iMessageModeType )
 	{
 		return;
 	}
-
+#if defined( INCLUDE_SCALEFORM )
 	SFHudChat* pChat = GET_HUDELEMENT( SFHudChat );
 	if ( pChat )
 	{
 		pChat->StartMessageMode( iMessageModeType );
 	}
+#elif defined( INCLUDE_ROCKETUI )
+	RkHudChat* pChat = GET_HUDELEMENT( RkHudChat );
+	if( pChat )
+	    pChat->StartMessageMode( iMessageModeType );
+#endif
 }
 
 //-----------------------------------------------------------------------------
@@ -1287,7 +1300,9 @@ void ClientModeShared::FireGameEvent( IGameEvent *event )
 			}
 		}
 
-		if ( team == 0 && GetLocalTeam() > 0 )
+		//lwss fix
+		//if ( team == 0 && GetLocalTeam() > 0 )
+		if ( team == 0 && GetLocalPlayerTeam() > 0 )
 		{
 			bValidTeam = false;
 		}

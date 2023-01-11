@@ -1,4 +1,4 @@
-//====== Copyright ©, Valve Corporation, All rights reserved. =======
+//====== Copyright ï¿½, Valve Corporation, All rights reserved. =======
 //
 // Purpose: EconItemSchema: Defines a schema for econ items
 //
@@ -35,6 +35,7 @@
 #include "materialsystem/imaterialsystem.h"
 
 #include "mathlib/expressioncalculator.h"
+#include "ai_activity.h"
 
 #if defined(CLIENT_DLL) || defined(GAME_DLL)
 #include "weapon_parse.h"
@@ -73,8 +74,58 @@ enum CraftFilter_t
 enum EQuestVar_t
 {
 	/** Removed for partner depot **/
-	k_EQuestVar_First,
-	k_EQuestVar_Last
+	// lwss - restored these, see g_arrQuestVars for more info.
+	k_EQuestVar_KillHuman = 0,
+	k_EQuestVar_First = k_EQuestVar_KillHuman,
+
+    k_EQuestVar_Act_KillChicken,
+    k_EQuestVar_Act_KillTarget,
+    k_EQuestVar_Act_WinMatch,
+    k_EQuestVar_Act_FlashbangEnemy,
+    k_EQuestVar_Act_PickupHostage,
+    k_EQuestVar_Act_RescueHostage,
+    k_EQuestVar_Act_DefuseBomb,
+    k_EQuestVar_Act_PlantBomb,
+    k_EQuestVar_Act_Damage,
+    k_EQuestVar_Act_WinRound,
+    k_EQuestVar_Act_DmBonusPoints,
+    k_EQuestVar_Act_Income,
+    k_EQuestVar_Act_Cash,
+    k_EQuestVar_Act_Spend,
+    k_EQuestVar_Act_PickupTrophy,
+    k_EQuestVar_Cond_Headshot,
+    k_EQuestVar_Cond_Burn,
+    k_EQuestVar_Cond_Match_UniqueWeapon,
+    k_EQuestVar_Cond_Match_UniqueWeaponCount,
+    k_EQuestVar_Cond_Roundstate_PistolRound,
+    k_EQuestVar_Cond_Roundstate_FinalRound,
+    k_EQuestVar_Cond_Roundstate_MatchPoint,
+    k_EQuestVar_Cond_Roundstate_BombPlanted,
+    k_EQuestVar_Cond_ItemOwn,
+    k_EQuestVar_Cond_ItemBorrowed,
+    k_EQuestVar_Cond_ItemBorrowedEnemy,
+    k_EQuestVar_Cond_ItemBorrowedTeammate,
+    k_EQuestVar_Cond_ItemBorrowedVictim,
+    k_EQuestVar_Cond_ItemNonDefault,
+    k_EQuestVar_Cond_BulletSinceSpawn,
+    k_EQuestVar_Cond_PlayerRescuing,
+    k_EQuestVar_Cond_PlayerZoomed,
+    k_EQuestVar_Cond_PlayerBlind,
+    k_EQuestVar_Cond_PlayerTerrorist,
+    k_EQuestVar_Cond_PlayerCT,
+    k_EQuestVar_Cond_LifeKillstreakHuman,
+    k_EQuestVar_Cond_LifeKillstreakChicken,
+    k_EQuestVar_Cond_MatchRoundsWon,
+    k_EQuestVar_Cond_MatchRoundsPlayed,
+    k_EQuestVar_Cond_VictimBlind,
+    k_EQuestVar_Cond_VictimZoomed,
+    k_EQuestVar_Cond_VictimRescuing,
+    k_EQuestVar_Cond_VictimTerrorist,
+    k_EQuestVar_Cond_VictimCT,
+    k_EQuestVar_Cond_VictimReloading,
+
+    k_EQuestVar_Last
+	// lwss end
 };
 
 //-----------------------------------------------------------------------------
@@ -1504,7 +1555,7 @@ public:
 	item_capabilities_t GetCapabilities() const { return m_unCapabilities; }
 
 	virtual bool CanApplyTo( const IEconItemInterface *pTool, const IEconItemInterface *pToolSubject ) const { Assert( pTool ); Assert( pToolSubject ); return true; }
-	virtual bool ShouldDisplayQuantity( const IEconItemInterface *pTool ) const;
+	virtual bool ShouldDisplayQuantity( const IEconItemInterface *pTool ) const { return false; } // lwss - add stub TODO: expand on this
 	virtual bool RequiresToolEscrowPeriod() const { return false; }
 
 	// We don't support throwing exceptions from tool construction so this is intended to be checked afterwards
@@ -1527,7 +1578,7 @@ public:
 
 #ifdef CLIENT_DLL
 	virtual bool ShouldShowContainedItemPanel( const IEconItemInterface *pItem ) const { Assert( !"IEconTool::ShouldShowContainedItemPanel(): we don't expect this to be called on anything besides gifts!" ); return false; }
-	virtual const char *GetUseCommandLocalizationToken( const IEconItemInterface *pItem, const char* pszDefault="#ApplyOnItem" ) const;
+	virtual const char *GetUseCommandLocalizationToken( const IEconItemInterface *pItem, const char* pszDefault="#ApplyOnItem" ) const { return "GetUseCommandLocalizationToken unimplemented!"; } //lwss - add stub TODO: expand on this
 
 	// Client "do something" interface. At least one of these functions must be implemented or your tool
 	// won't do anything on the client. Some tools (ie., collections) will implement both because they

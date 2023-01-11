@@ -111,11 +111,12 @@ enum ENetworkDisconnectionReason {
   NETWORK_DISCONNECT_SESSION_MIGRATED = 56,
   NETWORK_DISCONNECT_VERYLARGETRANSFEROVERFLOW = 57,
   NETWORK_DISCONNECT_SENDNETOVERFLOW = 58,
-  NETWORK_DISCONNECT_PLAYER_REMOVED_FROM_HOST_SESSION = 59
+  NETWORK_DISCONNECT_PLAYER_REMOVED_FROM_HOST_SESSION = 59,
+  NETWORK_DISCONNECT_SERVER_DOS = 61
 };
 bool ENetworkDisconnectionReason_IsValid(int value);
 const ENetworkDisconnectionReason ENetworkDisconnectionReason_MIN = NETWORK_DISCONNECT_INVALID;
-const ENetworkDisconnectionReason ENetworkDisconnectionReason_MAX = NETWORK_DISCONNECT_PLAYER_REMOVED_FROM_HOST_SESSION;
+const ENetworkDisconnectionReason ENetworkDisconnectionReason_MAX = NETWORK_DISCONNECT_SERVER_DOS;
 const int ENetworkDisconnectionReason_ARRAYSIZE = ENetworkDisconnectionReason_MAX + 1;
 
 const ::google::protobuf::EnumDescriptor* ENetworkDisconnectionReason_descriptor();

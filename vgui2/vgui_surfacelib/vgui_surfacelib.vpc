@@ -13,6 +13,9 @@ $Configuration
 {
 	$Compiler
 	{
+		//lwss - add freetype directory
+		$AdditionalIncludeDirectories		"$BASE;/usr/include/freetype2"	[$LINUXALL]
+		//lwss end
 		$PreprocessorDefinitions		"$BASE;ALLOW_TEXT_MODE=1" [$CSTRIKE_TRUNK_BUILD||$CSTRIKE_STAGING_BUILD]
 	}
 }

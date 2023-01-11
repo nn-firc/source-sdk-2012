@@ -1,4 +1,4 @@
-//========= Copyright © 1996-2008, Valve Corporation, All rights reserved. ============//
+//========= Copyright ï¿½ 1996-2008, Valve Corporation, All rights reserved. ============//
 //
 // Purpose: 
 //
@@ -30,6 +30,7 @@
 #include "filesystem/IXboxInstaller.h"
 #include "inputsystem/iinputsystem.h"
 #include <time.h>
+#include <gc_clientsystem.h>
 #include "messagebox_scaleform.h"
 
 
@@ -1453,6 +1454,55 @@ void CUIGameData::OnEvent( KeyValues *pEvent )
 	else if ( !Q_strcmp( "OnEngineLevelLoadingSession", szEvent ) )
 	{
 		/* Removed for partner depot */
+        //lwss- this section is responsible for sending a connect request to the GC
+
+		// only handle the "CreateSession" reason
+        if( strcmp( pEvent->GetString("reason"), "CreateSession" ) )
+            return;
+
+        uint64 *uiReservationCookiePtr = (uint64*)pEvent->GetPtr("ptr");
+        if( uiReservationCookiePtr )
+        {
+            INetSupport *pINetSupport = ( INetSupport * )g_pMatchFramework->GetMatchExtensions()->GetRegisteredExtensionInterface( INETSUPPORT_VERSION_STRING );
+            if( pINetSupport )
+            {
+                CGameUIConVarRef cl_session("cl_session");
+                pINetSupport->UpdateClientReservation( *uiReservationCookiePtr, 0 );
+                // unfinished....
+            }
+        }
+        else
+        {
+            netadr_t netadr;
+            netadr.SetIP( 0 );
+            netadr.SetPort( 0 );
+            netadr.SetType( NA_IP );
+            netadr.SetFromString( pEvent->GetString("adr" ) );
+            GCSDK::CProtoBufMsg<CMsgGCCStrike15_v2_ClientRequestJoinServerData> joinServerData( k_EMsgGCCStrike15_v2_ClientRequestJoinServerData );
+            INetSupport *pINetSupport = ( INetSupport * )g_pMatchFramework->GetMatchExtensions()->GetRegisteredExtensionInterface( INETSUPPORT_VERSION_STRING );
+            if( pINetSupport )
+            {
+                int buildNum = pINetSupport->GetEngineBuildNumber();
+                if( buildNum )
+                {
+                    joinServerData.Body().set_version( buildNum );
+                }
+
+                joinServerData.Body().set_account_id( steamapicontext->SteamUser()->GetSteamID().GetAccountID() );
+                joinServerData.Body().set_serverid( pEvent->GetUint64("gsid") );
+                joinServerData.Body().set_server_ip( netadr.GetIPHostByteOrder() );
+                joinServerData.Body().set_server_port( netadr.GetPort() );
+
+                GCClientSystem()->BSendMessage( joinServerData );
+                //g_xuidFriendWatchSessionJoiningXUID = (one of the above data, unsure)
+                //g_chFriendWatchSessionJoiningXUIDAction = 99;
+
+                //TODO: This is where the game pulls up a Panel "JoiningInvite" with CMatchMakingStatus
+                //CMatchMakingStatus::SetTimeToAutoCancel( Plat_FloatTime + 15.0 );
+            }
+        }
+
+
 	}
 #endif
 }
@@ -1481,10 +1531,14 @@ public:
 			char const *szReason = RemapText_t::RemapRawText( arrText, msg.Body().errormsg().c_str() );
 
 			g_pMatchFramework->CloseSession();
-			CMessageBoxScaleform::UnloadAllDialogs( true );
-			BasePanel()->RestoreMainMenuScreen();
-			CCommandMsgBox::CreateAndShow( "#SFUI_Disconnect_Title", szReason, true );
-			return false;
+#if defined( INCLUDE_SCALEFORM )
+            CMessageBoxScaleform::UnloadAllDialogs( true );
+#endif
+            BasePanel()->RestoreMainMenuScreen();
+#if defined( INCLUDE_SCALEFORM )
+            CCommandMsgBox::CreateAndShow( "#SFUI_Disconnect_Title", szReason, true );
+#endif
+            return false;
 		}
 
 		if ( msg.Body().res().serverid() )
@@ -1522,9 +1576,13 @@ public:
 			char const *szReason = RemapText_t::RemapRawText( arrText, msg.Body().errormsg().c_str() );
 
 			g_pMatchFramework->CloseSession();
-			CMessageBoxScaleform::UnloadAllDialogs( true );
-			BasePanel()->RestoreMainMenuScreen();
-			GameUI().CreateCommandMsgBox( "#SFUI_Disconnect_Title", szReason, true );
+#if defined( INCLUDE_SCALEFORM )
+            CMessageBoxScaleform::UnloadAllDialogs( true );
+#endif
+            BasePanel()->RestoreMainMenuScreen();
+#if defined( INCLUDE_SCALEFORM )
+            CCommandMsgBox::CreateAndShow( "#SFUI_Disconnect_Title", szReason, true );
+#endif
 			return false;
 		}
 

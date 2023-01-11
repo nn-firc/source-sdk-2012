@@ -15,6 +15,9 @@ $Configuration
 	$Compiler
 	{
 		$AdditionalIncludeDirectories	"$BASE;..\include"
+		//lwss - add freetype directory
+		$AdditionalIncludeDirectories		"$BASE;/usr/include/freetype2"	[$LINUXALL]
+		//lwss end
 		$AdditionalIncludeDirectories	"$BASE;$SRCDIR\thirdparty"
 		$PreprocessorDefinitions		"$BASE;DONT_PROTECT_FILEIO_FUNCTIONS"
 //		$TreatWchar_tAsBuiltinType		"No"

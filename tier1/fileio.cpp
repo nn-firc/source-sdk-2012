@@ -51,6 +51,8 @@
 #include <sys/statvfs.h>
 #endif
 #include <sched.h>
+
+#include "tier0/platform.h"
 #define int64 int64_t
 
 // On OSX the native API file offset is always 64-bit

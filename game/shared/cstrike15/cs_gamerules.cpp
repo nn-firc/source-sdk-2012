@@ -88,7 +88,8 @@
 #endif
 
 #include "gametypes.h"
-
+#include "cs_workshop_manager.h"
+#include "ugc_file_info_manager.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
@@ -2615,7 +2616,7 @@ namespace SpecHear
 }
 
 // NOTE: the indices here must match TEAM_TERRORIST, TEAM_CT, TEAM_SPECTATOR, etc.
-char *sTeamNames[] =
+const char *sTeamNames[] =
 {
 	"Unassigned",
 	"Spectator",
@@ -16138,7 +16139,7 @@ void CCSGameRules::RecordPlayerItemDrop( const CEconItemPreviewDataBlock &itemin
 #ifndef CLIENT_DLL
 const char *CCSGameRules::GetChatPrefix( bool bTeamOnly, CBasePlayer *pPlayer )
 {
-    char *pszPrefix = NULL;
+    const char *pszPrefix = NULL;
 
     if ( !pPlayer )  // dedicated server output
     {

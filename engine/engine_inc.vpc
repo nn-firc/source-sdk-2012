@@ -30,6 +30,9 @@ $Configuration
 		$PreprocessorDefinitions	"$BASE;DEDICATED;SWDS;NO_BINK" [$DEDICATED]
 		$PreprocessorDefinitions	"$BASE;INCLUDE_SCALEFORM" [!$DEDICATED]
 		$PreprocessorDefinitions	"$BASE;ALLOW_TEXT_MODE=1" [$CSTRIKE_TRUNK_BUILD||$CSTRIKE_STAGING_BUILD]
+		// lwss - gcc >=5 uses a different ABI. Protobuf was built with gcc4, so we need to use the old ABI
+		$PreprocessorDefinitions 	"$BASE;_GLIBCXX_USE_CXX11_ABI=0" [$LINUX64]
+		// lwss end
 	}
 
 	$Compiler [$WIN32] // This is already enabled for WIN64.

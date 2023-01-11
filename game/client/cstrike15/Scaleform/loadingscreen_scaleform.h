@@ -14,7 +14,7 @@
 #include "matchmaking/imatchframework.h"
 #include "uigamedata.h"
 #include "gameui_interface.h"
-#include "gameeventlistener.h"
+#include "GameEventListener.h"
 
 class CLoadingScreenScaleform : public ScaleformFlashInterface, public IMatchEventsSink, public CGameEventListener
 {

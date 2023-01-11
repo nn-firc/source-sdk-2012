@@ -366,6 +366,12 @@ void CServerMsg_CheckReservation::SendMsg( const ns_address &serverAdr, int sock
 	msg.WriteLongLong( 0 );
 #endif
 
+    //lwss - ifdef the SDR stuff out, it is out of scope for kisak-strike as of now
+	#if !defined(DEDICATED) && defined(KISAK_USE_SDR)
+		if ( serverAdr.GetAddressType() == NSAT_PROXIED_GAMESERVER )
+			NET_InitSteamDatagramProxiedGameserverConnection( serverAdr );
+	#endif
+
 	NET_SendPacket( NULL, socket, serverAdr, msg.GetData(), msg.GetNumBytesWritten() );
 }
 
@@ -426,6 +432,12 @@ void CServerMsg_Ping::SendMsg( const ns_address &serverAdr, int socket, uint32 t
 	msg.WriteByte( A2S_PING );
 	msg.WriteLong( GetHostVersion() );
 	msg.WriteLong( token );
+
+    //lwss - ifdef the SDR stuff out, it is out of scope for kisak-strike as of now
+    #if !defined(DEDICATED) && defined(KISAK_USE_SDR)
+		if ( serverAdr.GetAddressType() == NSAT_PROXIED_GAMESERVER )
+			NET_InitSteamDatagramProxiedGameserverConnection( serverAdr );
+	#endif
 
 	DevMsg( "Pinging %s\n", ns_address_render( serverAdr ).String() );
 	NET_SendPacket( NULL, socket, serverAdr, msg.GetData(), msg.GetNumBytesWritten() );
@@ -1483,7 +1495,21 @@ void CBaseClientState::CheckForResend ( bool bForceResendNow /* = false */ )
 					break;
 
 				case NSAT_PROXIED_GAMESERVER:
-					Assert( false );
+					#ifdef DEDICATED
+						Assert( false );
+                    //lwss - ifdef the SDR stuff out, it is out of scope for kisak-strike as of now
+                    #elif !defined(KISAK_USE_SDR)
+						Warning( "Kisak-Strike does not support SDR relays!\n" );
+						Assert( false );
+                    //lwss end
+					#else
+
+						// Make sure we have a ticket, and are setup to talk to this guy
+						if ( !NET_InitSteamDatagramProxiedGameserverConnection( remote.m_adrRemote ) )
+							continue;
+
+						pszProtocol = "SteamDatagram";
+					#endif
 					break;
 			}
 			if ( developer.GetInt() != 0 )
@@ -1690,18 +1716,19 @@ bool CBaseClientState::ProcessConnectionlessPacket( netpacket_t *packet )
 			}
 
 			// The host can disable access to secure servers if you load unsigned code (mods, plugins, hacks)
-			if ( dc.m_bGSSecure && !Host_IsSecureServerAllowed() )
-			{
-				m_netadrReserveServer.RemoveAll();
-				m_nServerReservationCookie = 0;				
-				m_pServerReservationCallback = NULL;
-#if !defined(DEDICATED)
-				g_pMatchFramework->CloseSession();
-				g_pMatchFramework->GetEventsSubscription()->BroadcastEvent( new KeyValues( "OnClientInsecureBlocked", "reason", "connect" ) );
-#endif
-				Disconnect();
-				return false;
-			}	
+//lwss- Disabled this.
+//			if ( dc.m_bGSSecure && !Host_IsSecureServerAllowed() )
+//			{
+//				m_netadrReserveServer.RemoveAll();
+//				m_nServerReservationCookie = 0;
+//				m_pServerReservationCallback = NULL;
+//#if !defined(DEDICATED)
+//				g_pMatchFramework->CloseSession();
+//				g_pMatchFramework->GetEventsSubscription()->BroadcastEvent( new KeyValues( "OnClientInsecureBlocked", "reason", "connect" ) );
+//#endif
+//				Disconnect();
+//				return false;
+//			}
 
 			char context[ 256 ] = { 0 };
 			msg.ReadString( context, sizeof( context ) );
@@ -2277,20 +2304,23 @@ void CBaseClientState::HandleDeferredConnection()
 			g_pMatchFramework->GetEventsSubscription()->BroadcastEvent( kvCreateSession );
 		}
 
-		if ( !uiReservationCookie )
-		{
-			Disconnect( true );	// disconnect the current attempt, will retry with GC reservation
-			{
-				KeyValues *kvCreateSession = new KeyValues( "OnEngineLevelLoadingSession" );
-				kvCreateSession->SetString( "reason", "CreateSession" );
-				kvCreateSession->SetString( "adr", ns_address_render( dc.m_adrServerAddress ).String() );
-				kvCreateSession->SetUint64( "gsid", dc.m_unGSSteamID );
-				// NO PTR HERE, FORCE COOKIE: kvCreateSession->SetPtr( "ptr", &uiReservationCookie );
-				g_pMatchFramework->GetEventsSubscription()->BroadcastEvent( kvCreateSession );
-			}
-		}
-		else
-			SendConnectPacket( dc.m_adrServerAddress, dc.m_nChallenge, dc.m_nAuthprotocol, dc.m_unGSSteamID, dc.m_bGSSecure );
+		//lwss - commented out so we can connect even without GC reservation.
+		//if ( !uiReservationCookie )
+		//{
+		//	Disconnect( true );	// disconnect the current attempt, will retry with GC reservation
+		//	{
+		//		KeyValues *kvCreateSession = new KeyValues( "OnEngineLevelLoadingSession" );
+		//		kvCreateSession->SetString( "reason", "CreateSession" );
+		//		kvCreateSession->SetString( "adr", ns_address_render( dc.m_adrServerAddress ).String() );
+		//		kvCreateSession->SetUint64( "gsid", dc.m_unGSSteamID );
+		//		// NO PTR HERE, FORCE COOKIE: kvCreateSession->SetPtr( "ptr", &uiReservationCookie );
+		//		g_pMatchFramework->GetEventsSubscription()->BroadcastEvent( kvCreateSession );
+		//	}
+		//}
+		//else
+        {
+            SendConnectPacket( dc.m_adrServerAddress, dc.m_nChallenge, dc.m_nAuthprotocol, dc.m_unGSSteamID, dc.m_bGSSecure );
+        }
 #endif
 	}
 	else
@@ -2371,7 +2401,7 @@ bool CBaseClientState::InternalProcessStringCmd( const CNETMsg_StringCmd& msg )
 
 
 #ifndef DEDICATED
-#ifdef INCLUDE_SCALEFORM
+#if defined( INCLUDE_SCALEFORM )
 class CScaleformAvatarImageProviderImpl : public IScaleformAvatarImageProvider
 {
 public:
@@ -2414,8 +2444,8 @@ bool CBaseClientState::NETMsg_PlayerAvatarData( const CNETMsg_PlayerAvatarData& 
 	m_mapPlayerAvatarData.Insert( pClientDataCopy->accountid(), pClientDataCopy );
 
 #ifndef DEDICATED
-#ifdef INCLUDE_SCALEFORM
-	if ( g_pScaleformUI )
+#if defined( INCLUDE_SCALEFORM )
+    if ( g_pScaleformUI )
 		g_pScaleformUI->AvatarImageReload( uint64( pClientDataCopy->accountid() ), &g_CScaleformAvatarImageProviderImpl );
 #endif
 #endif

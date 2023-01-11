@@ -1757,6 +1757,7 @@ void CBaseCombatWeapon::SetViewModel()
 //-----------------------------------------------------------------------------
 bool CBaseCombatWeapon::SendWeaponAnim( int iActivity )
 {
+    iActivity = TranslateViewmodelHandActivity( (Activity)iActivity );
 	//For now, just set the ideal activity and be done with it
 	return SetIdealActivity( (Activity) iActivity );
 }
@@ -2571,7 +2572,7 @@ void CBaseCombatWeapon::AddViewKick( void )
 //-----------------------------------------------------------------------------
 // Purpose: Get the string to print death notices with
 //-----------------------------------------------------------------------------
-char *CBaseCombatWeapon::GetDeathNoticeName( void )
+const char *CBaseCombatWeapon::GetDeathNoticeName( void )
 {
 #if !defined( CLIENT_DLL )
 	return (char*)STRING( m_iszName );
@@ -3388,12 +3389,12 @@ END_NETWORK_TABLE()
 
 const CEconItemView* CBaseCombatWeapon::GetEconItemView( void ) const
 {
-	return nullptr;
+    return BaseClass::GetEconItemView();
 }
 
 CEconItemView* CBaseCombatWeapon::GetEconItemView( void )
 {
-	return nullptr;
+    return (CEconItemView*)BaseClass::GetEconItemView();
 }
 
 int CBaseCombatWeapon::GetReserveAmmoCount( AmmoPosition_t nAmmoPosition, CBaseCombatCharacter * pForcedOwner/* = NULL*/  )

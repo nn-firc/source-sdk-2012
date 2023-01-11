@@ -46,7 +46,9 @@
 	#include "cs_custom_material_swap.h"
 	#include "cs_custom_weapon_visualsdata_processor.h"
 	//#include "glow_outline_effect.h"
+#if defined( INCLUDE_SCALEFORM )
 	#include "HUD/sfhudreticle.h"
+#endif
 
 	extern IVModelInfoClient* modelinfo;
 
@@ -135,8 +137,8 @@ void TE_DynamicLight( IRecipientFilter& filter, float delay,
 
 struct WeaponAliasTranslationInfoStruct
 {
-	char* alias;
-	char* translatedAlias;
+	const char* alias;
+	const char* translatedAlias;
 };
 
 static const WeaponAliasTranslationInfoStruct s_WeaponAliasTranslationInfo[] = 
@@ -401,7 +403,7 @@ LINK_ENTITY_TO_CLASS_ALIASED( weapon_cs_base, WeaponCSBase );
 	ConVar cl_crosshairgap_useweaponvalue( "cl_crosshairgap_useweaponvalue", "0", FCVAR_CLIENTDLL | FCVAR_ARCHIVE | FCVAR_SS, "If set to 1, the gap will update dynamically based on which weapon is currently equipped" );
 	ConVar cl_crosshairsize( "cl_crosshairsize", "5", FCVAR_CLIENTDLL | FCVAR_ARCHIVE  | FCVAR_SS );
 	ConVar cl_crosshairthickness( "cl_crosshairthickness", "0.5", FCVAR_CLIENTDLL | FCVAR_ARCHIVE  | FCVAR_SS );
-	ConVar cl_crosshairdot( "cl_crosshairdot", "1", FCVAR_CLIENTDLL | FCVAR_ARCHIVE  | FCVAR_SS );
+	ConVar cl_crosshairdot( "cl_crosshairdot", "0", FCVAR_CLIENTDLL | FCVAR_ARCHIVE  | FCVAR_SS );
 	ConVar cl_crosshaircolor_r( "cl_crosshaircolor_r", "50", FCVAR_CLIENTDLL | FCVAR_ARCHIVE  | FCVAR_SS );
 	ConVar cl_crosshaircolor_g( "cl_crosshaircolor_g", "250", FCVAR_CLIENTDLL | FCVAR_ARCHIVE  | FCVAR_SS );
 	ConVar cl_crosshaircolor_b( "cl_crosshaircolor_b", "50", FCVAR_CLIENTDLL | FCVAR_ARCHIVE  | FCVAR_SS );
@@ -2094,6 +2096,7 @@ void CWeaponCSBase::DrawCrosshair()
 	float flAngleToScreenPixel = 0;
 
 #ifdef CLIENT_DLL
+#if defined( INCLUDE_SCALEFORM )
 	// subtract a ratio of cam driver motion from crosshair according to cl_cam_driver_compensation_scale
 	if ( cl_cam_driver_compensation_scale.GetFloat() != 0 )
 	{
@@ -2113,6 +2116,7 @@ void CWeaponCSBase::DrawCrosshair()
 			}
 		}
 	}
+#endif
 #endif
 
 /*
@@ -3061,6 +3065,7 @@ void CWeaponCSBase::Spawn()
 {
 	m_nWeaponID = WeaponIdFromString( GetClassname() );
 
+	BaseClass::InitializeAttributes();
 	BaseClass::Spawn();
 
 	// Override the bloat that our base class sets as it's a little bit bigger than we want.
@@ -3833,6 +3838,37 @@ void CWeaponCSBase::OnLand( float fVelocity )
 void CWeaponCSBase::Recoil( CSWeaponMode weaponMode )
 {
 	/** Removed for partner depot **/
+    //lwss - rebuilt this function from reversing retail bins
+    float angle;
+    float magnitude;
+    int seed;
+    CCSPlayer *pPlayer = GetPlayerOwner();
+
+    if ( !pPlayer )
+        return;
+
+    //update: Special Thanks to PiMoNFeeD for noticing I missed an if-statement here with the vfunc IsFullAuto().
+    // The recoil was a bit wonky.
+    if( !IsFullAuto() )
+    {
+        seed = GetPredictionRandomSeed();
+    }
+    else
+    {
+        seed = (int) m_flRecoilIndex;
+    }
+
+    if( weapon_legacy_recoiltable.GetBool() )
+    {
+        GetCSWpnData().GetRecoilOffsets( weaponMode, seed, angle, magnitude );
+    }
+    else
+    {
+        g_WeaponRecoilData.GetRecoilOffsets( this, weaponMode, seed, angle, magnitude );
+    }
+
+    pPlayer->KickBack( angle, magnitude );
+    //lwss end
 }
 
 #ifdef CLIENT_DLL

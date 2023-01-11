@@ -1,4 +1,4 @@
-//========= Copyright © 1996-2005, Valve Corporation, All rights reserved. ============//
+//========= Copyright ï¿½ 1996-2005, Valve Corporation, All rights reserved. ============//
 //
 // Purpose: 
 //
@@ -7,7 +7,7 @@
 #include "cbase.h"
 #include "weapon_csbasegun.h"
 #include "fx_cs_shared.h"
-#include "in_buttons.h"	
+#include "in_buttons.h"
 
 #ifdef CLIENT_DLL
 #include "c_cs_player.h"
@@ -320,17 +320,15 @@ void CWeaponCSBaseGun::PrimaryAttack()
 	// change a few things if we're in burst mode
 	if ( IsInBurstMode() )
 	{
-		CALL_ATTRIB_HOOK_FLOAT( flCycleTime, cycletime_when_in_burst_mode );
-
+        //lwss - replaced usage of CALL_ATTRIB_HOOK* for GET_WEAPON_ATTR_FUNC() instead.
+        flCycleTime = GetBurstModeCycleTime();
 		m_iBurstShotsRemaining = 2;
-
-		m_fNextBurstShot = gpGlobals->curtime;
-		CALL_ATTRIB_HOOK_FLOAT( m_fNextBurstShot, time_between_burst_shots );		
+		m_fNextBurstShot = gpGlobals->curtime + GetBurstModeTimeBetweenShots();
 	}
 
 	if ( IsZoomed() )
 	{
-		CALL_ATTRIB_HOOK_FLOAT( flCycleTime, cycletime_when_zoomed );
+        CALL_ATTRIB_HOOK_FLOAT( flCycleTime, cycletime_when_zoomed );
 	}
 																	
 	if ( !CSBaseGunFire( flCycleTime, m_weaponMode ) )								// <--	'PEW PEW' HAPPENS HERE
@@ -631,7 +629,8 @@ void CWeaponCSBaseGun::BurstFireRemaining()
 		return;
 	}
 
-	uint16 nItemDefIndex = 0;
+    const CCSWeaponInfo& weaponInfo = GetCSWpnData();
+    uint16 nItemDefIndex = GetEconItemView()->GetItemIndex();
 
 	FX_FireBullets(
 		pPlayer->entindex(),
@@ -657,14 +656,13 @@ void CWeaponCSBaseGun::BurstFireRemaining()
 
 	if ( m_iBurstShotsRemaining > 0 )
 	{
-		CALL_ATTRIB_HOOK_FLOAT( m_fNextBurstShot, time_between_burst_shots );
+	    //lwss - replaced usage of CALL_ATTRIB_HOOK* for GET_WEAPON_ATTR_FUNC() instead.
+		m_fNextBurstShot = gpGlobals->curtime + weaponInfo.GetBurstModeTimeBetweenShots( GetEconItemView() );
 	}
 	else
 	{
 		m_fNextBurstShot = 0.0f;
 	}
-
-	const CCSWeaponInfo& weaponInfo = GetCSWpnData();
 
 	// update accuracy
 	m_fAccuracyPenalty += weaponInfo.GetInaccuracyFire( GetEconItemView(), m_weaponMode );
@@ -723,12 +721,12 @@ bool CWeaponCSBaseGun::CSBaseGunFire( float flCycleTime, CSWeaponMode weaponMode
 	else
 	{
 		SendWeaponAnim( ACT_VM_PRIMARYATTACK );
-	}		
+	}
 
 	// player "shoot" animation
 	pPlayer->SetAnimation( PLAYER_ATTACK1 );
 
-	uint16 nItemDefIndex = 0;
+	uint16 nItemDefIndex = GetEconItemView()->GetItemIndex();
 
 	FX_FireBullets(
 		pPlayer->entindex(),

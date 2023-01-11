@@ -86,6 +86,8 @@
 
 #if defined( INCLUDE_SCALEFORM )
 #include "scaleformui/scaleformui.h"
+#elif defined( INCLUDE_ROCKETUI )
+#include "rocketui/rocketui.h"
 #endif
 
 #if defined(_WIN32)
@@ -134,6 +136,8 @@ IPS3SaveRestoreToUI *ps3saveuiapi = NULL;
 #endif
 #if defined( INCLUDE_SCALEFORM )
 IScaleformUI* g_pScaleformUI = NULL;
+#elif defined( INCLUDE_ROCKETUI )
+IRocketUI* g_pRocketUI = NULL;
 #endif
 
 #ifndef DEDICATED
@@ -204,7 +208,7 @@ void EXPORT F( IEngineAPI **api )
 
 extern bool cs_initialized;
 extern int			lowshift;
-static char	*empty_string = "";
+static const char	*empty_string = "";
 
 //-----------------------------------------------------------------------------
 // Purpose: 
@@ -560,6 +564,8 @@ bool CEngineAPI::Connect( CreateInterfaceFn factory )
 	
 #if defined( INCLUDE_SCALEFORM )
 	g_pScaleformUI = ( IScaleformUI* ) factory( SCALEFORMUI_INTERFACE_VERSION, NULL );
+#elif defined( INCLUDE_ROCKETUI )
+	g_pRocketUI = ( IRocketUI* ) factory( ROCKETUI_INTERFACE_VERSION, NULL );
 #endif
 
 	if ( IsPC() && !IsPosix() )

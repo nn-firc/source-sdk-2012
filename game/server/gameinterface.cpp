@@ -1825,8 +1825,8 @@ void CServerGameDLL::PreSave( CSaveRestoreData *s )
 // This little hack lets me marry BSP names to messages in titles.txt
 typedef struct
 {
-	char *pBSPName;
-	char *pTitleName;
+	const char *pBSPName;
+	const char *pTitleName;
 } TITLECOMMENT;
 
 // this list gets searched for the first partial match, so some are out of order
@@ -3611,18 +3611,21 @@ float CServerGameClients::ProcessUsercmds( edict_t *player, bf_read *buf, int nu
 		// Validate UserCmd that we parsed:
 		if ( !to->viewangles.IsValid() )
 		{
-			to->viewangles.Init();
+            //lwss - untrusted here in retail
+            to->viewangles.Init();
 		}
 
 		if ( !IsEntityQAngleReasonable( to->viewangles ) )
 		{	// Make sure we don't crash the server even if we ban the dude
-			to->viewangles.Init();
+            //lwss - untrusted here in retail
+            to->viewangles.Init();
 		}
 
 		if ( !IsFinite( to->forwardmove ) ||
 			!IsFinite( to->sidemove ) ||
 			!IsFinite( to->upmove ) )
 		{
+            //lwss - untrusted here in retail
 			to->forwardmove = 0;
 			to->sidemove = 0;
 			to->upmove = 0;

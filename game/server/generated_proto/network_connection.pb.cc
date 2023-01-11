@@ -58,7 +58,7 @@ void protobuf_AddDesc_network_5fconnection_2eproto() {
   ::google::protobuf::protobuf_AddDesc_google_2fprotobuf_2fdescriptor_2eproto();
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
     "\n\030network_connection.proto\032 google/proto"
-    "buf/descriptor.proto*\214%\n\033ENetworkDisconn"
+    "buf/descriptor.proto*\327%\n\033ENetworkDisconn"
     "ectionReason\022\036\n\032NETWORK_DISCONNECT_INVAL"
     "ID\020\000\022\037\n\033NETWORK_DISCONNECT_SHUTDOWN\020\001\022F\n"
     "%NETWORK_DISCONNECT_DISCONNECT_BY_USER\020\002"
@@ -177,9 +177,11 @@ void protobuf_AddDesc_network_5fconnection_2eproto() {
     "nnect_SendNetOverflow\022l\n3NETWORK_DISCONN"
     "ECT_PLAYER_REMOVED_FROM_HOST_SESSION\020;\0323"
     "\242\324\030/#GameUI_Disconnect_PlayerRemovedFrom"
-    "HostSession:E\n\030network_connection_token\022"
-    "!.google.protobuf.EnumValueOptions\030\304\212\003 \001"
-    "(\tB\003\200\001\000", 4887);
+    "HostSession\022I\n\035NETWORK_DISCONNECT_SERVER"
+    "_DOS\020=\032&\242\324\030\"#GameUI_Disconnect_TooManyCo"
+    "mmands:E\n\030network_connection_token\022!.goo"
+    "gle.protobuf.EnumValueOptions\030\304\212\003 \001(\tB\003\200"
+    "\001\000", 4962);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "network_connection.proto", &protobuf_RegisterTypes);
   ::google::protobuf::internal::ExtensionSet::RegisterExtension(
@@ -260,6 +262,7 @@ bool ENetworkDisconnectionReason_IsValid(int value) {
     case 57:
     case 58:
     case 59:
+    case 61:
       return true;
     default:
       return false;

@@ -84,6 +84,7 @@ def build(bld):
 		'subrectimage.cpp',
 		'TextEntry.cpp',
 		'TextImage.cpp',
+		'tgaimagepanel.cpp',
 		'ToggleButton.cpp',
 		'Tooltip.cpp',
 		'ToolWindow.cpp',
@@ -92,7 +93,8 @@ def build(bld):
 		'URLLabel.cpp',
 		'WizardPanel.cpp',
 		'WizardSubPanel.cpp',
-		'../src/vgui_key_translation.cpp'
+		'footerpanel.cpp',
+		'../src/vgui_key_translation.cpp',
 	]
 
 	includes = [

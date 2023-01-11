@@ -17,6 +17,7 @@
 #include "weapon_parse.h"
 #include "baseviewmodel_shared.h"
 #include "weapon_proficiency.h"
+#include "econ/econ_entity.h"
 
 #if defined( CLIENT_DLL )
 #undef CBaseCombatWeapon
@@ -120,7 +121,7 @@ namespace vgui2
 // Purpose: Base weapon class, shared on client and server
 //-----------------------------------------------------------------------------
 
-#define BASECOMBATWEAPON_DERIVED_FROM		CBaseAnimating
+#define BASECOMBATWEAPON_DERIVED_FROM		CEconEntity
 
 // temp states for modular weapon body groups
 #define MODULAR_BODYGROUPS_DEFAULT_NONE_SET		0
@@ -375,7 +376,7 @@ public:
 
 	virtual void			AddViewKick( void );	// Add in the view kick for the weapon
 
-	virtual char			*GetDeathNoticeName( void );	// Get the string to print death notices with
+	virtual const char		*GetDeathNoticeName( void );	// Get the string to print death notices with
 
 	CBaseCombatCharacter	*GetOwner() const;
 	void					SetOwner( CBaseCombatCharacter *owner );
@@ -525,7 +526,10 @@ public:
 	virtual void			UpdateVisibility( void );
 
 	virtual void			BoneMergeFastCullBloat( Vector &localMins, Vector &localMaxs, const Vector &thisEntityMins, const Vector &thisEntityMaxs  ) const;
-	virtual bool			OnFireEvent( C_BaseViewModel *pViewModel, const Vector& origin, const QAngle& angles, int event, const char *options ) { return false; }
+	virtual bool			OnFireEvent( C_BaseViewModel *pViewModel, const Vector& origin, const QAngle& angles, int event, const char *options )
+	{
+        return BaseClass::OnFireEvent( pViewModel, origin, angles, event, options );
+    }
 
 	// Should this object cast shadows?
 	virtual ShadowType_t	ShadowCastType();

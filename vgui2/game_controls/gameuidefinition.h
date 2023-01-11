@@ -1,4 +1,4 @@
-//========= Copyright © 1996-2005, Valve Corporation, All rights reserved. ============//
+//========= Copyright ï¿½ 1996-2005, Valve Corporation, All rights reserved. ============//
 //
 // Purpose: 
 //
@@ -23,7 +23,8 @@
 
 class CGameLayer;
 class CGameUIScript;
-enum EScriptExecution;
+//enum EScriptExecution; lwss- this enum is unavailable. Replacing with int
+typedef int EScriptExecution;
 struct GameUIEvent_t;
 
 struct GameGraphicMap_t 

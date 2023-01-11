@@ -160,6 +160,8 @@
 #include "ixboxsystem.h"
 #if defined( INCLUDE_SCALEFORM )
 #include "scaleformui/scaleformui.h"
+#elif defined( INCLUDE_ROCKETUI )
+#include "rocketui/rocketui.h"
 #endif
 
 extern IXboxSystem *g_pXboxSystem;
@@ -3098,8 +3100,10 @@ void CFrameTimer::ComputeFrameVariability()
 	variance = devSquaredFrameStartTime / ( double ) ( count );
 	m_flFPSStdDeviationFrameStartTimeSeconds = sqrt( variance );
 
-	tmPlot( TELEMETRY_LEVEL0, TMPT_NONE, 0, m_flFPSStdDeviationSeconds * 1000.0f, "m_flFPSStdDeviationSeconds(ms)" );
+#ifdef RAD_TELEMETRY_ENABLED
+    tmPlot( TELEMETRY_LEVEL0, TMPT_NONE, 0, m_flFPSStdDeviationSeconds * 1000.0f, "m_flFPSStdDeviationSeconds(ms)" );
 	tmPlot( TELEMETRY_LEVEL0, TMPT_NONE, 0, m_flFPSStdDeviationFrameStartTimeSeconds * 1000.0f, "m_flFPSStdDeviationFrameStartTimeMS(ms)" );
+#endif
 
 //	printf("var: %.2f avg:%.6f frametime:%f\n", m_flFPSStdDeviationSeconds * 1000.0f, avg, frametime);
 }
@@ -4521,6 +4525,11 @@ void _Host_RunFrame (float time)
 			g_pScaleformUI->RunFrame( ( g_ClientGlobalVariables.realtime - flLastScaleformRunFrame ) / timeScale );
 			flLastScaleformRunFrame = g_ClientGlobalVariables.realtime;
 		}
+#elif defined( INCLUDE_ROCKETUI )
+        if ( g_pRocketUI && shouldrender )
+        {
+			g_pRocketUI->RunFrame( g_ClientGlobalVariables.realtime );
+        }
 #endif
 
 		g_Log.RunFrame();
@@ -4872,7 +4881,7 @@ void Host_InitProcessor( void )
 	const CPUInformation& pi = GetCPUInformation();
 
 	// Compute Frequency in Mhz: 
-	char* szFrequencyDenomination = "Mhz";
+	const char* szFrequencyDenomination = "Mhz";
 	double fFrequency = pi.m_Speed / 1000000.0;
 
 	// Adjust to Ghz if nessecary:
@@ -5514,12 +5523,13 @@ void Host_Init( bool bDedicated )
 #endif
 
 	//////// DISABLE FOR SHIP! //////////
-	if ( !IsCert() || CommandLine()->FindParm( "-dbginput" ) )
-	{
-		g_pDebugInputThread = new CDebugInputThread();
-		g_pDebugInputThread->SetName( "Debug Input" );
-		g_pDebugInputThread->Start( 0, TP_PRIORITY_HIGH );
-	}
+	//lwss- comment this out
+	//if ( !IsCert() || CommandLine()->FindParm( "-dbginput" ) )
+	//{
+	//	g_pDebugInputThread = new CDebugInputThread();
+	//	g_pDebugInputThread->SetName( "Debug Input" );
+	//	g_pDebugInputThread->Start( 0, TP_PRIORITY_HIGH );
+	//}
 
 #ifndef _CERT
 	if ( CommandLine()->FindParm( "-tslist" ) )
@@ -5763,7 +5773,9 @@ void Host_Init( bool bDedicated )
 	// Mark DLL as active
 	//	eng->SetNextState( InEditMode() ? IEngine::DLL_PAUSED : IEngine::DLL_ACTIVE );
 
-	TelemetryTick();
+#ifdef RAD_TELEMETRY_ENABLED
+    TelemetryTick();
+#endif
 
 	// Initialize processor subsystem, and print relevant information:
 	Host_InitProcessor();
@@ -6609,11 +6621,13 @@ void Host_Shutdown(void)
 //-----------------------------------------------------------------------------
 bool Host_AllowQueuedMaterialSystem( bool bAllow )
 {
-#if !defined DEDICATED
+#if !defined( DEDICATED )
 	g_bAllowThreadedSound = bAllow;
 	// NOTE: Moved this to materialsystem for integrating with other mqm changes
 	return g_pMaterialSystem->AllowThreading( bAllow, g_nMaterialSystemThread );
 #endif
+	//lwss fix- THIS DID NOT RETURN A VALUE ON DEDICATED BUILDS, MESSING UP THE STACK AND CAUSING ME MUCH GRIEF!
+	return false;
 }
 
 void Host_EnsureHostNameSet()

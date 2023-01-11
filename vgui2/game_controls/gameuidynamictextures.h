@@ -1,4 +1,4 @@
-//========= Copyright © 1996-2005, Valve Corporation, All rights reserved. ============//
+//========= Copyright ï¿½ 1996-2005, Valve Corporation, All rights reserved. ============//
 //
 // Purpose: 
 //
@@ -15,8 +15,8 @@
 #include "tier1/utlobjectreference.h"
 #include "tier1/utldict.h"
 #include "tier1/utlstring.h"
-#include "tier1/utlstringmap.h"
-#include "materialsystem/materialsystemutil.h"
+#include "tier1/UtlStringMap.h"
+#include "materialsystem/MaterialSystemUtil.h"
 #include "materialsystem/imaterialproxy.h"
 #include "bitmap/texturepacker.h"
 

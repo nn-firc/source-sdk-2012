@@ -1305,12 +1305,13 @@ bool CPlayerInventory::AddEconDefaultEquippedDefinition( CEconDefaultEquippedDef
 //-----------------------------------------------------------------------------
 // Purpose: Creates a script item and associates it with this econ item
 //-----------------------------------------------------------------------------
-void CPlayerInventory::SOCreated( SOID_t owner, const GCSDK::CSharedObject *pObject, GCSDK::ESOCacheEvent eEvent )
+void CPlayerInventory::SOCreated( const CSteamID & steamIDOwner, const GCSDK::CSharedObject *pObject, GCSDK::ESOCacheEvent eEvent )
 {
 #ifdef _DEBUG
-	Msg("CPlayerInventory::SOCreated %s [event = %u]\n", CSteamID( owner.ID() ).Render(), eEvent );
+	//Msg("CPlayerInventory::SOCreated %s [event = %u]\n", CSteamID( owner.ID() ).Render(), eEvent );
+	Msg("CPlayerInventory::SOCreated [event = %u]\n", eEvent );
 #endif
-
+    GCSDK::SOID_t owner( steamIDOwner ); //lwss hack
 	if ( owner != m_OwnerID )
 		return;
 
@@ -1350,9 +1351,17 @@ void CPlayerInventory::SOCreated( SOID_t owner, const GCSDK::CSharedObject *pObj
 
 
 //-----------------------------------------------------------------------------
+// Purpose: LWSS Add - Called before an SO Update
+//-----------------------------------------------------------------------------
+void CPlayerInventory::PreSOUpdate(const CSteamID &steamIDOwner, GCSDK::ESOCacheEvent eEvent)
+{
+    /* Do Nothing by Default */
+}
+
+//-----------------------------------------------------------------------------
 // Purpose: Updates the script item associated with this econ item
 //-----------------------------------------------------------------------------
-void CPlayerInventory::SOUpdated( SOID_t owner, const GCSDK::CSharedObject *pObject, GCSDK::ESOCacheEvent eEvent )
+void CPlayerInventory::SOUpdated( const CSteamID & steamIDOwner, const GCSDK::CSharedObject *pObject, GCSDK::ESOCacheEvent eEvent )
 {
 #ifdef _DEBUG
 	{
@@ -1374,7 +1383,7 @@ void CPlayerInventory::SOUpdated( SOID_t owner, const GCSDK::CSharedObject *pObj
 		}
 	}
 #endif
-
+    GCSDK::SOID_t owner( steamIDOwner ); //lwss hack
 	if ( owner != m_OwnerID )
 		return;
 
@@ -1471,15 +1480,23 @@ void CPlayerInventory::SOUpdated( SOID_t owner, const GCSDK::CSharedObject *pObj
 	}
 }
 
-
+//-----------------------------------------------------------------------------
+// Purpose: LWSS Add - Called After an SO Update
+//-----------------------------------------------------------------------------
+void CPlayerInventory::PostSOUpdate(const CSteamID &steamIDOwner, GCSDK::ESOCacheEvent eEvent)
+{
+    /* Do Nothing by Default */
+}
 //-----------------------------------------------------------------------------
 // Purpose: Removes the script item associated with this econ item
 //-----------------------------------------------------------------------------
-void CPlayerInventory::SODestroyed( SOID_t owner, const GCSDK::CSharedObject *pObject, GCSDK::ESOCacheEvent eEvent )
+void CPlayerInventory::SODestroyed( const CSteamID & steamIDOwner, const GCSDK::CSharedObject *pObject, GCSDK::ESOCacheEvent eEvent )
 {
 #ifdef _DEBUG
-	Msg("CPlayerInventory::SODestroyed %s [event = %u]\n", CSteamID( owner.ID() ).Render(), eEvent );
+	//Msg("CPlayerInventory::SODestroyed %s [event = %u]\n", CSteamID( owner.ID() ).Render(), eEvent );
+	Msg("CPlayerInventory::SODestroyed [event = %u]\n", eEvent );
 #endif
+    GCSDK::SOID_t owner( steamIDOwner ); //lwss hack
 
 	if( pObject->GetTypeID() != CEconItem::k_nTypeID )
 		return;
@@ -1516,7 +1533,7 @@ void CPlayerInventory::SODestroyed( SOID_t owner, const GCSDK::CSharedObject *pO
 // Purpose: This is our initial notification that this cache has been received
 //			from the server.
 //-----------------------------------------------------------------------------
-void CPlayerInventory::SOCacheSubscribed( SOID_t owner, GCSDK::ESOCacheEvent eEvent )
+void CPlayerInventory::SOCacheSubscribed( const CSteamID & steamIDOwner, GCSDK::ESOCacheEvent eEvent )
 {
 	/** Removed for partner depot **/
 	return;
@@ -1589,13 +1606,15 @@ void CPlayerInventory::MarkSetItemDescriptionsDirty( int nItemSetIndex )
 //-----------------------------------------------------------------------------
 // Purpose:
 //-----------------------------------------------------------------------------
-void CPlayerInventory::SOCacheUnsubscribed( GCSDK::SOID_t ID, GCSDK::ESOCacheEvent eEvent )
+void CPlayerInventory::SOCacheUnsubscribed( const CSteamID & steamIDOwner, GCSDK::ESOCacheEvent eEvent )
 {
 #ifdef _DEBUG
-	Msg("CPlayerInventory::SOCacheUnsubscribed %s [event = %u]\n", CSteamID( ID.ID() ).Render(), eEvent );
+	//Msg("CPlayerInventory::SOCacheUnsubscribed %s [event = %u]\n", CSteamID( ID.ID() ).Render(), eEvent );
+	Msg("CPlayerInventory::SOCacheUnsubscribed [event = %u]\n", eEvent );
 #endif
+    GCSDK::SOID_t owner( steamIDOwner ); //lwss hack
 
-	if ( ID != m_OwnerID )
+	if ( owner != m_OwnerID )
 		return;
 
 	m_bCurrentlySubscribedToSteam = false;

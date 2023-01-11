@@ -523,20 +523,48 @@ class CMsgGCStorePurchaseInitResponse : public ::google::protobuf::Message {
   inline ::google::protobuf::uint64 txn_id() const;
   inline void set_txn_id(::google::protobuf::uint64 value);
 
+  // optional string url = 3;
+  inline bool has_url() const;
+  inline void clear_url();
+  static const int kUrlFieldNumber = 3;
+  inline const ::std::string& url() const;
+  inline void set_url(const ::std::string& value);
+  inline void set_url(const char* value);
+  inline void set_url(const char* value, size_t size);
+  inline ::std::string* mutable_url();
+  inline ::std::string* release_url();
+  inline void set_allocated_url(::std::string* url);
+
+  // repeated uint64 item_ids = 4;
+  inline int item_ids_size() const;
+  inline void clear_item_ids();
+  static const int kItemIdsFieldNumber = 4;
+  inline ::google::protobuf::uint64 item_ids(int index) const;
+  inline void set_item_ids(int index, ::google::protobuf::uint64 value);
+  inline void add_item_ids(::google::protobuf::uint64 value);
+  inline const ::google::protobuf::RepeatedField< ::google::protobuf::uint64 >&
+      item_ids() const;
+  inline ::google::protobuf::RepeatedField< ::google::protobuf::uint64 >*
+      mutable_item_ids();
+
   // @@protoc_insertion_point(class_scope:CMsgGCStorePurchaseInitResponse)
  private:
   inline void set_has_result();
   inline void clear_has_result();
   inline void set_has_txn_id();
   inline void clear_has_txn_id();
+  inline void set_has_url();
+  inline void clear_has_url();
 
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
 
   ::google::protobuf::uint64 txn_id_;
+  ::std::string* url_;
+  ::google::protobuf::RepeatedField< ::google::protobuf::uint64 > item_ids_;
   ::google::protobuf::int32 result_;
 
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(2 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(4 + 31) / 32];
 
   friend void  protobuf_AddDesc_base_5fgcmessages_2eproto();
   friend void protobuf_AssignDesc_base_5fgcmessages_2eproto();
@@ -2520,6 +2548,13 @@ class CMsgApplySticker : public ::google::protobuf::Message {
   inline ::google::protobuf::uint32 baseitem_defidx() const;
   inline void set_baseitem_defidx(::google::protobuf::uint32 value);
 
+  // optional float sticker_wear = 5;
+  inline bool has_sticker_wear() const;
+  inline void clear_sticker_wear();
+  static const int kStickerWearFieldNumber = 5;
+  inline float sticker_wear() const;
+  inline void set_sticker_wear(float value);
+
   // @@protoc_insertion_point(class_scope:CMsgApplySticker)
  private:
   inline void set_has_sticker_item_id();
@@ -2530,6 +2565,8 @@ class CMsgApplySticker : public ::google::protobuf::Message {
   inline void clear_has_sticker_slot();
   inline void set_has_baseitem_defidx();
   inline void clear_has_baseitem_defidx();
+  inline void set_has_sticker_wear();
+  inline void clear_has_sticker_wear();
 
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
 
@@ -2537,9 +2574,10 @@ class CMsgApplySticker : public ::google::protobuf::Message {
   ::google::protobuf::uint64 item_item_id_;
   ::google::protobuf::uint32 sticker_slot_;
   ::google::protobuf::uint32 baseitem_defidx_;
+  float sticker_wear_;
 
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(4 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(5 + 31) / 32];
 
   friend void  protobuf_AddDesc_base_5fgcmessages_2eproto();
   friend void protobuf_AssignDesc_base_5fgcmessages_2eproto();
@@ -8884,6 +8922,101 @@ inline void CMsgGCStorePurchaseInitResponse::set_txn_id(::google::protobuf::uint
   txn_id_ = value;
 }
 
+// optional string url = 3;
+inline bool CMsgGCStorePurchaseInitResponse::has_url() const {
+  return (_has_bits_[0] & 0x00000004u) != 0;
+}
+inline void CMsgGCStorePurchaseInitResponse::set_has_url() {
+  _has_bits_[0] |= 0x00000004u;
+}
+inline void CMsgGCStorePurchaseInitResponse::clear_has_url() {
+  _has_bits_[0] &= ~0x00000004u;
+}
+inline void CMsgGCStorePurchaseInitResponse::clear_url() {
+  if (url_ != &::google::protobuf::internal::kEmptyString) {
+    url_->clear();
+  }
+  clear_has_url();
+}
+inline const ::std::string& CMsgGCStorePurchaseInitResponse::url() const {
+  return *url_;
+}
+inline void CMsgGCStorePurchaseInitResponse::set_url(const ::std::string& value) {
+  set_has_url();
+  if (url_ == &::google::protobuf::internal::kEmptyString) {
+    url_ = new ::std::string;
+  }
+  url_->assign(value);
+}
+inline void CMsgGCStorePurchaseInitResponse::set_url(const char* value) {
+  set_has_url();
+  if (url_ == &::google::protobuf::internal::kEmptyString) {
+    url_ = new ::std::string;
+  }
+  url_->assign(value);
+}
+inline void CMsgGCStorePurchaseInitResponse::set_url(const char* value, size_t size) {
+  set_has_url();
+  if (url_ == &::google::protobuf::internal::kEmptyString) {
+    url_ = new ::std::string;
+  }
+  url_->assign(reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* CMsgGCStorePurchaseInitResponse::mutable_url() {
+  set_has_url();
+  if (url_ == &::google::protobuf::internal::kEmptyString) {
+    url_ = new ::std::string;
+  }
+  return url_;
+}
+inline ::std::string* CMsgGCStorePurchaseInitResponse::release_url() {
+  clear_has_url();
+  if (url_ == &::google::protobuf::internal::kEmptyString) {
+    return NULL;
+  } else {
+    ::std::string* temp = url_;
+    url_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
+    return temp;
+  }
+}
+inline void CMsgGCStorePurchaseInitResponse::set_allocated_url(::std::string* url) {
+  if (url_ != &::google::protobuf::internal::kEmptyString) {
+    delete url_;
+  }
+  if (url) {
+    set_has_url();
+    url_ = url;
+  } else {
+    clear_has_url();
+    url_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
+  }
+}
+
+// repeated uint64 item_ids = 4;
+inline int CMsgGCStorePurchaseInitResponse::item_ids_size() const {
+  return item_ids_.size();
+}
+inline void CMsgGCStorePurchaseInitResponse::clear_item_ids() {
+  item_ids_.Clear();
+}
+inline ::google::protobuf::uint64 CMsgGCStorePurchaseInitResponse::item_ids(int index) const {
+  return item_ids_.Get(index);
+}
+inline void CMsgGCStorePurchaseInitResponse::set_item_ids(int index, ::google::protobuf::uint64 value) {
+  item_ids_.Set(index, value);
+}
+inline void CMsgGCStorePurchaseInitResponse::add_item_ids(::google::protobuf::uint64 value) {
+  item_ids_.Add(value);
+}
+inline const ::google::protobuf::RepeatedField< ::google::protobuf::uint64 >&
+CMsgGCStorePurchaseInitResponse::item_ids() const {
+  return item_ids_;
+}
+inline ::google::protobuf::RepeatedField< ::google::protobuf::uint64 >*
+CMsgGCStorePurchaseInitResponse::mutable_item_ids() {
+  return &item_ids_;
+}
+
 // -------------------------------------------------------------------
 
 // CSOPartyInvite
@@ -11216,6 +11349,28 @@ inline ::google::protobuf::uint32 CMsgApplySticker::baseitem_defidx() const {
 inline void CMsgApplySticker::set_baseitem_defidx(::google::protobuf::uint32 value) {
   set_has_baseitem_defidx();
   baseitem_defidx_ = value;
+}
+
+// optional float sticker_wear = 5;
+inline bool CMsgApplySticker::has_sticker_wear() const {
+  return (_has_bits_[0] & 0x00000010u) != 0;
+}
+inline void CMsgApplySticker::set_has_sticker_wear() {
+  _has_bits_[0] |= 0x00000010u;
+}
+inline void CMsgApplySticker::clear_has_sticker_wear() {
+  _has_bits_[0] &= ~0x00000010u;
+}
+inline void CMsgApplySticker::clear_sticker_wear() {
+  sticker_wear_ = 0;
+  clear_has_sticker_wear();
+}
+inline float CMsgApplySticker::sticker_wear() const {
+  return sticker_wear_;
+}
+inline void CMsgApplySticker::set_sticker_wear(float value) {
+  set_has_sticker_wear();
+  sticker_wear_ = value;
 }
 
 // -------------------------------------------------------------------
