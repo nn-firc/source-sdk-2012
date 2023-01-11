@@ -309,8 +309,6 @@ def configure(conf):
 			conf.check_pkg('freetype2', 'FT2', FT2_CHECK)
 			conf.check_pkg('fontconfig', 'FC', FC_CHECK)
 			conf.check_cfg(package='openal', uselib_store='OPENAL', args=['--cflags', '--libs'])
-			conf.check_cfg(package='libjpeg', uselib_store='JPEG', args=['--cflags', '--libs'])
-			conf.check_cfg(package='libpng', uselib_store='PNG', args=['--cflags', '--libs'])
 			conf.check_cfg(package='libcurl', uselib_store='CURL', args=['--cflags', '--libs'])
 			conf.check_cfg(package='SDL2_mixer', uselib_store='sdl2_mixer', args=['--cflags', '--libs'])
 		conf.check_cfg(package='zlib', uselib_store='ZLIB', args=['--cflags', '--libs'])
