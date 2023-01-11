@@ -363,7 +363,7 @@ def build(bld):
 
 	defines = []
 
-	libs = ['tier0','vgui_controls','videocfg','dmxloader','tier1','interfaces','tier2','tier3','bitmap','vstdlib','appframework','datamodel','vtf','soundsystem_lowlevel','mathlib','steam_api','matsys_controls','BZ2','SDL2','JPEG','ZLIB','OPENAL','CURL','protobuf','cryptopp','quickhull']
+	libs = ['tier0','vgui_controls','videocfg','dmxloader','tier1','interfaces','tier2','tier3','bitmap','vstdlib','appframework','datamodel','vtf','soundsystem_lowlevel','mathlib','steam_api','matsys_controls','BZ2','SDL2','JPEG','ZLIB','OPENAL','CURL','protobuf','cryptopp','quickhull','png']
 
 	if bld.env.DEST_OS == 'android':
 		libs += ['SSL', 'CRYPTO'] # android curl was built with openssl
