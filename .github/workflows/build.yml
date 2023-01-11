@@ -14,12 +14,18 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
-    - name: Build
+    - name: Build Release
       run: |
         sudo apt update && sudo apt upgrade -y && sudo apt install -y git build-essential libsdl2-mixer-dev libsdl2-dev libopenal-dev libcurlpp-dev libssl-dev libfontconfig1-dev libcurl4-openssl-dev net-tools wget unzip zip
-        ./waf configure -T release --64bits --prefix=/home/runner/work/csgo-sdk-2017/csgo-sdk-2017/csgo
+        ./waf configure -T release --64bits --prefix=/home/runner/work/csgo-sdk-2017/csgo-sdk-2017/csgo-rel
         ./waf install --strip -j3
-        zip -9 -r csgo.zip csgo
+        zip -9 -r csgo-rel.zip csgo-rel
+    - name: Build Debug
+      run: |
+        sudo apt update && sudo apt upgrade -y && sudo apt install -y git build-essential libsdl2-mixer-dev libsdl2-dev libopenal-dev libcurlpp-dev libssl-dev libfontconfig1-dev libcurl4-openssl-dev net-tools wget unzip zip
+        ./waf configure -T debug -D --64bits --prefix=/home/runner/work/csgo-sdk-2017/csgo-sdk-2017/csgo-dbg
+        ./waf install --strip -j3
+        zip -9 -r csgo-dbg.zip csgo-dbg
     - name: Create tag version
       if: github.event_name != 'pull_request'
       id: tag_version
@@ -40,11 +46,11 @@ jobs:
         tag_name: ${{ steps.tag_version.outputs.new_tag }}
     - name: Publish game client artifact
       if: github.event_name != 'pull_request'
-      uses: actions/upload-release-asset@v1
+      uses: actions/upload-release-asset@v1.0.2
       env:
         GITHUB_TOKEN: ${{ github.token }}
       with:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: csgo.zip
-        asset_name: csgo.zip
+        asset_path: csgo-rel.zip,csgo-dbg.zip
+        asset_name: csgo-rel.zip,csgo-dbg.zip
         asset_content_type: application/zip
