@@ -1,0 +1,55 @@
+#! /usr/bin/env python
+# encoding: utf-8
+
+from waflib import Utils
+import os
+
+top = '.'
+PROJECT_NAME = 'png'
+
+def options(opt):
+	# stub
+	return
+
+def configure(conf):
+	return
+
+def build(bld):
+	source = [
+		'png.c',
+		'pngerror.c',
+		'pngget.c',
+		'pngmem.c',
+		'pngpread.c',
+		'pngread.c',
+		'pngrio.c',
+		'pngrtran.c',
+		'pngrutil.c',
+		'pngset.c',
+		'pngtrans.c',
+		'pngwio.c',
+		'pngwrite.c',
+		'pngwtran.c',
+		'pngwutil.c'
+	]
+
+	includes = [
+		'.'
+	]
+
+	defines = []
+
+	libs = ['ZLIB']
+
+	bld.stlib(
+		source   = source,
+		target   = PROJECT_NAME,
+		name     = PROJECT_NAME,
+		features = 'c cxx',
+		includes = includes,
+		defines  = defines,
+		use      = libs,
+		subsystem = bld.env.MSVC_SUBSYSTEM,
+		idx      = bld.get_taskgen_count()
+	)
+

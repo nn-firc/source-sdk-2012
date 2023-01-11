@@ -734,6 +734,7 @@ def build(bld):
 		'raytrace',
 		'resourcefile',
 		'jpeg',
+		'png',
 		'protobuf',
 		'RT'
 	]

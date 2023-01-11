@@ -63,6 +63,7 @@ projects={
 		'soundsystem/lowlevel',
 		'StubSteamAPI',
 		'thirdparty/libjpeg',
+		'thirdparty/libpng-1.5.2',
 		'thirdparty/protobuf-2.5.0',
 		'thirdparty/quickhull',
 		'studiorender',
