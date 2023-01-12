@@ -26,6 +26,7 @@ jobs:
         ./waf configure -T debug -D --64bits --prefix=/home/runner/work/csgo-sdk-2017/csgo-sdk-2017/csgo-dbg
         ./waf install --strip -j3
         zip -9 -r csgo-dbg.zip csgo-dbg
+
        - uses: actions/upload-artifact@v3
           with:
             name: my-artifact
