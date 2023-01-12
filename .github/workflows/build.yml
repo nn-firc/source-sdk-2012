@@ -28,7 +28,6 @@ jobs:
         zip -9 -r csgo-dbg.zip csgo-dbg
     
     - uses: actions/upload-artifact@v3
-    - name: upload
       with:
             name: build
             path: /home/runner/work/csgo-sdk-2017/csgo-sdk-2017/?.zip
