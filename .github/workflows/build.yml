@@ -31,4 +31,4 @@ jobs:
     - name: upload
       with:
             name: build
-            path:/home/runner/work/csgo-sdk-2017/csgo-sdk-2017/?.zip
+            path: /home/runner/work/csgo-sdk-2017/csgo-sdk-2017/?.zip
