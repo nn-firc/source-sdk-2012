@@ -7253,14 +7253,6 @@ CSysModule *CBaseFileSystem::LoadModule( const char *pFileName, const char *pPat
 	{
 		pPathID = "EXECUTABLE_PATH"; // default to the bin dir
 	}
-	else if ( IsPlatformWindowsPC64() )
-	{
-		bPathIsGameBin = V_strcmp( "GAMEBIN", pPathID ) == 0;
-	}
-
-#if defined(POSIX) && defined(PLATFORM_64BITS)
-	bPathIsGameBin = V_strcmp( "GAMEBIN", pPathID ) == 0;
-#endif
 
 	char tempPathID[ MAX_PATH ];
 	ParsePathID( pFileName, pPathID, tempPathID );
@@ -7285,33 +7277,6 @@ CSysModule *CBaseFileSystem::LoadModule( const char *pFileName, const char *pPat
 			// we found the binary in one of our search paths
 			return pModule;
 		}
-		else if ( IsPlatformWindowsPC64() && bPathIsGameBin )
-		{
-			Q_snprintf( tempPathID, sizeof( tempPathID ), "%s%s%s%s", m_SearchPaths[ i ].GetPathString(), "x64", CORRECT_PATH_SEPARATOR_S, pFileName ); // append the path to this dir.
-			pModule = Sys_LoadModule( tempPathID );
-			if ( pModule )
-			{
-				// we found the binary in a 64-bit location.
-				return pModule;
-			}
-		}
-#if defined(POSIX) && defined(PLATFORM_64BITS)
-		else if ( bPathIsGameBin )
-		{
-#if defined(LINUX)
-			const char* plat_dir = "linux64";
-#else
-			const char* plat_dir = "osx64";
-#endif
-			Q_snprintf( tempPathID, sizeof( tempPathID ), "%s%s%s%s", m_SearchPaths[ i ].GetPathString(), plat_dir, CORRECT_PATH_SEPARATOR_S, pFileName ); // append the path to this dir.
-			pModule = Sys_LoadModule( tempPathID );
-			if ( pModule )
-			{
-				// we found the binary in a 64-bit location.
-				return pModule;
-			}
-		}
-#endif
 	}
 
 	// couldn't load it from any of the search paths, let LoadLibrary try
