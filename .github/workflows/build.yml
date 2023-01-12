@@ -45,7 +45,7 @@ jobs:
         release_name: AutoRelease ${{ steps.tag_version.outputs.new_tag }}
         tag_name: ${{ steps.tag_version.outputs.new_tag }}
     -name : Upload
-        - uses: actions/upload-artifact@v3
+          uses: actions/upload-artifact@v3
           with:
             name: my-artifact
             path:/home/runner/work/csgo-sdk-2017/csgo-sdk-2017/csgo-*.zip
