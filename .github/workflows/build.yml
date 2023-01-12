@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - name: Build Release
       run: |
         sudo apt update && sudo apt upgrade -y && sudo apt install -y git build-essential libsdl2-mixer-dev libsdl2-dev libopenal-dev libcurlpp-dev libssl-dev libfontconfig1-dev libcurl4-openssl-dev net-tools wget unzip zip
@@ -44,10 +44,8 @@ jobs:
         prerelease: false
         release_name: AutoRelease ${{ steps.tag_version.outputs.new_tag }}
         tag_name: ${{ steps.tag_version.outputs.new_tag }}
-    - name: Publish game client artifact
-        uses: softprops/action-gh-release@v0.1.15
-        if: startsWith(github.ref, 'refs/tags/')
-        with:
-          files: |
-            csgo-rel.zip
-            csgo-dbg.zip
+    -name : Upload
+        - uses: actions/upload-artifact@v3
+          with:
+            name: my-artifact
+            path:/home/runner/work/csgo-sdk-2017/csgo-sdk-2017/csgo-*.zip
