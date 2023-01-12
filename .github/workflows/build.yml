@@ -26,26 +26,7 @@ jobs:
         ./waf configure -T debug -D --64bits --prefix=/home/runner/work/csgo-sdk-2017/csgo-sdk-2017/csgo-dbg
         ./waf install --strip -j3
         zip -9 -r csgo-dbg.zip csgo-dbg
-    - name: Create tag version
-      if: github.event_name != 'pull_request'
-      id: tag_version
-      uses: anothrNick/github-tag-action@1.61.0
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        WITH_V: true
-    - name: Create release
-      if: github.event_name != 'pull_request'
-      env:
-        GITHUB_TOKEN: ${{ github.token }}
-      uses: actions/create-release@v1
-      id: create_release
-      with:
-        draft: false
-        prerelease: false
-        release_name: AutoRelease ${{ steps.tag_version.outputs.new_tag }}
-        tag_name: ${{ steps.tag_version.outputs.new_tag }}
-    -name : Upload
-          uses: actions/upload-artifact@v3
+       - uses: actions/upload-artifact@v3
           with:
             name: my-artifact
             path:/home/runner/work/csgo-sdk-2017/csgo-sdk-2017/csgo-*.zip
