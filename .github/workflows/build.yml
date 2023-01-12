@@ -31,4 +31,4 @@ jobs:
     - uses: actions/upload-artifact@v3
       with:
             name: build
-            path:/home/runner/work/csgo-sdk-2017/csgo-sdk-2017/csgo-*.zip
+            path:csgo-*.zip
