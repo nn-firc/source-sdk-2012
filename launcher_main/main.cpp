@@ -659,6 +659,25 @@ int main( int argc, char *argv[] )
 
 int main( int argc, char *argv[] )
 {
+	char ld_path[4196];
+	char *path = "bin/";
+	char *ld_env;
+
+	if( (ld_env = getenv("LD_LIBRARY_PATH")) != NULL )
+	{
+		snprintf(ld_path, sizeof(ld_path), "%s:bin/", ld_env);
+		path = ld_path;
+	}
+
+	setenv("LD_LIBRARY_PATH", path, 1);
+
+	extern char** environ;
+	if( getenv("NO_EXECVE_AGAIN") == NULL )
+	{
+		setenv("NO_EXECVE_AGAIN", "1", 1);
+		execve(argv[0], argv, environ);
+	}
+
 	const char *pLauncherPath = "bin/liblauncher" DLL_EXT_STRING;
 
 	void *launcher = dlopen( pLauncherPath, RTLD_NOW );
