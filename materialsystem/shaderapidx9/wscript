@@ -40,7 +40,8 @@ def build(bld):
 		'cvballoctracker.cpp',
 		'vertexdecl.cpp',
 		'vertexshaderdx8.cpp',
-		'winutils.cpp'#							[!$WINDOWS]
+		'winutils.cpp',#							[!$WINDOWS]
+		'../../public/tier0/memoverride.cpp'
 	]
 
 	includes = [

@@ -45,10 +45,11 @@ def build(bld):
 		'cmaterialdict.cpp',
 		'cmaterialsystem.cpp',
 		'cmatlightmaps.cpp',
-        'cmatpaintmaps.cpp',
+		'cmatpaintmaps.cpp',
 		'cmatrendercontext.cpp',
 		'cmatqueuedrendercontext.cpp',
-        'pch_materialsystem.cpp'
+		'pch_materialsystem.cpp',
+		'../../public/tier0/memoverride.cpp'
 	]
 
 	includes = [
