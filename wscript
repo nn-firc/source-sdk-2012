@@ -58,6 +58,7 @@ projects={
 		'materialsystem/shaderapidx9',
 		'materialsystem/shaderapiempty',
 		'materialsystem/shaderlib',
+		'materialsystem/stdshaders',
 		'mathlib',
 		'mathlib/extended',
 		'particles',

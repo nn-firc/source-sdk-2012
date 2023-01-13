@@ -1,0 +1,171 @@
+#! /usr/bin/env python
+# encoding: utf-8
+
+from waflib import Utils
+import os
+
+top = '.'
+PROJECT_NAME = 'stdshader_dx9'
+
+def options(opt):
+	# stub
+	return
+
+def configure(conf):
+	conf.env.append_unique('DEFINES',[
+		'STDSHADER_DX9_DLL_EXPORT',
+		'FAST_MATERIALVAR_ACCESS'
+	])
+
+def build(bld):
+	source = [
+		'aftershock.cpp',#								[!$PS3]
+		'aftershock_helper.cpp',#							[!$PS3]
+		'AccumBuff4Sample.cpp',#							[!$PS3]
+		'accumbuff5sample.cpp',#							[!$PS3]
+		'BaseVSShader.cpp',
+		'bik_dx90.cpp',
+		'black.cpp',
+		'Bloom.cpp',#										[!$PS3]
+		'BlurFilterX.cpp',
+		'BlurFilterY.cpp',
+		'BufferClearObeyStencil_dx9.cpp',
+		'cable_dx9.cpp',#									[!$PS3]
+		'character_ssao.cpp',
+		'character.cpp',
+		'cloak.cpp',
+		'cloak_blended_pass_helper.cpp',
+		'cloak_dx9_helper.cpp',
+		'colorcorrection.cpp',#							[!$PS3]
+		'colorout.cpp',
+		'cs_grass.cpp',
+		'customclothing.cpp',
+		'customweapon_dx9.cpp',
+		'customweapon_dx9_helper.cpp',
+		'customcharacter.cpp',
+		'debugmrttexture.cpp',#							[!$PS3]
+		'DebugTextureView.cpp',
+		'DecalModulate_dx9.cpp',
+		'DepthOfField_dx9.cpp',
+		'depthwrite.cpp',
+		'Downsample.cpp',
+		'downsample_nohdr.cpp',
+		'Engine_Post_dx9.cpp',
+		'embroider.cpp',
+		'emissive_scroll_blended_pass_helper.cpp',
+		'eye_refract.cpp',
+		'eye_refract_helper.cpp',
+		'eyes_dx8_dx9_helper.cpp',
+		'eyes_dx9.cpp',
+		'eyeglint_dx9.cpp',
+		'flesh_interior_blended_pass_helper.cpp',
+		'floatcombine.cpp',
+		'floatcombine_autoexpose.cpp',#				[!$PS3]
+		'floattoscreen.cpp',#
+		'floattoscreen_vanilla.cpp',#					[!$PS3]
+		'gamecontrols.cpp',#							[!$PS3]
+		'HDRCombineTo16Bit.cpp',#						[!$PS3]
+		'HDRSelectRange.cpp',#						[!$PS3]
+		'hsl_filmgrain_pass1.cpp',
+		'hsl_filmgrain_pass2.cpp',
+		'filmgrain.cpp',
+		'filmdust.cpp',
+		'hsv.cpp',#									[!$PS3]
+		'introscreenspaceeffect.cpp',#				[!$PS3]
+		'lightmappedgeneric_dx9.cpp',
+		'lightmappedgeneric_dx9_helper.cpp',
+		'lightmappedpaint_dx9_helper.cpp',
+		'lightmappedreflective.cpp',
+		'lightmapped_4wayblend.cpp',
+		'lightmapped_4wayblend_dx9_helper.cpp',
+		'modulate_dx9.cpp',
+		'MonitorScreen_dx9.cpp',
+		'motion_blur_dx9.cpp',
+		'object_motion_blur_dx9.cpp',#				[!$PS3]
+		'occlusion_dx9.cpp',
+		'paintblob_dx9.cpp',
+		'paintblob_helper.cpp',
+		'particlelitgeneric_dx9.cpp',
+		'particlelitgeneric_dx9_helper.cpp',
+		'particlesphere_dx9.cpp',
+		'portal.cpp',
+		'portalstaticoverlay.cpp',
+		'portal_refract.cpp',
+		'portal_refract_helper.cpp',
+		'proto_ice.cpp',#								[!$PS3]
+		'proto_ice_helper.cpp',#						[!$PS3]
+		'prototype.cpp',#								[!$PS3]
+		'prototype_helper.cpp',#						[!$PS3]
+		'refract.cpp',
+		'refract_dx9_helper.cpp',
+		'sample4x4.cpp',
+		'sample4x4_blend.cpp',
+		'screenspace_general.cpp',
+		'shadow.cpp',
+		'shadowbuild_dx9.cpp',
+		'shadowmodel_dx9.cpp',
+		'shatteredglass.cpp',
+		'showz.cpp',
+		'solidenergy_dx9.cpp',
+		'solidenergy_dx9_helper.cpp',
+		'phong_dx9_helper.cpp',
+		'sky_hdr_dx9.cpp',
+		'splinerope.cpp',
+		'sprite_dx9.cpp',
+		'spritecard.cpp',
+		'teeth.cpp',
+		'TreeLeaf.cpp',#								[!$PS3]
+		'unlitgeneric_dx9.cpp',
+		'unlitworld_screensample.cpp',
+		'unlittwotexture_dx9.cpp',
+		'vertexlitgeneric_dx9.cpp',
+		'vertexlitgeneric_dx9_helper.cpp',
+		'volume_clouds.cpp',#							[!$PS3]
+		'volume_clouds_helper.cpp',#					[!$PS3]
+		'vortwarp_dx9.cpp',#							[!$ps3]
+		'water.cpp',
+		'weapondecal_dx9.cpp',
+		'weapondecal_dx9_helper.cpp',
+		'windowimposter_dx90.cpp',
+		'wireframe_dx9.cpp',
+		'worldimposter.cpp',							
+		'worldtwotextureblend.cpp',
+		'worldvertextransition.cpp',
+		'worldvertextransition_dx8_helper.cpp',#		[!$PS3]
+		'writez_dx9.cpp',
+		'writestencil_dx9.cpp',
+		'../../public/tier0/memoverride.cpp'
+	]
+
+	includes = [
+		'.',
+		'..',
+		'../../public',
+		'../../public/tier0',
+		'../../public/tier1',
+		'fxctmp9',
+		'vshtmp9'
+	] + bld.env.INCLUDES_SDL2
+
+	defines = []
+
+	libs = ['tier0','shaderlib','tier1','mathlib','interfaces','vstdlib']
+
+	if bld.env.DEST_OS == 'android':
+		libs += ['ANDROID_SUPPORT']
+
+	install_path = bld.env.LIBDIR
+
+	bld.shlib(
+		source   = source,
+		target   = PROJECT_NAME,
+		name     = PROJECT_NAME,
+		features = 'c cxx',
+		includes = includes,
+		defines  = defines,
+		use      = libs,
+		install_path = install_path,
+		subsystem = bld.env.MSVC_SUBSYSTEM,
+		idx      = bld.get_taskgen_count()
+	)
+
