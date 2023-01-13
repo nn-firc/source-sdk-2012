@@ -15,15 +15,6 @@
 
 //-----------------------------------------------------------------------------
 
-#if !defined(PS3) && (!defined(_MSC_VER) || _MSC_VER < 1800) && !defined(LINUX64)
-// This C99 function exists in VS 2013's math.h and for PS3 but are not currently available elsewhere.
-// lwss - this function exists in linux now.
-inline float round( float f )
-{
-	return (float)( (int)( f + 0.5 ) );
-}
-#endif
-
 //-----------------------------------------------------------------------------
 // CAI_MoveSolver
 //-----------------------------------------------------------------------------
