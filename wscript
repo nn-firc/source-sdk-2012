@@ -55,6 +55,7 @@ projects={
 		'localize',
 		'materialsystem',
 		'materialsystem/shaderapidx9',
+		'materialsystem/shaderapiempty',
 		'materialsystem/shaderlib',
 		'mathlib',
 		'mathlib/extended',
