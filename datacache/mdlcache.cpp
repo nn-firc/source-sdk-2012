@@ -61,7 +61,7 @@
 #if defined( _X360 )
 #define AsyncMdlCache() 0	// Explicitly !!!OFF!!! for 360 (incompatible), specific compatible resources opt in individually.
 #else
-#define AsyncMdlCache() 0
+#define AsyncMdlCache() 1
 #endif
 
 #define ERROR_MODEL		"models/error.mdl"
