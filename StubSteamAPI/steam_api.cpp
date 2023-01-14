@@ -24,6 +24,10 @@ S_API bool SteamInternal_GameServer_Init() {
 	return true;
 }
 
+S_API bool SteamGameServerInternal_CreateInterface() {
+	return true;
+}
+
 S_API bool SteamAPI_RestartAppIfNecessary() {
 	return false;
 }
