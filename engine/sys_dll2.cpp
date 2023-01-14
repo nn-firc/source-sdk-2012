@@ -789,7 +789,7 @@ bool CEngineAPI::SetStartupInfo( StartupInfo_t &info )
 #endif // !NO_STEAM && !_GAMECONSOLE
 
 	// turn on the Steam3 API early so we can query app data up front
-#if !defined( DEDICATED ) && !defined( NO_STEAM )
+#if 0//!defined( DEDICATED ) && !defined( NO_STEAM )
 	TRACEINIT( Steam3Client().Activate(), Steam3Client().Shutdown() );
 	if ( IsPS3() )
 	{

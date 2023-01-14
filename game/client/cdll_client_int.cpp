@@ -1425,7 +1425,7 @@ int CHLClient::Connect( CreateInterfaceFn appSystemFactory, CGlobalVarsBase *pGl
     g_pRocketUI = ( IRocketUI* ) appSystemFactory( ROCKETUI_INTERFACE_VERSION, NULL );
 #endif
 
-#ifndef NO_STEAM
+#if 0//ndef NO_STEAM
 	#ifndef _PS3
 	SteamAPI_InitSafe();
 	SteamAPI_SetTryCatchCallbacks( false ); // We don't use exceptions, so tell steam not to use try/catch in callback handlers
