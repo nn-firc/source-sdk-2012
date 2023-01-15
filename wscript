@@ -54,6 +54,7 @@ projects={
 		'launcher_main',
 		'localize',
 		'matchmaking',
+		'matchmaking/client',
 		'materialsystem',
 		'materialsystem/shaderapidx9',
 		'materialsystem/shaderapiempty',

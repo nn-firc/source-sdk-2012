@@ -5,7 +5,7 @@ from waflib import Utils
 import os
 
 top = '.'
-PROJECT_NAME = 'matchmaking'
+PROJECT_NAME = 'matchmaking_base'
 
 def options(opt):
 	# stub
@@ -54,13 +54,6 @@ def build(bld):
 		'extkeyvalues.cpp',
 		'../public/filesystem_helpers.cpp',
 		'main.cpp',
-		'cstrike15/mm_title.cpp',
-		'cstrike15/mm_title_gamesettingsmgr.cpp',
-		'cstrike15/mm_title_main.cpp',
-		'cstrike15/mm_title_richpresence.cpp',
-		'cstrike15/mm_title_titledata.cpp',
-		'../game/shared/cstrike15/gametypes.cpp',
-		'../common/platforminputdevice.cpp',
 		'../public/tier0/memoverride.cpp'
 	]
 
@@ -69,10 +62,6 @@ def build(bld):
 		'../public',
 		'../public/tier0',
 		'../public/tier1',
-		'../game/shared',
-		'../gcsdk/steamextra',
-		'common',
-		'../common/xlast_csgo',
 		'../thirdparty/protobuf-2.5.0/src'
 	]
 
@@ -82,19 +71,11 @@ def build(bld):
 		'tier0',
 		'gcsdk',
 		'tier1',
-		'tier2',
-		'tier3',
 		'vstdlib',
-		'interfaces',
-		'mathlib',
-		'steam_api'
+		'interfaces'
 	]
 
-	install_path = bld.env.PREFIX
-	if bld.env.DEST_OS != 'android':
-		install_path += '/csgo/bin'
-
-	bld.shlib(
+	bld.stlib(
 		source   = source,
 		target   = PROJECT_NAME,
 		name     = PROJECT_NAME,
@@ -102,7 +83,6 @@ def build(bld):
 		includes = includes,
 		defines  = defines,
 		use      = libs,
-		install_path = install_path,
 		subsystem = bld.env.MSVC_SUBSYSTEM,
 		idx      = bld.get_taskgen_count()
 	)

@@ -2604,7 +2604,7 @@ bool ClientDLL_Load()
 	// into insecure mode so it won't connect to secure servers and get VAC banned
 	// #if 0 the following block and rebuild engine.dll if you want to build your own noCEG client.dll and run on Steam Public in secure mode!
 #if 1
-	if ( !Host_AllowLoadModule( "client" DLL_EXT_STRING, "GAMEBIN", false ) )
+	if ( !Host_AllowLoadModule( "libclient" DLL_EXT_STRING, "GAMEBIN", false ) )
 	{
 		// not supposed to load this but we will anyway
 		Host_DisallowSecureServers();
@@ -2613,7 +2613,7 @@ bool ClientDLL_Load()
 
 	// loads the client.dll, but ensures that the client dll is running under Steam
 	// this will have to be undone when we want mods to be able to run
-	g_ClientDLLModule = g_pFileSystem->LoadModule( "client" DLL_EXT_STRING, "GAMEBIN", false );
+	g_ClientDLLModule = g_pFileSystem->LoadModule( "libclient" DLL_EXT_STRING, "GAMEBIN", false );
 	if ( g_ClientDLLModule )
 	{
 		g_ClientFactory = Sys_GetFactory( g_ClientDLLModule );

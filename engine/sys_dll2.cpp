@@ -2187,7 +2187,7 @@ bool CModAppSystemGroup::Create()
 
 	// Check the signature on the client dll.  If this fails we load it anyway but put this client
 	// into insecure mode so it won't connect to secure servers and get VAC banned
-	if ( !IsServerOnly() && !Host_AllowLoadModule( "matchmaking" DLL_EXT_STRING, "GAMEBIN", false ) )
+	if ( !IsServerOnly() && !Host_AllowLoadModule( "libmatchmaking" DLL_EXT_STRING, "GAMEBIN", false ) )
 	{
 		// not supposed to load this but we will anyway
 		Host_DisallowSecureServers();
@@ -2195,7 +2195,7 @@ bool CModAppSystemGroup::Create()
 
 	// loads the matchmaking.dll
 	g_pMatchmakingDllModule = g_pFileSystem->LoadModule(
-		IsServerOnly() ? ( "matchmaking_ds" DLL_EXT_STRING ) : ( "matchmaking" DLL_EXT_STRING ),
+		IsServerOnly() ? ( "libmatchmaking_ds" DLL_EXT_STRING ) : ( "libmatchmaking" DLL_EXT_STRING ),
 		"GAMEBIN", false );
 
 	if ( g_pMatchmakingDllModule )

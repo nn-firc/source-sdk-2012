@@ -1,0 +1,75 @@
+#! /usr/bin/env python
+# encoding: utf-8
+
+from waflib import Utils
+import os
+
+top = '.'
+PROJECT_NAME = 'matchmaking'
+
+def options(opt):
+	# stub
+	return
+
+def configure(conf):
+	conf.env.append_unique('DEFINES',[
+		'MATCHMAKING_DLL',
+		'NO_STRING_T',
+		'VECTOR',
+		'VERSION_SAFE_STEAM_API_INTERFACES',
+		'NO_STEAM_GAMECOORDINATOR'
+	])
+
+def build(bld):
+	source = [
+		'../cstrike15/mm_title.cpp',
+		'../cstrike15/mm_title_gamesettingsmgr.cpp',
+		'../cstrike15/mm_title_main.cpp',
+		'../cstrike15/mm_title_richpresence.cpp',
+		'../cstrike15/mm_title_titledata.cpp',
+		'../../game/shared/cstrike15/gametypes.cpp',
+		'../../common/platforminputdevice.cpp',
+		'../../public/tier0/memoverride.cpp'
+	]
+
+	includes = [
+		'..',
+		'../../public',
+		'../../public/tier0',
+		'../../public/tier1',
+		'../../gcsdk/steamextra',
+		'../../common',
+		'../../common/xlast_csgo',
+		'../../thirdparty/protobuf-2.5.0/src'
+	]
+
+	defines = []
+
+	libs = [
+		'tier0',
+		'gcsdk',
+		'tier1',
+		'tier2',
+		'vstdlib',
+		'interfaces',
+		'mathlib',
+		'matchmaking_base',
+		'steam_api'
+	]
+
+	install_path = bld.env.PREFIX
+	if bld.env.DEST_OS != 'android':
+		install_path += '/csgo/bin'
+
+	bld.shlib(
+		source   = source,
+		target   = PROJECT_NAME,
+		name     = PROJECT_NAME,
+		features = 'c cxx',
+		includes = includes,
+		defines  = defines,
+		use      = libs,
+		install_path = install_path,
+		subsystem = bld.env.MSVC_SUBSYSTEM,
+		idx      = bld.get_taskgen_count()
+	)
