@@ -313,7 +313,7 @@ void CShaderSystem::LoadAllShaderDLLs( )
 	SetupShaderDictionary( i );
 
 #if defined( _PS3 ) || defined( _OSX )
-	LoadShaderDLL( "stdshader_dx9" DLL_EXT_STRING );
+	LoadShaderDLL( "libstdshader_dx9" DLL_EXT_STRING );
 #else // _PS3 || _OSX
 
 	// 360 has the the debug shaders in its dx9 dll
@@ -333,7 +333,7 @@ void CShaderSystem::LoadAllShaderDLLs( )
 	char buf[32];
 	for ( i = dxStart; i <= dxSupportLevel; ++i )
 	{
-		Q_snprintf( buf, sizeof( buf ), "stdshader_dx%d", i );
+		Q_snprintf( buf, sizeof( buf ), "libstdshader_dx%d", i );
 		LoadShaderDLL( buf );
 	}
 
