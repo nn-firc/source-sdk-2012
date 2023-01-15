@@ -312,7 +312,7 @@ void CShaderSystem::LoadAllShaderDLLs( )
 	// Add the shaders to the dictionary of shaders...
 	SetupShaderDictionary( i );
 
-#if defined( _PS3 ) || defined( _OSX )
+#if 1//defined( _PS3 ) || defined( _OSX )
 	LoadShaderDLL( "libstdshader_dx9" DLL_EXT_STRING );
 #else // _PS3 || _OSX
 
