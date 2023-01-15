@@ -18,13 +18,13 @@ jobs:
       run: |
         sudo apt-get update && sudo apt install -y git build-essential libsdl2-mixer-dev libsdl2-dev libopenal-dev libcurlpp-dev libssl-dev libfontconfig1-dev libcurl4-openssl-dev net-tools wget unzip zip
         ./waf configure -T release --64bits --prefix=/home/runner/work/csgo-sdk-2017/csgo-sdk-2017/csgo-rel
-        ./waf install --strip -j3
+        ./waf install --strip -j4
         zip -9 -r csgo-rel.zip csgo-rel
     - name: Build Debug
       run: |
         sudo apt update && sudo apt upgrade -y && sudo apt install -y git build-essential libsdl2-mixer-dev libsdl2-dev libopenal-dev libcurlpp-dev libssl-dev libfontconfig1-dev libcurl4-openssl-dev net-tools wget unzip zip
         ./waf configure -T debug -D --64bits --prefix=/home/runner/work/csgo-sdk-2017/csgo-sdk-2017/csgo-dbg
-        ./waf install --strip -j3
+        ./waf install --strip -j4
         zip -9 -r csgo-dbg.zip csgo-dbg
     
     - uses: actions/upload-artifact@v3
