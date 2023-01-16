@@ -2038,7 +2038,7 @@ void CSDLMgr::ForceSystemCursorVisible()
 //===============================================================================
 void CSDLMgr::UnforceSystemCursorVisible()
 {
-	m_nForceCursorVisible = fallback;
+	m_nForceCursorVisible = false;
 }
 
 #endif
