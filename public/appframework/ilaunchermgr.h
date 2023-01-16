@@ -16,7 +16,7 @@
 // Cocoa functions that we hook were never ported to 64-bit. Until that is fixed,
 // we basically have to work around this by making sure the cursor is visible 
 // and set to something that is reasonable for usage in the overlay. 
-#if ( defined( OSX ) && defined( PLATFORM_64BITS ) && !defined( NO_STEAM ) )
+#if 1//( defined( OSX ) && defined( PLATFORM_64BITS ) && !defined( NO_STEAM ) )
 #define WITH_OVERLAY_CURSOR_VISIBILITY_WORKAROUND 1 
 #endif
 
