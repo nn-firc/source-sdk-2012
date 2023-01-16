@@ -134,6 +134,14 @@ def build(bld):
 		'worldvertextransition_dx8_helper.cpp',
 		'writez_dx9.cpp',
 		'writestencil_dx9.cpp',
+		'debugdepth.cpp',
+		'DebugDrawEnvmapMask.cpp',
+		'debugluxel.cpp',
+		'debugnormalmap.cpp',
+		'debugtangentspace.cpp',
+		'fillrate.cpp',
+		#// dead shader, but hl2 models have it
+		'eyeball.cpp',
 		'../../public/tier0/memoverride.cpp'
 	]
 
