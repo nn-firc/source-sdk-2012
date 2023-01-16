@@ -1343,12 +1343,12 @@ void LoadEntityDLLs( const char *szBaseDir, bool bServerOnly )
 
 	if ( !serverGameDLL )
 	{
-		Q_snprintf( szDllFilename, sizeof( szDllFilename ), "server" DLL_EXT_STRING );
+		Q_snprintf( szDllFilename, sizeof( szDllFilename ), "libserver" DLL_EXT_STRING );
 		LoadThisDll( szDllFilename, bServerOnly );
 	}
 
 #elif defined( _PS3 )
-	Q_snprintf( szDllFilename, sizeof( szDllFilename ), "server" DLL_EXT_STRING );
+	Q_snprintf( szDllFilename, sizeof( szDllFilename ), "libserver" DLL_EXT_STRING );
 	LoadThisDll( szDllFilename, bServerOnly );
 #elif defined( LINUX )
 	if ( s_bIsDedicatedServer && !CommandLine()->FindParm( "-novalveds" ) )
@@ -1358,11 +1358,11 @@ void LoadEntityDLLs( const char *szBaseDir, bool bServerOnly )
 	}
 	if ( !serverGameDLL )
 	{
-		Q_snprintf( szDllFilename, sizeof( szDllFilename ), "server"  );
+		Q_snprintf( szDllFilename, sizeof( szDllFilename ), "libserver"  );
 		LoadThisDll( szDllFilename, bServerOnly );
 	}
 #elif defined( POSIX )
-	Q_snprintf( szDllFilename, sizeof( szDllFilename ), "server" );
+	Q_snprintf( szDllFilename, sizeof( szDllFilename ), "libserver" );
 	LoadThisDll( szDllFilename, bServerOnly );
 #else
 	#error "define server.dll type"
