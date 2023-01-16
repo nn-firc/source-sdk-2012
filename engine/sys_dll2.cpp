@@ -776,7 +776,7 @@ bool CEngineAPI::SetStartupInfo( StartupInfo_t &info )
 	extern void Sys_Version( bool bDedicated );
 	Sys_Version( false );
 
-#if !defined( NO_STEAM ) && !defined( _GAMECONSOLE )
+#if 0//!defined( NO_STEAM ) && !defined( _GAMECONSOLE )
 	if ( !CommandLine()->FindParm( "-nobreakpad" ) )
 	{
 		// AppID of the client will be automatically used
@@ -2766,7 +2766,7 @@ bool CDedicatedServerAPI::ModInit( ModInfo_t &info )
 	// Parse AppID from steam.inf file
 	Sys_Version( true );
 
-#if !defined( NO_STEAM ) && !defined( _GAMECONSOLE )
+#if 0//!defined( NO_STEAM ) && !defined( _GAMECONSOLE )
 	if ( !CommandLine()->FindParm( "-nobreakpad" ) )
 	{
 		bool bValveDS = false;
