@@ -140,8 +140,6 @@ def build(bld):
 		'debugnormalmap.cpp',
 		'debugtangentspace.cpp',
 		'fillrate.cpp',
-		#// dead shader, but hl2 models have it
-		'eyeball.cpp',
 		'../../public/tier0/memoverride.cpp'
 	]
 
