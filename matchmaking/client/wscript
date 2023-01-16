@@ -17,8 +17,7 @@ def configure(conf):
 		'NO_STRING_T',
 		'VECTOR',
 		'VERSION_SAFE_STEAM_API_INTERFACES',
-		'NO_STEAM_GAMECOORDINATOR',
-		'NO_STEAM'
+		'NO_STEAM_GAMECOORDINATOR'
 	])
 
 def build(bld):
