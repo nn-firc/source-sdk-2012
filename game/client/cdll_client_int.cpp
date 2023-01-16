@@ -677,8 +677,8 @@ class CClientDLLSharedAppSystems : public IClientDLLSharedAppSystems
 public:
 	CClientDLLSharedAppSystems()
 	{
-		AddAppSystem( "soundemittersystem" , SOUNDEMITTERSYSTEM_INTERFACE_VERSION );
-		AddAppSystem( "scenefilecache", SCENE_FILE_CACHE_INTERFACE_VERSION );
+		AddAppSystem( "libsoundemittersystem" , SOUNDEMITTERSYSTEM_INTERFACE_VERSION );
+		AddAppSystem( "libscenefilecache", SCENE_FILE_CACHE_INTERFACE_VERSION );
 		
 #ifdef GAMEUI_UISYSTEM2_ENABLED
 		AddAppSystem( "client", GAMEUISYSTEMMGR_INTERFACE_VERSION );

@@ -4041,8 +4041,8 @@ class CServerDLLSharedAppSystems : public IServerDLLSharedAppSystems
 public:
 	CServerDLLSharedAppSystems()
 	{
-		AddAppSystem( "soundemittersystem", SOUNDEMITTERSYSTEM_INTERFACE_VERSION );
-		AddAppSystem( "scenefilecache", SCENE_FILE_CACHE_INTERFACE_VERSION );
+		AddAppSystem( "libsoundemittersystem", SOUNDEMITTERSYSTEM_INTERFACE_VERSION );
+		AddAppSystem( "libscenefilecache", SCENE_FILE_CACHE_INTERFACE_VERSION );
 #ifdef INFESTED_DLL
 		AddAppSystem( "missionchooser", ASW_MISSION_CHOOSER_VERSION );
 #endif
