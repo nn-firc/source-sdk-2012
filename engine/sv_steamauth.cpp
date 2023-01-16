@@ -237,7 +237,7 @@ void CSteam3Server::Activate()
 	}
 	
 #ifndef _X360
-	#if defined( NO_STEAM )
+	#if 1//defined( NO_STEAM )
 	m_eServerMode = eServerModeNoAuthentication;
 	sv_lan.SetValue( true );
 	return;
