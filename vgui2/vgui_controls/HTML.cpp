@@ -208,7 +208,7 @@ m_NewWindow( this, &HTML::BrowserPopupHTMLWindow )
 	}
 	else
 	{
-		Warning( "Unable to access SteamHTMLSurface" );
+		Warning( "Unable to access SteamHTMLSurface\n" );
 	}
 
 	m_iScrollBorderX=m_iScrollBorderY=0;
