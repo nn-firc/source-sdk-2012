@@ -1,12 +1,17 @@
-# CSGO-SDK-2017
-
-## Leak but better & Still WIP
+# Counter-Strike: Global Offensive
+### Fix the 2017 leak
 
 ## Features:
 - [waf buildsystem](https://waf.io)
 - Fix bugs
-- without steam
+- Without steam
+- Without Scaleform Flash UI
 
+## Todo:
+- Fix run with debug
+- Fix unknow bug
+
+## License:
 
                SOURCE 1 SDK LICENSE
 
