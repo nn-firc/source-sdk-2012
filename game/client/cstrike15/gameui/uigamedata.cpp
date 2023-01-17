@@ -31,7 +31,9 @@
 #include "inputsystem/iinputsystem.h"
 #include <time.h>
 #include <gc_clientsystem.h>
+#if defined INCLUDE_SCALEFORM
 #include "messagebox_scaleform.h"
+#endif
 
 
 #if defined( _PS3 )

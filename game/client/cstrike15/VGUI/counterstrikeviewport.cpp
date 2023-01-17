@@ -39,12 +39,12 @@
 #include "vguicenterprint.h"
 #include "text_message.h"
 
-#include "teammenu_scaleform.h"
-#include "chooseclass_scaleform.h"
 #if defined( INCLUDE_SCALEFORM )
 #include "Scaleform/HUD/sfhudinfopanel.h"
 #include "Scaleform/HUD/sfhudwinpanel.h"
 #include "Scaleform/loadingscreen_scaleform.h"
+#include "teammenu_scaleform.h"
+#include "chooseclass_scaleform.h"
 #endif
 
 #if defined( CSTRIKE15 )

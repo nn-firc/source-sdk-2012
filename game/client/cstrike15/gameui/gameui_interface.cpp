@@ -68,7 +68,9 @@
 #include "matsys_controls/matsyscontrols.h"
 #include "steam/steam_api.h"
 #include "protocol.h"
+#if defined INCLUDE_SCALEFORM
 #include "loadingscreen_scaleform.h"
+#endif
 #include "GameUI/IGameUI.h"
 #include "inputsystem/iinputsystem.h"
 
@@ -124,7 +126,9 @@ class IMatchExtPortal2 *g_pMatchExtPortal2 = &g_MatchExtPortal2;
 
 #include "basepanel.h"
 #include "../gameui/cstrike15/cstrike15basepanel.h"
+#if defined INCLUDE_SCALEFORM
 #include "../Scaleform/messagebox_scaleform.h"
+#endif
 
 typedef CBaseModPanel UI_BASEMOD_PANEL_CLASS;
 inline UI_BASEMOD_PANEL_CLASS & GetUiBaseModPanelClass() { return *BasePanel(); }

@@ -20,9 +20,9 @@
 #include "matchmaking/imatchevents.h"
 #if defined( INCLUDE_SCALEFORM )
 #include "messagebox_scaleform.h"
+#include "splitscreensignon.h"
 #endif
 #include "GameEventListener.h"
-#include "splitscreensignon.h"
 
 #ifdef _PS3
 void MarkRegisteredKnownConsoleUserSteamIDToUnregisterLater( CSteamID steamIdConsoleUser );

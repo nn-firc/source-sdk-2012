@@ -69,7 +69,6 @@
 #include "matchmaking/mm_helpers.h"
 #include "gameui/basepanel.h"
 #include "gameui/uigamedata.h"
-#include "Scaleform/messagebox_scaleform.h"
 #include "GameStats.h"
 #if defined ( _GAMECONSOLE )
 #include "GameUI/IGameUI.h"
@@ -83,6 +82,7 @@
 #if defined( INCLUDE_SCALEFORM )
 #include "Scaleform/HUD/sfhud_uniquealerts.h"
 #include "Scaleform/HUD/sfhud_rosettaselector.h"
+#include "Scaleform/messagebox_scaleform.h"
 #endif
 #include "hltvreplaysystem.h"
 #include "netmessages.h"
