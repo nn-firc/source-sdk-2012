@@ -17,7 +17,7 @@
 #include "tier1/strtools.h" // V_memset
 
 #if defined( NO_STEAM )
-typedef CSteamID uint64;
+typedef unsigned long long uint64;
 #endif
 
 enum PeerToPeerAddressType_t

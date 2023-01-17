@@ -14,7 +14,6 @@ def options(opt):
 def configure(conf):
 	if conf.options.DEDICATED:
 		conf.define('SWDS', 1)
-		conf.define('NO_STEAM', 1)
 
 	conf.env.append_unique('DEFINES',[
 		'__USEA3D',
@@ -23,7 +22,8 @@ def configure(conf):
 		'VERSION_SAFE_STEAM_API_INTERFACES',
 		'USE_BREAKPAD_HANDLER',
 		'USE_CONVARS',
-		'VOICE_OVER_IP'
+		'VOICE_OVER_IP',
+		'NO_STEAM',
 	])
 
 def build(bld):

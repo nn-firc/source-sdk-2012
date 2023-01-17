@@ -12,7 +12,7 @@ def options(opt):
 	return
 
 def configure(conf):
-	return
+	conf.define('NO_STEAM',1)
 
 def build(bld):
 	source = [

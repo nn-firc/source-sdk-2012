@@ -776,7 +776,7 @@ bool CEngineAPI::SetStartupInfo( StartupInfo_t &info )
 	extern void Sys_Version( bool bDedicated );
 	Sys_Version( false );
 
-#if 0//!defined( NO_STEAM ) && !defined( _GAMECONSOLE )
+#if !defined( NO_STEAM ) && !defined( _GAMECONSOLE )
 	if ( !CommandLine()->FindParm( "-nobreakpad" ) )
 	{
 		// AppID of the client will be automatically used
@@ -789,7 +789,7 @@ bool CEngineAPI::SetStartupInfo( StartupInfo_t &info )
 #endif // !NO_STEAM && !_GAMECONSOLE
 
 	// turn on the Steam3 API early so we can query app data up front
-#if 0//!defined( DEDICATED ) && !defined( NO_STEAM )
+#if !defined( DEDICATED ) && !defined( NO_STEAM )
 	TRACEINIT( Steam3Client().Activate(), Steam3Client().Shutdown() );
 	if ( IsPS3() )
 	{
@@ -2766,7 +2766,7 @@ bool CDedicatedServerAPI::ModInit( ModInfo_t &info )
 	// Parse AppID from steam.inf file
 	Sys_Version( true );
 
-#if 0//!defined( NO_STEAM ) && !defined( _GAMECONSOLE )
+#if !defined( NO_STEAM ) && !defined( _GAMECONSOLE )
 	if ( !CommandLine()->FindParm( "-nobreakpad" ) )
 	{
 		bool bValveDS = false;
