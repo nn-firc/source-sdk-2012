@@ -16,13 +16,13 @@ CSGO Assets: DepotID: 731 ManifestID: 7043469183016184477
 ```
 
 2. Install pacages:
-edit from [Kisak-Strike](https://github.com/swagsoftware/Kisak-Strike) :
-### Packages
+```
 SDL2 SDL2_mixer rt openal curl ssl z crypto dl pthread fontconfig freetype GL python
+```
 
 3. Waf build:
 ```
-./waf configure -T release --prefix=PATH/TO/CSGO	#use ./waf --help for more info(like -8 is build 64bits)
+./waf configure -T release --prefix=PATH/TO/CSGO	#use ./waf --help for more info(like -8 means build for 64bit platform)
 ./waf install -j<NUM_THREADS>
 ```
 4. Have fun!

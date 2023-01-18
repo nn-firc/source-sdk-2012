@@ -693,7 +693,6 @@ def build(bld):
 		'cstrike15/control',
 		'cstrike15/VGUI',
 		'cstrike15/gameui',
-		'cstrike15/Scaleform',
 		'../shared/cstrike15/control',
 		'../shared/cstrike15',
 		'../shared/econ',

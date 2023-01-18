@@ -14,13 +14,20 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
-    - name: Build Release
+    - name: Build
       run: |
         sudo apt-get update && sudo apt install -y git build-essential libsdl2-mixer-dev libsdl2-dev libopenal-dev libcurlpp-dev libssl-dev libfontconfig1-dev libcurl4-openssl-dev net-tools
         ./waf configure -T release --64bits --prefix=/home/runner/work/csgo-sdk-2017/csgo-sdk-2017/csgo-release
         ./waf install --strip -j4
+        ./waf configure -T debug --64bits --prefix=/home/runner/work/csgo-sdk-2017/csgo-sdk-2017/csgo-debug
+        ./waf install -j4
 
     - uses: actions/upload-artifact@v3
       with:
-            name: Release
+            name: Release 64bits
             path: /home/runner/work/csgo-sdk-2017/csgo-sdk-2017/csgo-release
+
+    - uses: actions/upload-artifact@v3
+      with:
+            name: Debug 64bits
+            path: /home/runner/work/csgo-sdk-2017/csgo-sdk-2017/csgo-debug
