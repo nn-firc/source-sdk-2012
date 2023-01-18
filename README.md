@@ -8,7 +8,7 @@
 - Without Scaleform Flash UI
 
 ## Todo:
-- Fix run with debug
+- Fix without steam
 - Fix physics error
 
 ## License:
