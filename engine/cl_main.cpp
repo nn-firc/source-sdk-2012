@@ -1581,7 +1581,7 @@ void CL_RegisterResources( void )
 	videomode->InvalidateWindow();
 }
 
-#ifndef DEDICATED
+#if !defined DEDICATED && !defined NO_STEAM
 class CEngineReliableAvatarCallback_t
 {
 public:
@@ -1844,7 +1844,7 @@ void CL_FullyConnected( void )
 		engineClient->ClientCmd( "cameraman_request" );
 	}
 
-#ifndef DEDICATED
+#if !defined DEDICATED && !defined NO_STEAM
 	// Register a listener that will be uploading our own avatar data to the game server
 	static CEngineReliableAvatarCallback_t s_EngineReliableAvatarCallback;
 	s_EngineReliableAvatarCallback.UploadMyOwnAvatarToGameServer();

@@ -23,7 +23,7 @@ def configure(conf):
 		'USE_BREAKPAD_HANDLER',
 		'USE_CONVARS',
 		'VOICE_OVER_IP',
-		'NO_STEAM',
+		'NO_STEAM'
 	])
 
 def build(bld):
