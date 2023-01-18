@@ -621,6 +621,8 @@ def build(bld):
 		'cstrike15/cs_hud_chat.cpp',
 		'cstrike15/cs_hud_scope.cpp',
 		'cstrike15/cs_hud_weaponselection.cpp',
+		'cstrike15/cs_hud_health.cpp',
+		'cstrike15/cs_hud_ammo.cpp',
 		'cstrike15/hud_flashbang.cpp',
 		'cstrike15/radio_status.cpp',
 		'../shared/cstrike15/weapon_basecsgrenade.cpp',
