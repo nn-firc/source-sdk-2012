@@ -54,7 +54,7 @@ projects={
 		'launcher_main',
 		'localize',
 		'matchmaking',
-		'matchmaking/client',
+		'matchmaking/cstrike15',
 		'materialsystem',
 		'materialsystem/shaderapidx9',
 		'materialsystem/shaderapiempty',
