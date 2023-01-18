@@ -1,5 +1,4 @@
 # Counter-Strike: Global Offensive
-### Fix the 2017 leak
 
 ## Features:
 - 100% opensource
@@ -19,29 +18,11 @@ CSGO Assets: DepotID: 731 ManifestID: 7043469183016184477
 2. Install pacages:
 edit from [Kisak-Strike](https://github.com/swagsoftware/Kisak-Strike) :
 ### Packages
-SDL2 SDL2_mixer rt openal curl ssl z crypto dl pthread fontconfig freetype GL
-
-##### Ubuntu
-```
-build-essential cmake libsdl2-mixer-dev libsdl2-dev libopenal-dev libcurlpp-dev libssl-dev libfontconfig1-dev libcurl4-openssl-dev net-tools
-```
-##### Fedora
-```
-SDL2-devel SDL2_mixer-devel openal-soft-devel libcurl-devel openssl-devel fontconfig-devel freetype-devel gcc g++ mesa-libGL-devel mesa-libGLU-devel
-```
-##### Arch
-```
-sdl2 sdl2_mixer openal libcurl-compat openssl fontconfig freetype2 mesa gcc base-devel
-```
-
-##### Gentoo
-```
-media-libs/libsdl2 media-libs/sdl2-mixer media-libs/openal net-misc/curl dev-libs/openssl media-libs/fontconfig media-libs/freetype media-libs/mesa sys-devel/gcc
-```
+SDL2 SDL2_mixer rt openal curl ssl z crypto dl pthread fontconfig freetype GL python
 
 3. Waf build:
 ```
-./waf configure -8 -T release --prefix=PATH/TO/CSGO	#use ./waf --help for more info(like -8 is build 64bits)
+./waf configure -T release --prefix=PATH/TO/CSGO	#use ./waf --help for more info(like -8 is build 64bits)
 ./waf install -j<NUM_THREADS>
 ```
 4. Have fun!
