@@ -624,6 +624,7 @@ def build(bld):
 		'cstrike15/cs_hud_health.cpp',
 		'cstrike15/cs_hud_ammo.cpp',
 		'cstrike15/hud_armor.cpp',
+		'cstrike15/hud_roundtimer.cpp',
 		'cstrike15/hud_flashbang.cpp',
 		'cstrike15/radio_status.cpp',
 		'../shared/cstrike15/weapon_basecsgrenade.cpp',
