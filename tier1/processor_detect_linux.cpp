@@ -16,6 +16,14 @@
 // Turn off memdbg macros (turned on up top) since this is included like a header
 #include "tier0/memdbgoff.h"
 
+
+#if defined (__arm__)
+bool CheckMMXTechnology(void) { return false; }
+bool CheckSSETechnology(void) { return false; }
+bool CheckSSE2Technology(void) { return false; }
+bool Check3DNowTechnology(void) { return false; }
+#else
+
 static void cpuid(uint32 function, uint32& out_eax, uint32& out_ebx, uint32& out_ecx, uint32& out_edx)
 {
 #if defined(PLATFORM_64BITS)
@@ -77,4 +85,5 @@ bool Check3DNowTechnology(void)
     }
     return false;
 }
+#endif
 

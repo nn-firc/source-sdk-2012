@@ -10,6 +10,9 @@
 #include "tier0/dbg.h"
 #include "mathlib/mathlib.h"
 #include "mathlib/vector.h"
+#ifdef __arm__
+#include "sse2neon.h"
+#endif
 #include "sse.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
@@ -102,7 +105,12 @@ float FASTCALL _SSE_VectorNormalize (Vector& vec)
 	// be much of a performance win, considering you will very likely miss 3 branch predicts in a row.
 	if ( v[0] || v[1] || v[2] )
 	{
-#if defined( _WIN32 ) && !defined( _WIN64 )
+#ifdef __arm__
+		float rsqrt = _SSE_RSqrtAccurate( v[0] * v[0] + v[1] * v[1] + v[2] * v[2] );
+		r[0] = v[0] * rsqrt;
+		r[1] = v[1] * rsqrt;
+		r[2] = v[2] * rsqrt;
+#elif defined( _WIN32 ) && !defined( _WIN64 )
 	_asm
 		{
 			mov			eax, v
@@ -342,6 +350,16 @@ void FastSinCos( float x, float* s, float* c )  // any x
 	}
 }
 #endif
+#elif defined __arm__
+void _SSE_SinCos(float x, float* s, float* c)
+{
+#if defined( POSIX )
+        sincosf(x, s, c);
+#else
+	*s = sin( x );
+        *c = cos( x );
+#endif
+}
 #elif defined( _OSX ) || defined (LINUX) || defined( _WIN64 )
 // [will] - Note: could use optimization.
 void FastSinCos( float x, float* s, float* c )  // any x
@@ -451,7 +469,7 @@ float FastCos( float x )
 		movss   x,    xmm0
 		
 	}
-#elif defined( _WIN64 )
+#elif defined( _WIN64 ) || defined( __arm__ )
 	return cosf( x );
 #elif POSIX
 	

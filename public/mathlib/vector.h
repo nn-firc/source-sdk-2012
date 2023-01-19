@@ -26,7 +26,9 @@
 #include "mathlib/math_pfns.h"
 #endif
 
-#ifndef PLATFORM_PPC // we want our linux with xmm support
+#if defined( __arm__ )
+#include "sse2neon.h"
+#elif !defined PLATFORM_PPC // we want our linux with xmm support
 // For MMX intrinsics
 #include <xmmintrin.h>
 #endif

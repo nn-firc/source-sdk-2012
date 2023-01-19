@@ -3,13 +3,20 @@
 #define TIER0_HARDWARE_TIMER
 
 #include "tier0/platform.h"
+#include <time.h>
 
 #ifdef GNUC
 inline int GetHardwareClockFast( void )
 {
+#if defined( __arm__ )
+	struct timespec t;
+	clock_gettime( CLOCK_REALTIME, &t);
+	return t.tv_sec * 1000000000ULL + t.tv_nsec;
+#else
 	unsigned long long int nRet;
 	__asm__ volatile (".byte 0x0f, 0x31" : "=A" (nRet)); // rdtsc
 	return ( int ) nRet;
+#endif
 }
 
 #else

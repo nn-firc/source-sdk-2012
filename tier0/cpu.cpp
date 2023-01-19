@@ -45,7 +45,7 @@ struct CpuIdResult_t
 
 static bool cpuid( unsigned long function, CpuIdResult_t &out )
 {
-#if defined( _X360 ) || defined( _PS3 )
+#if defined( _X360 ) || defined( _PS3 ) || defined( __arm__ )
 	return false;
 #elif defined(GNUC)
 	unsigned long out_eax,out_ebx,out_ecx,out_edx;
@@ -124,7 +124,7 @@ static bool cpuid( unsigned long function, CpuIdResult_t &out )
 
 static bool cpuidex( unsigned long function, unsigned long subfunction, CpuIdResult_t &out )
 {
-#if defined( _X360 ) || defined( _PS3 )
+#if defined( _X360 ) || defined( _PS3 ) || defined( __arm__ )
 	return false;
 #elif defined(GNUC)
 	unsigned long out_eax, out_ebx, out_ecx, out_edx;
@@ -263,7 +263,7 @@ static bool IsWin98OrOlder()
 
 static bool CheckSSETechnology(void)
 {
-#if defined( _X360 ) || defined( _PS3 )
+#if defined( _X360 ) || defined( _PS3 ) || defined( __arm__ )
 	return true;
 #else
 	if ( IsWin98OrOlder() )
@@ -277,7 +277,7 @@ static bool CheckSSETechnology(void)
 
 static bool CheckSSE2Technology(void)
 {
-#if defined( _X360 ) || defined( _PS3 )
+#if defined( _X360 ) || defined( _PS3 ) || defined( __arm__ )
 	return false;
 #else
     return ( cpuid( 1 ).edx & 0x04000000 ) != 0;
@@ -295,7 +295,7 @@ bool CheckSSE3Technology(void)
 
 bool CheckSSSE3Technology(void)
 {
-#if defined( _X360 ) || defined( _PS3 )
+#if defined( _X360 ) || defined( _PS3 ) || defined( __arm__ )
 	return false;
 #else
 	// SSSE 3 is implemented by both Intel and AMD
@@ -306,7 +306,7 @@ bool CheckSSSE3Technology(void)
 
 bool CheckSSE41Technology(void)
 {
-#if defined( _X360 ) || defined( _PS3 )
+#if defined( _X360 ) || defined( _PS3 ) || defined( __arm__ )
 	return false;
 #else
 	// SSE 4.1 is implemented by both Intel and AMD
@@ -318,7 +318,7 @@ bool CheckSSE41Technology(void)
 
 bool CheckSSE42Technology(void)
 {
-#if defined( _X360 ) || defined( _PS3 )
+#if defined( _X360 ) || defined( _PS3 ) || defined( __arm__ )
 	return false;
 #else
 	// SSE4.2 is an Intel-only feature
@@ -334,7 +334,7 @@ bool CheckSSE42Technology(void)
 
 bool CheckSSE4aTechnology( void )
 {
-#if defined( _X360 ) || defined( _PS3 )
+#if defined( _X360 ) || defined( _PS3 ) || defined( __arm__ )
 	return false;
 #else
 	// SSE 4a is an AMD-only feature
@@ -350,7 +350,7 @@ bool CheckSSE4aTechnology( void )
 
 static bool Check3DNowTechnology(void)
 {
-#if defined( _X360 ) || defined( _PS3 )
+#if defined( _X360 ) || defined( _PS3 ) || defined( __arm__ )
 	return false;
 #else
 	if ( cpuid( 0x80000000 ).eax > 0x80000000L )
@@ -363,7 +363,7 @@ static bool Check3DNowTechnology(void)
 
 static bool CheckCMOVTechnology()
 {
-#if defined( _X360 ) || defined( _PS3 )
+#if defined( _X360 ) || defined( _PS3 ) || defined( __arm__ )
 	return false;
 #else
 	return ( cpuid( 1 ).edx & ( 1 << 15 ) ) != 0;
@@ -372,7 +372,7 @@ static bool CheckCMOVTechnology()
 
 static bool CheckFCMOVTechnology(void)
 {
-#if defined( _X360 ) || defined( _PS3 )
+#if defined( _X360 ) || defined( _PS3 ) || defined( __arm__ )
 	return false;
 #else
 	return ( cpuid( 1 ).edx & ( 1 << 16 ) ) != 0;
@@ -381,7 +381,7 @@ static bool CheckFCMOVTechnology(void)
 
 static bool CheckRDTSCTechnology(void)
 {
-#if defined( _X360 ) || defined( _PS3 )
+#if defined( _X360 ) || defined( _PS3 ) || defined( __arm__ )
 	return false;
 #else
 	return ( cpuid( 1 ).edx & 0x10 ) != 0;

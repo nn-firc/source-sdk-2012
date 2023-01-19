@@ -854,13 +854,6 @@ InitReturnVal_t CEngineAPI::Init()
 	m_bRunningSimulation = false;
 
 	// Initialize the FPU control word
-#if !defined( DEDICATED ) && !defined( _X360 ) && !defined( _PS3 ) && !defined( PLATFORM_64BITS ) && !defined( LINUX ) && !defined(__clang__)
-	_asm
-	{
-		fninit
-	}
-#endif
-
 	SetupFPUControlWord();
 
 	// This creates the videomode singleton object, it doesn't depend on the registry

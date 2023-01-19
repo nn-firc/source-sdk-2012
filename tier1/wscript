@@ -60,8 +60,7 @@ def build(bld):
 		'utlsymbol.cpp',
 		'miniprofiler_hash.cpp',
 		'sparsematrix.cpp',
-		'memoverride_dummy.cpp',
-		'pathmatch.cpp'
+		'memoverride_dummy.cpp'
 	]
 
 	includes = [

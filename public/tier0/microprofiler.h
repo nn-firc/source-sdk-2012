@@ -26,6 +26,10 @@ PLATFORM_INTERFACE int64 GetHardwareClockReliably();
 #include <intrin.h>	// get __rdtsc
 #endif
 
+#ifdef POSIX
+#include <time.h>
+#endif
+
 
 #if defined(_LINUX) || defined( OSX )
 inline unsigned long long GetTimebaseRegister( void )
@@ -34,6 +38,10 @@ inline unsigned long long GetTimebaseRegister( void )
     unsigned long long Low, High;
     __asm__ __volatile__ ( "rdtsc" : "=a" (Low), "=d" (High) );
     return ( High << 32 ) | ( Low & 0xffffffff );
+#elif defined( __arm__ ) && defined (POSIX)
+	struct timespec ts;
+	clock_gettime(CLOCK_REALTIME, &ts);
+	return ts.tv_sec * 1000000000ULL + ts.tv_nsec;
 #else
     unsigned long long Val;
     __asm__ __volatile__ ( "rdtsc" : "=A" (Val) );

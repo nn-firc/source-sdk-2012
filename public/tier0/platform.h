@@ -13,6 +13,10 @@
 #define PLATFORM_64BITS 1
 #endif
 
+#if defined __arm__ && defined POSIX
+#include <time.h>
+#endif
+
 #if defined( LINUX ) && ((__GNUC__ * 100) + __GNUC_MINOR__) >= 406
 // based on some Jonathan Wakely macros on the net...
 #define GCC_DIAG_STR(s) #s
@@ -1127,6 +1131,9 @@ typedef void * HINSTANCE;
 	#define DebuggerBreak()		__asm { int 3 }
 #elif COMPILER_MSVCX360
 	#define DebuggerBreak()		DebugBreak()
+#elif defined __arm__
+	#include <signal.h>
+	#define DebuggerBreak() raise(SIGINT)
 #elif COMPILER_GCC
 	#if defined( _PS3 )
 		#if defined( __SPU__ )
@@ -1365,6 +1372,9 @@ typedef int socklen_t;
 
 	#endif
 
+#elif defined (__arm__)
+	inline void SetupFPUControlWord() {}
+
 #elif defined ( COMPILER_GCC )
 
 // Works for PS3 
@@ -1389,7 +1399,7 @@ typedef int socklen_t;
 // Works for PS3 
 	inline void SetupFPUControlWord()
 	{
-#ifdef _PS3
+#if defined _PS3 || defined __arm__
 // TODO: PS3 compiler spits out the following errors:
 // C:/tmp/ccIN0aaa.s: Assembler messages:
 // C:/tmp/ccIN0aaa.s(80): Error: Unrecognized opcode: `fnstcw'
@@ -1834,6 +1844,10 @@ inline uint64 Plat_Rdtsc()
 	uint32 lo, hi;
 	__asm__ __volatile__ ( "rdtsc" : "=a" (lo), "=d" (hi));
 	return ( ( ( uint64 )hi ) << 32 ) | lo;
+#elif defined( __arm__ ) && defined (POSIX)
+	struct timespec t;
+	clock_gettime( CLOCK_REALTIME, &t);
+	return t.tv_sec * 1000000000ULL + t.tv_nsec;
 #else
 #error
 #endif

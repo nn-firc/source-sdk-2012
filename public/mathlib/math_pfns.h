@@ -76,7 +76,11 @@ enum MatrixAxisType_t
 #if !(defined( PLATFORM_PPC ) || defined(SPU))
 // If we are not PPC based or SPU based, then assumes it is SSE2. We should make this code cleaner.
 
+#if defined(__arm__)
+#include "sse2neon.h"
+#else
 #include <xmmintrin.h>
+#endif
 
 
 

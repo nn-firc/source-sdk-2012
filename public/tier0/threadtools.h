@@ -17,6 +17,7 @@
 #if defined( POSIX ) && !defined( _PS3 ) && !defined( _X360 )
 #include <pthread.h>
 #include <errno.h>
+#include <sched.h>
 #define WAIT_OBJECT_0 0
 #define WAIT_TIMEOUT 0x00000102
 #define WAIT_FAILED -1
@@ -234,6 +235,8 @@ inline void ThreadPause()
 {
 #if defined( COMPILER_PS3 )
 	__db16cyc();
+#elif defined(__arm__)
+	sched_yield();
 #elif defined( COMPILER_GCC ) || defined( COMPILER_CLANG )
 	__asm __volatile( "pause" );
 #elif defined ( COMPILER_MSVC64 )
@@ -305,6 +308,9 @@ inline int32 ThreadInterlockedDecrement( int32 volatile *p )
 
 inline int32 ThreadInterlockedExchange( int32 volatile *p, int32 value )
 {
+#ifdef __arm__
+	return __sync_lock_test_and_set( p, value );
+#else
 	Assert( (size_t)p % 4 == 0 );
 	int32 nRet;
 
@@ -315,6 +321,7 @@ inline int32 ThreadInterlockedExchange( int32 volatile *p, int32 value )
 		: "r" (p), "0" (value)
 		: "memory");
 	return nRet;
+#endif
 }
 
 inline int32 ThreadInterlockedExchangeAdd( int32 volatile *p, int32 value )

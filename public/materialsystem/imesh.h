@@ -1241,6 +1241,9 @@ inline void CVertexBuilder::FastAdvanceNVertices( int n )
 
 inline void CVertexBuilder::FastVertex( const ModelVertexDX8_t &vertex )
 {
+#ifdef __arm__
+	FastVertexSSE( vertex );
+#else
 	Assert( m_CompressionType == VERTEX_COMPRESSION_NONE ); // FIXME: support compressed verts if needed
 	Assert( m_nCurrentVertex < m_nMaxVertexCount );
 
@@ -1301,6 +1304,7 @@ inline void CVertexBuilder::FastVertex( const ModelVertexDX8_t &vertex )
 	m_bWrittenNormal   = false;
 	m_bWrittenUserData = false;
 #endif
+#endif
 }
 
 inline void CVertexBuilder::FastVertexSSE( const ModelVertexDX8_t &vertex )
@@ -1327,16 +1331,15 @@ inline void CVertexBuilder::FastVertexSSE( const ModelVertexDX8_t &vertex )
 #elif defined(GNUC)
 	const void *pRead = &vertex;
 	void *pCurrPos = m_pCurrPosition;
-	__asm__ __volatile__ (
-						  "movaps (%0), %%xmm0\n"
-						  "movaps 16(%0), %%xmm1\n"
-						  "movaps 32(%0), %%xmm2\n"
-						  "movaps 48(%0), %%xmm3\n"
-						  "movntps %%xmm0, (%1)\n"
-						  "movntps %%xmm1, 16(%1)\n"
-						  "movntps %%xmm2, 32(%1)\n"
-						  "movntps %%xmm3, 48(%1)\n"						  
-						  :: "r" (pRead), "r" (pCurrPos) : "memory");
+
+	__m128 m1 = _mm_load_ps( (float *)pRead );
+	__m128 m2 = _mm_load_ps( (float *)(pRead + 16) );
+	__m128 m3 = _mm_load_ps( (float *)(pRead + 32) );
+	__m128 m4 = _mm_load_ps( (float *)(pRead + 48) );
+	_mm_stream_ps( (float *)pCurrPos, m1 );
+	_mm_stream_ps( (float *)(pCurrPos + 16), m2 );
+	_mm_stream_ps( (float *)(pCurrPos + 32), m3 );
+	_mm_stream_ps( (float *)(pCurrPos + 48), m4 );
 #else
 	Error( "Implement CMeshBuilder::FastVertexSSE((dx8)" );
 #endif
