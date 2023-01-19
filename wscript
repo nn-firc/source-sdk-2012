@@ -37,8 +37,6 @@ projects={
 		'choreoobjects',
 		'dmxloader',
 		'engine',
-		'external/crypto++-5.61',
-		'fgdlib',
 		'filesystem',
 		'game/client',
 		'game/server',
@@ -57,7 +55,6 @@ projects={
 		'matchmaking/cstrike15',
 		'materialsystem',
 		'materialsystem/shaderapidx9',
-		'materialsystem/shaderapiempty',
 		'materialsystem/shaderlib',
 		'materialsystem/stdshaders',
 		'mathlib',
@@ -70,8 +67,9 @@ projects={
 		'serverbrowser',
 		'soundemittersystem',
 		'soundsystem/lowlevel',
-		'StubSteamAPI',
+		'steamapi',
 		'studiorender',
+		'thirdparty/crypto++-5.61',
 		'thirdparty/libjpeg',
 		'thirdparty/libpng-1.5.2',
 		'thirdparty/protobuf-2.5.0',
@@ -127,7 +125,6 @@ def define_platform(conf):
 
 	if conf.options.DEDICATED:
 		conf.options.SDL = False
-#		conf.options.GL = False
 		conf.define('DEDICATED', 1)
 
 	if conf.options.GL:
@@ -285,13 +282,6 @@ def configure(conf):
 	cxxflags = list(cflags) + ['-std=gnu++0x','-fpermissive']
 
 	if conf.env.COMPILER_CC == 'gcc':
-#		wrapfunctions = ['freopen','creat','access','__xstat','stat','lstat','fopen64','open64',
-#			'opendir','__lxstat','chmod','chown','lchown','symlink','link','__lxstat64','mknod',
-#			'utimes','unlink','rename','utime','__xstat64','mount','mkdir','rmdir','scandir','realpath','mkfifo']
-
-#		for func in wrapfunctions:
-#			linkflags += ['-Wl,--wrap='+func]
-
 		conf.define('COMPILER_GCC', 1)
 
 
@@ -394,9 +384,9 @@ def build(bld):
 	if bld.env.DEDICATED:
 		bld.add_subproject(projects['dedicated'])
 	else:
-		if bld.env.TOGLES:
-			projects['game'] += ['togles']
-		elif bld.env.GL:
-			projects['game'] += ['togl']
+#		if bld.env.TOGLES:
+#			projects['game'] += ['togles']
+#		elif bld.env.GL:
+		projects['game'] += ['togl']
 
 		bld.add_subproject(projects['game'])

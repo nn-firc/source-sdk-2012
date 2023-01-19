@@ -357,7 +357,7 @@ def build(bld):
 		'audio/private',
 		'generated_proto',
 		'../thirdparty/protobuf-2.5.0/src',
-		'../external/crypto++-5.61',
+		'../thirdparty/crypto++-5.61',
 		'../thirdparty/quickhull'
 	]
 
