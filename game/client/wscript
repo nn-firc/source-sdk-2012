@@ -626,6 +626,7 @@ def build(bld):
 		'cstrike15/cs_hud_ammo.cpp',
 		'cstrike15/hud_account.cpp',
 		'cstrike15/hud_armor.cpp',
+		'cstrike15/hud_radar.cpp',
 		'cstrike15/hud_roundtimer.cpp',
 		'cstrike15/hud_defuser.cpp',
 		'cstrike15/hud_deathnotice.cpp',
