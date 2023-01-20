@@ -13,6 +13,9 @@
 #include <winsock2.h>
 #else
 #include <sys/types.h>
+#ifdef ANDROID
+#include <sys/select.h>
+#endif
 #endif
 
 #include "hrtimer.h"

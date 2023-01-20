@@ -21,7 +21,7 @@
 #include "tier1.h"
 #include "tier2/tier2.h"
 
-#ifdef _LINUX
+#if defined(_LINUX) && !defined(ANDROID)
 #include <GL/glx.h>
 #endif
 // NOTE: This has to be the last file included!
@@ -279,7 +279,7 @@ static bool CheckOpenGLExtension_internal(const char *libname, const char *ext, 
 				return false;
 			}
 		}
-#elif defined (OSX)
+#elif defined (OSX) || defined(ANDROID)
 		if (!ptr)
 			return false;  // definitely not there.
 #else
