@@ -126,7 +126,7 @@ class CHudChat;
 //-----------------------------------------------------------------------------
 ConVar cl_spec_mode(
 	"cl_spec_mode",
-	"0",
+	"1",
 	FCVAR_USERINFO | FCVAR_CLIENTDLL | FCVAR_ARCHIVE | FCVAR_SS | FCVAR_SERVER_CAN_EXECUTE,
 	"Saves the last viewed spectator mode for use next time we start to spectate" );
 
