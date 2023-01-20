@@ -19,6 +19,7 @@
 #include "vgui/IVGui.h"
 #include "vgui/ILocalize.h"
 #include "mapoverview.h"
+#include "cstrikespectatorgui.h"
 #include "hud_radar.h"
 
 #define RADAR_DOT_NORMAL		0
@@ -59,6 +60,7 @@ CHudRadar::CHudRadar( const char *pName ) :	vgui::Panel( NULL, "HudRadar" ), CHu
 	s_Radar = this;
 
 	SetHiddenBits( HIDEHUD_PLAYERDEAD );
+
 }
 
 
@@ -81,11 +83,18 @@ void CHudRadar::LevelInit()
 	m_bHostageFlash = true;
 
 	g_RadarFlashes.RemoveAll();
+
+	// Map Overview handles radar duties now.
+	if( GetMapOverView() )
+		GetMapOverView()->SetMode(CCSMapOverview::MAP_MODE_RADAR);
 }
 
 void CHudRadar::Reset()
 {
 	CHudElement::Reset();
+
+	if( GetMapOverView() )
+		GetMapOverView()->SetMode(CCSMapOverview::MAP_MODE_RADAR);
 }
 
 
@@ -106,6 +115,12 @@ bool CHudRadar::ShouldDraw()
 void CHudRadar::SetVisible(bool state)
 {
 	BaseClass::SetVisible(state);
+
+	if( GetMapOverView() && GetMapOverView()->GetMode() == CCSMapOverview::MAP_MODE_RADAR )
+	{
+		// We are the hud element still, but he is in charge of the new style now.
+		GetMapOverView()->SetVisible( state );		
+	}
 }
 
 void CHudRadar::Paint()
@@ -260,6 +275,8 @@ void Radar_FlashPlayer( int iPlayer )
 	pFlash->m_flNextRadarFlashTime = gpGlobals->curtime;
 	pFlash->m_iNumRadarFlashes = 16;
 	pFlash->m_bRadarFlash = false;
+
+	GetMapOverView()->FlashEntity(iPlayer);
 }
 
 CON_COMMAND( drawradar, "Draws HUD radar" )
@@ -297,7 +314,14 @@ void CHudLocation::LevelInit()
 
 bool CHudLocation::ShouldDraw()
 {
-	return true;
+	CCSMapOverview *pCSMapOverview = (CCSMapOverview *)GET_HUDELEMENT( CCSMapOverview );
+
+	if( GetMapOverView() && GetMapOverView()->GetMode() == CMapOverview::MAP_MODE_RADAR && pCSMapOverview && pCSMapOverview->ShouldDraw() == true )
+		return true;
+	else if( GetMapOverView() && GetMapOverView()->GetMode() == CMapOverview::MAP_MODE_INSET )	
+		return true;
+
+	return false;
 }
 
 void CHudLocation::ApplySchemeSettings(vgui::IScheme *pScheme)
@@ -323,4 +347,17 @@ void CHudLocation::OnTick()
 		pszLocation = pPlayer->GetLastKnownPlaceName();
 	}
 	SetText( g_pVGuiLocalize->Find( pszLocation ) );
+
+	// We have two different locations based on the Overview mode.
+	// So we just position ourselves below, and center our text in their width.
+	if( GetMapOverView() )
+	{
+		int x = 0, y = 0;
+		int width = 0, height = 0;
+		GetMapOverView()->GetAsPanel()->GetPos( x, y );
+		GetMapOverView()->GetAsPanel()->GetSize( width, height );
+		y += GetMapOverView()->GetAsPanel()->GetTall();
+		SetPos( x, y );
+		SetWide( width );
+	}
 }
