@@ -223,10 +223,10 @@ def configure(conf):
 
 	define_platform(conf)
 
-	if conf.env.TOGLES:
-		projects['game'] += ['togles']
-	elif conf.env.GL:
-		projects['game'] += ['togl']
+#	if conf.env.TOGLES:
+#		projects['game'] += ['togles']
+#	elif conf.env.GL:
+	projects['game'] += ['togl']
 
 
 	if conf.env.DEST_OS in ['win32', 'linux', 'darwin'] and conf.env.DEST_CPU == 'x86_64':
@@ -279,7 +279,7 @@ def configure(conf):
 	linkflags += flags
 
 	# And here C++ flags starts to be treated separately
-	cxxflags = list(cflags) + ['-std=gnu++0x','-fpermissive']
+	cxxflags = list(cflags) + ['-std=c++11','-fpermissive']
 
 	if conf.env.COMPILER_CC == 'gcc':
 		conf.define('COMPILER_GCC', 1)

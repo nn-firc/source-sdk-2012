@@ -212,10 +212,8 @@ class Android:
 		return os.path.join(self.gen_binutils_path(), 'strip')
 
 	def system_stl(self):
-		# TODO: proper STL support
 		return [
-			#os.path.abspath(os.path.join(self.ndk_home, 'sources', 'cxx-stl', 'system', 'include')),
-			os.path.abspath(os.path.join(self.ndk_home, 'sources', 'cxx-stl', 'stlport', 'stlport')),
+			os.path.abspath(os.path.join(self.ndk_home, 'sources', 'cxx-stl', 'gnu-libstdc++', '4.9', 'include')),
 			os.path.abspath(os.path.join(self.ndk_home, 'sources', 'android', 'support', 'include'))
 		]
 
@@ -339,8 +337,9 @@ def configure(conf):
 		conf.env.CXXFLAGS += android.cflags(True)
 		conf.env.LINKFLAGS += android.linkflags()
 		conf.env.LDFLAGS += android.ldflags()
-		conf.env.STLIBPATH += [os.path.abspath(os.path.join(android.ndk_home, 'sources','cxx-stl','stlport','libs',values[0]))]
-		conf.env.LDFLAGS += ['-lstlport_static']
+		conf.env.STLIBPATH += [os.path.abspath(os.path.join(android.ndk_home, 'sources','cxx-stl','gnu-libstdc++','4.9','libs',values[0]))]
+		conf.env.CXXFLAGS += ('-I', os.path.join(android.ndk_home, 'sources','cxx-stl','gnu-libstdc++','4.9','libs',values[0],'include'))
+		conf.env.LDFLAGS += ['-lgnustl_static']
 
 		conf.env.HAVE_M = True
 		if android.is_hardfp():
