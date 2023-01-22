@@ -765,6 +765,7 @@ CBaseModPanel::~CBaseModPanel()
 static const char *g_rgValidCommands[] =
 {
 	"OpenGameMenu",
+	"OpenConsole",
 	"OpenPlayerListDialog",
 	"OpenNewGameDialog",
 	"OpenLoadGameDialog",
@@ -1464,6 +1465,8 @@ void CBaseModPanel::UpdateGameMenus()
 CGameMenu *CBaseModPanel::RecursiveLoadGameMenu(KeyValues *datafile)
 {
 	CGameMenu *menu = new CGameMenu(this, datafile->GetName());
+
+	menu->AddMenuItem("Console", "CONSOLE", "OpenConsole", this);
 
 	// loop through all the data adding items to the menu
 	for (KeyValues *dat = datafile->GetFirstSubKey(); dat != NULL; dat = dat->GetNextKey())
@@ -2335,6 +2338,10 @@ void CBaseModPanel::RunMenuCommand(const char *command)
 	else if ( !Q_stricmp( command, "OpenNewGameDialog" ) )
 	{
 		OnOpenNewGameDialog();
+	}
+	else if ( !Q_stricmp( command, "OpenConsole" ) )
+	{
+		GameConsole().Activate();
 	}
 	else if ( !Q_stricmp( command, "OpenLoadGameDialog" ) )
 	{
