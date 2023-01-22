@@ -291,11 +291,7 @@ static void VoiceRecord_Stop()
 }
 
 // Hacked functions to create the inputs and codecs..
-#ifdef _PS3
-static IVoiceRecord*	CreateVoiceRecord_DSound(int nSamplesPerSec) { return NULL; }
-#else
-extern IVoiceRecord*	CreateVoiceRecord_DSound(int nSamplesPerSec);
-#endif
+extern IVoiceRecord	 *CreateVoiceRecord_SDL(int nSamplesPerSec);
 
 ConVar voice_gain_rate( "voice_gain_rate", "1.0", FCVAR_NONE );
 ConVar voice_gain_downward_multiplier( "voice_gain_downward_multiplier", "100.0", FCVAR_NONE );  // how quickly it will lower gain when it detects that the current gain value will cause clipping
@@ -806,14 +802,8 @@ bool Voice_Init(const char *pCodecName, int iVersion )
 
 	EngineVGui()->UpdateProgressBar( PROGRESS_DEFAULT );
 
-#ifdef OSX
-	IVoiceRecord* CreateVoiceRecord_AudioQueue(int sampleRate);
-	g_pVoiceRecord = CreateVoiceRecord_AudioQueue( Voice_SamplesPerSec() );
-	//g_pVoiceRecord = NULL;
-	if ( !g_pVoiceRecord )
-#endif
-		// Get the voice input device.
-	g_pVoiceRecord = CreateVoiceRecord_DSound( Voice_SamplesPerSec() );
+	// Get the voice input device.
+	g_pVoiceRecord = CreateVoiceRecord_SDL( Voice_SamplesPerSec() );
 	if( !g_pVoiceRecord )
 	{
 		Msg( "Unable to initialize DirectSoundCapture. You won't be able to speak to other players." );
