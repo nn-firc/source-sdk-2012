@@ -258,7 +258,6 @@ def configure(conf):
 			'-L'+os.path.abspath('.')+'/lib/android/armeabi-v7a/',
 			'-I'+os.path.abspath('.')+'/thirdparty/curl/include',
 			'-I'+os.path.abspath('.')+'/thirdparty/SDL',
-			'-I'+os.path.abspath('.')+'/thirdparty/openal-soft/include/',
 			'-I'+os.path.abspath('.')+'/thirdparty/fontconfig',
 			'-I'+os.path.abspath('.')+'/thirdparty/freetype/include',
 			'-I'+os.path.abspath('.')+'/thirdparty/android/jpeglib',
@@ -309,13 +308,11 @@ def configure(conf):
 		else:
 			conf.check_pkg('freetype2', 'FT2', FT2_CHECK)
 			conf.check_pkg('fontconfig', 'FC', FC_CHECK)
-			conf.check_cfg(package='openal', uselib_store='OPENAL', args=['--cflags', '--libs'])
 			conf.check_cfg(package='libcurl', uselib_store='CURL', args=['--cflags', '--libs'])
 	else:
 		conf.check(lib='SDL2', uselib_store='SDL2')
 		conf.check(lib='freetype2', uselib_store='FT2')
 		conf.check(lib='fontconfig', uselib_store='FC')
-		conf.check(lib='openal', uselib_store='OPENAL')
 		conf.check(lib='curl', uselib_store='CURL')
 		conf.check(lib='crypto', uselib_store='CRYPTO')
 		conf.check(lib='ssl', uselib_store='SSL')
