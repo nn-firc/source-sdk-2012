@@ -48,7 +48,11 @@
 #undef INVALID_HANDLE_VALUE
 #include <winsock2.h> // gethostname
 #elif !IsGameConsole()
+#ifdef ANDROID
+#include <unistd.h>
+#else
 #include <sys/unistd.h> // gethostname
+#endif
 #endif
 
 #ifdef DEDICATED
