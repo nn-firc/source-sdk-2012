@@ -662,7 +662,30 @@ void ClientModeShared::GraphPageChanged()
 //-----------------------------------------------------------------------------
 int ClientModeShared::HandleSpectatorKeyInput( int down, ButtonCode_t keynum, const char *pszCurrentBinding )
 {
-	/* Removed for partner depot */
+	if ( down && pszCurrentBinding && Q_strcmp( pszCurrentBinding, "+attack" ) == 0 )
+	{
+		engine->ClientCmd( "spec_next" );
+		return 0; // we handled it, don't handle twice or send to server
+	}
+	else if ( down && pszCurrentBinding && Q_strcmp( pszCurrentBinding, "+attack2" ) == 0 )
+	{
+		engine->ClientCmd( "spec_prev" );
+		return 0;
+	}
+	else if ( down && pszCurrentBinding && Q_strcmp( pszCurrentBinding, "+jump" ) == 0 )
+	{
+		engine->ClientCmd( "spec_mode" );
+		return 0;
+	}
+	else if ( down && pszCurrentBinding && Q_strcmp( pszCurrentBinding, "+strafe" ) == 0 )
+	{
+		HLTVCamera()->SetAutoDirector( C_HLTVCamera::AUTODIRECTOR_ON );
+#if defined( REPLAY_ENABLED )
+		ReplayCamera()->SetAutoDirector( true );
+#endif
+		return 0;
+	}
+
 	return 1;
 }
 
