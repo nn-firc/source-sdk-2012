@@ -146,11 +146,7 @@ protected:
 	bool				m_bInitialized;
 	bool				m_bFullscreenViewport;
 	IViewPortPanel		*m_pActivePanel;
-
-#if !defined( CSTRIKE15 )
 	IViewPortPanel		*m_pLastActivePanel;
-#endif
-
 	vgui::HCursor		m_hCursorNone;
 	vgui::AnimationController *m_pAnimController;
 	int					m_OldSize[2];
