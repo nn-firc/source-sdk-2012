@@ -1021,6 +1021,8 @@ void CEngineVGui::Init()
 		g_pVGuiLocalize->AddFile( szFileName );
 	}
 
+	g_pVGuiLocalize->AddFile( "resource/cstrike_%language%.txt" ); //add cstrike language for gameui
+
 	COM_TimestampedLog( "staticGameUIFuncs->Initialize" );
 
 	staticGameUIFuncs->Initialize( g_GameSystemFactory );
