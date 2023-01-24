@@ -1203,7 +1203,7 @@ CStdioFile *CStdioFile::FS_fopen( const char *filename, const char *options, int
 			ThreadId_t curThread = ThreadGetCurrentId();
 
 #ifdef ANDROID
-			int fd = fileno( m_pFile );
+			int fd = fileno( pFile );
 #else
 			int fd = fileno_unlocked( pFile );
 #endif
