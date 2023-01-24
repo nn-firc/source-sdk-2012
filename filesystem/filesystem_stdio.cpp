@@ -1282,7 +1282,11 @@ void CStdioFile::FS_fclose()
 	if ( m_bWriteable )
 	{
 		fflush( m_pFile );
+#ifdef ANDROID
+		int fd = fileno( m_pFile );
+#else
 		int fd = fileno_unlocked( m_pFile );
+#endif
 		flock( fd, LOCK_UN );
 		int iLockID = m_LockedFDMap.Find( fd );
 		if ( iLockID != m_LockedFDMap.InvalidIndex() )

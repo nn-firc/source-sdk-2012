@@ -5859,6 +5859,8 @@ bool CBaseFileSystem::IsFileWritable( char const *pFileName, char const *pPathID
 			if ( buf.st_mode & _S_IWRITE )
 #elif defined( _PS3 )
 			if( buf.st_mode & S_IWUSR )
+#elif ANDROID
+			if ( buf.st_mode & S_IWUSR )
 #elif POSIX
 			if ( buf.st_mode & S_IWRITE )
 #else
@@ -5891,6 +5893,8 @@ bool CBaseFileSystem::IsFileWritable( char const *pFileName, char const *pPathID
 			if ( buf.st_mode & _S_IWRITE )
 #elif defined( _PS3 )
 			if( buf.st_mode & S_IWUSR )
+#elif ANDROID
+			if ( buf.st_mode & S_IWUSR )
 #elif POSIX
 			if ( buf.st_mode & S_IWRITE )
 #else
