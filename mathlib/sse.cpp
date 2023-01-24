@@ -10,7 +10,7 @@
 #include "tier0/dbg.h"
 #include "mathlib/mathlib.h"
 #include "mathlib/vector.h"
-#ifdef __arm__
+#ifdef __arm__ || defined __aarch64__
 #include "sse2neon.h"
 #endif
 #include "sse.h"
@@ -61,11 +61,11 @@ _PS_EXTERN_CONST(am_pi_o_2, (float)(M_PI / 2.0));
 _PS_EXTERN_CONST(am_2_o_pi, (float)(2.0 / M_PI));
 _PS_EXTERN_CONST(am_pi_o_4, (float)(M_PI / 4.0));
 _PS_EXTERN_CONST(am_4_o_pi, (float)(4.0 / M_PI));
-_PS_EXTERN_CONST_TYPE(am_sign_mask, int32, 0x80000000);
-_PS_EXTERN_CONST_TYPE(am_inv_sign_mask, int32, ~0x80000000);
-_PS_EXTERN_CONST_TYPE(am_min_norm_pos,int32, 0x00800000);
-_PS_EXTERN_CONST_TYPE(am_mant_mask, int32, 0x7f800000);
-_PS_EXTERN_CONST_TYPE(am_inv_mant_mask, int32, ~0x7f800000);
+_PS_EXTERN_CONST_TYPE(am_sign_mask, int32, (int)0x80000000);
+_PS_EXTERN_CONST_TYPE(am_inv_sign_mask, int32, ~(int)0x80000000);
+_PS_EXTERN_CONST_TYPE(am_min_norm_pos,int32, (int)0x00800000);
+_PS_EXTERN_CONST_TYPE(am_mant_mask, int32, (int)0x7f800000);
+_PS_EXTERN_CONST_TYPE(am_inv_mant_mask, int32, ~(int)0x7f800000);
 
 _EPI32_CONST(1, 1);
 _EPI32_CONST(2, 2);
@@ -105,7 +105,7 @@ float FASTCALL _SSE_VectorNormalize (Vector& vec)
 	// be much of a performance win, considering you will very likely miss 3 branch predicts in a row.
 	if ( v[0] || v[1] || v[2] )
 	{
-#ifdef __arm__
+#if defined __arm__ || defined __aarch64__
 		float rsqrt = _SSE_RSqrtAccurate( v[0] * v[0] + v[1] * v[1] + v[2] * v[2] );
 		r[0] = v[0] * rsqrt;
 		r[1] = v[1] * rsqrt;
@@ -350,7 +350,7 @@ void FastSinCos( float x, float* s, float* c )  // any x
 	}
 }
 #endif
-#elif defined __arm__
+#elif defined __arm__ || defined __aarch64__
 void _SSE_SinCos(float x, float* s, float* c)
 {
 #if defined( POSIX )
@@ -380,8 +380,8 @@ void FastSinCos( float x, float* s, float* c )  // any x
 //#define _PS_CONST(Name, Val) static const ALIGN16 float _ps_##Name[4] ALIGN16_POST = { Val, Val, Val, Val }
 #define _PS_CONST_TYPE(Name, Type, Val) static const ALIGN16 Type _ps_##Name[4] ALIGN16_POST = { Val, Val, Val, Val }
 
-_PS_CONST_TYPE(sign_mask, int, 0x80000000);
-_PS_CONST_TYPE(inv_sign_mask, int, ~0x80000000);
+_PS_CONST_TYPE(sign_mask, int, (int)0x80000000);
+_PS_CONST_TYPE(inv_sign_mask, int, ~(int)0x80000000);
 
 
 #define _PI32_CONST(Name, Val)  static const ALIGN16 int _pi32_##Name[4]  ALIGN16_POST = { Val, Val, Val, Val }
@@ -469,7 +469,7 @@ float FastCos( float x )
 		movss   x,    xmm0
 		
 	}
-#elif defined( _WIN64 ) || defined( __arm__ )
+#elif defined( _WIN64 ) || defined( __arm__ ) || defined( __aarch64__ )
 	return cosf( x );
 #elif POSIX
 	

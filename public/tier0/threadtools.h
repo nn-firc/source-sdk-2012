@@ -235,7 +235,7 @@ inline void ThreadPause()
 {
 #if defined( COMPILER_PS3 )
 	__db16cyc();
-#elif defined(__arm__)
+#elif defined(__arm__) || defined(__aarch64__)
 	sched_yield();
 #elif defined( COMPILER_GCC ) || defined( COMPILER_CLANG )
 	__asm __volatile( "pause" );
@@ -308,7 +308,7 @@ inline int32 ThreadInterlockedDecrement( int32 volatile *p )
 
 inline int32 ThreadInterlockedExchange( int32 volatile *p, int32 value )
 {
-#ifdef __arm__
+#if defined __arm__ || defined __aarch64__
 	return __sync_lock_test_and_set( p, value );
 #else
 	Assert( (size_t)p % 4 == 0 );

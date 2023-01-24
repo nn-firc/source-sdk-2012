@@ -1676,7 +1676,7 @@ FORCEINLINE int RoundFloatToInt(float f)
 		fld f
 		fistp nResult
 	}
-#elif GNUC && !defined __arm__
+#elif GNUC && (!defined __arm__ && !defined __aarch64__)
 	__asm __volatile__ (
 		"fistpl %0;": "=m" (nResult): "t" (f) : "st"
 	);
@@ -1723,7 +1723,7 @@ FORCEINLINE unsigned char RoundFloatToByte(float f)
 		fld f
 		fistp nResult
 	}
-#elif GNUC && !defined __arm__
+#elif GNUC && (!defined __arm__ && !defined __aarch64__)
 	__asm __volatile__ (
 		"fistpl %0;": "=m" (nResult): "t" (f) : "st"
 	);
@@ -1770,7 +1770,7 @@ FORCEINLINE unsigned long RoundFloatToUnsignedLong(float f)
 		fistp       qword ptr nResult
 	}
 	return *((unsigned long*)nResult);
-#elif defined( COMPILER_GCC ) && !defined __arm__
+#elif defined( COMPILER_GCC ) && (!defined __arm__ && !defined __aarch64__)
 	unsigned char nResult[8];
 	__asm __volatile__ (
 		"fistpl %0;": "=m" (nResult): "t" (f) : "st"

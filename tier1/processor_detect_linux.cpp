@@ -17,7 +17,7 @@
 #include "tier0/memdbgoff.h"
 
 
-#if defined (__arm__)
+#if defined (__arm__) || defined (__aarch64__)
 bool CheckMMXTechnology(void) { return false; }
 bool CheckSSETechnology(void) { return false; }
 bool CheckSSE2Technology(void) { return false; }

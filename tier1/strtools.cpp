@@ -55,9 +55,11 @@
 
 #ifdef POSIX
 
-#ifndef _PS3
+#ifdef ANDROID
+#include "../thirdparty/android/iconv.h"
+#elif !defined _PS3
 #include <iconv.h>
-#endif // _PS3
+#endif
 
 #include <ctype.h>
 #include <unistd.h>

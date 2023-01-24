@@ -213,7 +213,7 @@ class Android:
 
 	def system_stl(self):
 		return [
-			os.path.abspath(os.path.join(self.ndk_home, 'sources', 'cxx-stl', 'llvm-libc++', 'libcxx', 'include')),
+			os.path.abspath(os.path.join(self.ndk_home, 'sources', 'cxx-stl', 'gnu-libstdc++', '4.9', 'include')),
 			os.path.abspath(os.path.join(self.ndk_home, 'sources', 'android', 'support', 'include'))
 		]
 
@@ -298,7 +298,6 @@ class Android:
 
 	def ldflags(self):
 		ldflags = ['-no-canonical-prefixes']
-
 		if self.is_clang() or self.is_host():
 			ldflags += ['-stdlib=libstdc++']
 		if self.is_arm():
@@ -342,8 +341,9 @@ def configure(conf):
 		conf.env.CXXFLAGS += android.cflags(True)
 		conf.env.LINKFLAGS += android.linkflags()
 		conf.env.LDFLAGS += android.ldflags()
-		conf.env.STLIBPATH += [os.path.abspath(os.path.join(android.ndk_home, 'sources','cxx-stl','llvm-libc++','libs',stlarch))]
-		conf.env.LDFLAGS += ['-lc++_static']
+		conf.env.STLIBPATH += [os.path.abspath(os.path.join(android.ndk_home, 'sources','cxx-stl','gnu-libstdc++','4.9','libs',stlarch))]
+		conf.env.CXXFLAGS += ('-I', os.path.join(android.ndk_home, 'sources','cxx-stl','gnu-libstdc++','4.9','libs',stlarch,'include'))
+		conf.env.LDFLAGS += ['-lgnustl_static']
 
 		conf.env.HAVE_M = True
 		if android.is_hardfp():

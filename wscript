@@ -239,8 +239,7 @@ def configure(conf):
 
 	compiler_optional_flags = [
 		'-fdiagnostics-color=always',
-		'-w',
-		'-Wno-c++11-narrowing'
+		'-w'
 	]
 
 	c_compiler_optional_flags = [
@@ -254,7 +253,7 @@ def configure(conf):
 	if conf.env.COMPILER_CC != 'msvc':
 		flags += ['-pthread']
 
-	if conf.env.DEST_OS == ['android']:
+	if conf.env.DEST_OS == 'android':
 		flags += [
 			'-I'+os.path.abspath('.')+'/thirdparty/curl/include',
 			'-I'+os.path.abspath('.')+'/thirdparty/SDL',
@@ -278,7 +277,7 @@ def configure(conf):
 	linkflags += flags
 
 	# And here C++ flags starts to be treated separately
-	cxxflags = list(cflags) + ['-std=c++11','-fpermissive']
+	cxxflags = list(cflags) + ['-std=c++11','-fpermissive','-Wno-c++11-narrowing']
 
 	if conf.env.COMPILER_CC == 'gcc':
 		conf.define('COMPILER_GCC', 1)

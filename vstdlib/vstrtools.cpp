@@ -5,7 +5,9 @@
 #if defined( _WIN32 ) && !defined( _X360 )
 #include <windows.h>
 #endif
-#if defined(POSIX) && !defined(_PS3)
+#ifdef ANDROID
+#include "../thirdparty/android/iconv.h"
+#elif defined(POSIX) && !defined(_PS3)
 #include <iconv.h>
 #endif
 

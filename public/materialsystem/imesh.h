@@ -1241,7 +1241,7 @@ inline void CVertexBuilder::FastAdvanceNVertices( int n )
 
 inline void CVertexBuilder::FastVertex( const ModelVertexDX8_t &vertex )
 {
-#ifdef __arm__
+#ifdef __arm__ || defined __aarch64__
 	FastVertexSSE( vertex );
 #else
 	Assert( m_CompressionType == VERTEX_COMPRESSION_NONE ); // FIXME: support compressed verts if needed
@@ -1333,13 +1333,13 @@ inline void CVertexBuilder::FastVertexSSE( const ModelVertexDX8_t &vertex )
 	void *pCurrPos = m_pCurrPosition;
 
 	__m128 m1 = _mm_load_ps( (float *)pRead );
-	__m128 m2 = _mm_load_ps( (float *)(pRead + 16) );
-	__m128 m3 = _mm_load_ps( (float *)(pRead + 32) );
-	__m128 m4 = _mm_load_ps( (float *)(pRead + 48) );
+	__m128 m2 = _mm_load_ps( (float *)((intp)pRead + 16) );
+	__m128 m3 = _mm_load_ps( (float *)((intp)pRead + 32) );
+	__m128 m4 = _mm_load_ps( (float *)((intp)pRead + 48) );
 	_mm_stream_ps( (float *)pCurrPos, m1 );
-	_mm_stream_ps( (float *)(pCurrPos + 16), m2 );
-	_mm_stream_ps( (float *)(pCurrPos + 32), m3 );
-	_mm_stream_ps( (float *)(pCurrPos + 48), m4 );
+	_mm_stream_ps( (float *)((intp)pCurrPos + 16), m2 );
+	_mm_stream_ps( (float *)((intp)pCurrPos + 32), m3 );
+	_mm_stream_ps( (float *)((intp)pCurrPos + 48), m4 );
 #else
 	Error( "Implement CMeshBuilder::FastVertexSSE((dx8)" );
 #endif

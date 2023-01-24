@@ -13,7 +13,7 @@
 #define PLATFORM_64BITS 1
 #endif
 
-#if defined __arm__ && defined POSIX
+#if (defined __arm__ || defined __aarch64__) && defined POSIX
 #include <time.h>
 #endif
 
@@ -1131,7 +1131,7 @@ typedef void * HINSTANCE;
 	#define DebuggerBreak()		__asm { int 3 }
 #elif COMPILER_MSVCX360
 	#define DebuggerBreak()		DebugBreak()
-#elif defined __arm__
+#elif defined __arm__ || defined __aarch64__
 	#include <signal.h>
 	#define DebuggerBreak() raise(SIGINT)
 #elif COMPILER_GCC
@@ -1372,7 +1372,7 @@ typedef int socklen_t;
 
 	#endif
 
-#elif defined (__arm__)
+#elif defined (__arm__) || defined __aarch64__
 	inline void SetupFPUControlWord() {}
 
 #elif defined ( COMPILER_GCC )
@@ -1844,7 +1844,7 @@ inline uint64 Plat_Rdtsc()
 	uint32 lo, hi;
 	__asm__ __volatile__ ( "rdtsc" : "=a" (lo), "=d" (hi));
 	return ( ( ( uint64 )hi ) << 32 ) | lo;
-#elif defined( __arm__ ) && defined (POSIX)
+#elif (defined __arm__ || defined __aarch64__) && defined (POSIX)
 	struct timespec t;
 	clock_gettime( CLOCK_REALTIME, &t);
 	return t.tv_sec * 1000000000ULL + t.tv_nsec;

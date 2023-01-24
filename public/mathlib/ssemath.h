@@ -11,7 +11,7 @@
 #elif defined ( _PS3 )
 #include <vectormath/c/vectormath_aos.h>
 #include <vectormath/c/vectormath_aos_v.h>
-#elif defined( __arm__ )
+#elif defined( __arm__ ) || defined( __aarch64__ )
 #include "sse2neon.h"
 #else
 #include <xmmintrin.h>

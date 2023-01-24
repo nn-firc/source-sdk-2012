@@ -15,7 +15,7 @@
 
 #include <math.h>
 #include <float.h>
-#if defined(__arm__)
+#if defined(__arm__) || defined(__aarch64__)
 #include "sse2neon.h"
 #elif !defined( PLATFORM_PPC ) && !defined( _PS3 )
 #include <xmmintrin.h>	// for sse
