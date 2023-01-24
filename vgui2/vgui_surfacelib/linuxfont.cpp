@@ -117,7 +117,7 @@ void CLinuxFont::CreateFontList()
 	const char *name;
 
     config = FcConfigGetCurrent();
-	FcConfigAppFontAddDir(config, "platform/vgui/fonts");
+	FcConfigAppFontAddDir(config, (const FcChar8 *)"platform/vgui/fonts");
     pat = FcPatternCreate();
     os = FcObjectSetCreate();
     FcObjectSetAdd(os, FC_FILE);
