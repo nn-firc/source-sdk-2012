@@ -218,6 +218,10 @@ protected:
 template< int msgType, typename PB_OBJECT_TYPE, int groupType , bool bReliable > 
 std::string CNetMessagePB< msgType, PB_OBJECT_TYPE, groupType , bReliable >::s_typeName;
 
+#ifdef _N
+#undef _N //gnustl4.9 defined this
+#endif
+
 class CNetMessageBinder
 {
 public:
