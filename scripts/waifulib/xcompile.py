@@ -213,7 +213,7 @@ class Android:
 
 	def system_stl(self):
 		return [
-			os.path.abspath(os.path.join(self.ndk_home, 'sources', 'cxx-stl', 'gnu-libstdc++', '4.9', 'include')),
+			os.path.abspath(os.path.join(self.ndk_home, 'sources', 'cxx-stl', 'llvm-libc++', 'libcxx', 'include')),
 			os.path.abspath(os.path.join(self.ndk_home, 'sources', 'android', 'support', 'include'))
 		]
 
@@ -253,7 +253,7 @@ class Android:
 		if self.is_arm():
 			if self.arch == 'armeabi-v7a':
 				# ARMv7 support
-				cflags += ['-mthumb', '-mfpu=neon-vfpv4', '-mcpu=cortex-a7', '-mtune=cortex-a7', '-DHAVE_EFFICIENT_UNALIGNED_ACCESS', '-DVECTORIZE_SINCOS']
+				cflags += ['-mfpu=neon-vfpv4', '-mcpu=cortex-a7', '-mtune=cortex-a7', '-DHAVE_EFFICIENT_UNALIGNED_ACCESS', '-DVECTORIZE_SINCOS']
 
 				if not self.is_clang() and not self.is_host():
 					cflags += [ '-mvectorize-with-neon-quad' ]
@@ -297,12 +297,13 @@ class Android:
 		return linkflags
 
 	def ldflags(self):
-		ldflags = ['-lgcc', '-no-canonical-prefixes']
+		ldflags = ['-no-canonical-prefixes']
+
 		if self.is_clang() or self.is_host():
 			ldflags += ['-stdlib=libstdc++']
 		if self.is_arm():
 			if self.arch == 'armeabi-v7a':
-				ldflags += ['-march=armv7-a', '-mthumb']
+				ldflags += ['-march=armv7-a']
 
 				if not self.is_clang() and not self.is_host(): # lld only
 					ldflags += ['-Wl,--fix-cortex-a8']
@@ -316,7 +317,7 @@ class Android:
 def options(opt):
 	android = opt.add_option_group('Android options')
 	android.add_option('--android', action='store', dest='ANDROID_OPTS', default=None,
-		help='enable building for android, format: --android=<arch>,<toolchain>,<api>, example: --android=armeabi-v7a-hard,4.9,9')
+		help='enable building for android, format: --android=<arch>,<toolchain>,<api>, example: --android=aarch64,host,21')
 
 def configure(conf):
 	if conf.options.ANDROID_OPTS:
@@ -329,6 +330,10 @@ def configure(conf):
 		if values[0] not in valid_archs:
 			conf.fatal('Unknown arch: %s. Supported: %r' % (values[0], ', '.join(valid_archs)))
 
+
+		stlarch = values[0]
+		if values[0] == 'aarch64': stlarch = 'arm64-v8a'
+
 		conf.android = android = Android(conf, values[0], values[1], int(values[2]))
 		conf.environ['CC'] = android.cc()
 		conf.environ['CXX'] = android.cxx()
@@ -337,9 +342,8 @@ def configure(conf):
 		conf.env.CXXFLAGS += android.cflags(True)
 		conf.env.LINKFLAGS += android.linkflags()
 		conf.env.LDFLAGS += android.ldflags()
-		conf.env.STLIBPATH += [os.path.abspath(os.path.join(android.ndk_home, 'sources','cxx-stl','gnu-libstdc++','4.9','libs',values[0]))]
-		conf.env.CXXFLAGS += ('-I', os.path.join(android.ndk_home, 'sources','cxx-stl','gnu-libstdc++','4.9','libs',values[0],'include'))
-		conf.env.LDFLAGS += ['-lgnustl_static']
+		conf.env.STLIBPATH += [os.path.abspath(os.path.join(android.ndk_home, 'sources','cxx-stl','llvm-libc++','libs',stlarch))]
+		conf.env.LDFLAGS += ['-lc++_static']
 
 		conf.env.HAVE_M = True
 		if android.is_hardfp():

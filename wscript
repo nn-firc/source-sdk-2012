@@ -21,7 +21,6 @@ int main() { return FT_Init_FreeType( NULL ); }
 FC_CHECK='''extern "C" {
 #include <fontconfig/fontconfig.h>
 }
-
 int main() { return (int)FcInit(); }
 '''
 
@@ -179,7 +178,7 @@ def options(opt):
 	grp = opt.add_option_group('Common options')
 
 	grp.add_option('-8', '--64bits', action = 'store_true', dest = 'ALLOW64', default = False,
-		help = 'allow targetting 64-bit engine(Linux/Windows/OSX x86 only) [default: %default]')
+		help = 'allow targetting 64-bit engine [default: %default]')
 
 	grp.add_option('-d', '--dedicated', action = 'store_true', dest = 'DEDICATED', default = False,
 		help = 'build dedicated server [default: %default]')
@@ -249,23 +248,22 @@ def configure(conf):
 
 	cflags, linkflags = conf.get_optimization_flags()
 
-	flags = ['-pipe', '-fPIC']
+	flags = ['-pipe', '-fPIC', '-L'+os.path.abspath('.')+'/lib/'+conf.env.DEST_OS+'/'+conf.env.DEST_CPU+'/']
+
 	if conf.env.COMPILER_CC != 'msvc':
 		flags += ['-pthread']
 
-	if conf.env.DEST_OS == 'android':
+	if conf.env.DEST_OS == ['android']:
 		flags += [
-			'-L'+os.path.abspath('.')+'/lib/android/armeabi-v7a/',
 			'-I'+os.path.abspath('.')+'/thirdparty/curl/include',
 			'-I'+os.path.abspath('.')+'/thirdparty/SDL',
-			'-I'+os.path.abspath('.')+'/thirdparty/fontconfig',
 			'-I'+os.path.abspath('.')+'/thirdparty/freetype/include',
 			'-I'+os.path.abspath('.')+'/thirdparty/android/jpeglib',
 			'-llog',
 			'-lz'
 		]
 
-	if conf.env.DEST_CPU == 'arm':
+	if conf.env.DEST_CPU in ['arm','aarch64']:
 		flags += ['-fsigned-char']
 
 		if conf.env.DEST_OS != 'android':
@@ -313,10 +311,11 @@ def configure(conf):
 		conf.check(lib='SDL2', uselib_store='SDL2')
 		conf.check(lib='freetype2', uselib_store='FT2')
 		conf.check(lib='fontconfig', uselib_store='FC')
+		if conf.env.DEST_CPU != 'aarch64':
+			conf.check(lib='unwind', uselib_store='UNWIND')
+			conf.check(lib='crypto', uselib_store='CRYPTO')
+			conf.check(lib='ssl', uselib_store='SSL')
 		conf.check(lib='curl', uselib_store='CURL')
-		conf.check(lib='crypto', uselib_store='CRYPTO')
-		conf.check(lib='ssl', uselib_store='SSL')
-		conf.check(lib='expat', uselib_store='EXPAT')
 		conf.check(lib='android_support', uselib_store='ANDROID_SUPPORT')
 
 	if conf.env.DEST_OS != 'win32':
