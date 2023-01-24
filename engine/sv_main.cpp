@@ -89,7 +89,11 @@
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 #ifdef _LINUX
+#ifdef ANDROID
+#include <sys/syscall.h>
+#else
 #include <syscall.h>
+#endif
 #endif
 
 #ifdef _PS3

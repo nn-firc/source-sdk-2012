@@ -939,7 +939,7 @@ public:
 				if ( ! IsChildProcess() )							// do NOT let subprocesses output to stdout.
 				{
 					// This is not actually a varargs-style printf function; it simply takes a char*
-					dedicated->Sys_Printf( pMessage );		// stupid header has char * instead of const char * -- lwss: not any longer
+					dedicated->Sys_Printf( (char *)pMessage );		// stupid header has char * instead of const char * -- lwss: not any longer
 				}
 				else
 				{

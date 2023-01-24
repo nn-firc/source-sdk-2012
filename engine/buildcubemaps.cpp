@@ -370,7 +370,7 @@ static void BuildSingleCubemap( const char *pVTFName, const Vector &vecOrigin,
 		argv[iArg++] = "-UseStandardError";	// These are only here for the -currently released- version of vtex.dll.
 		argv[iArg++] = "-WarningsAsErrors";
 		argv[iArg++] = pTXTName;
-		ivt->VTex( CubemapsFSFactory, pGameDir, iArg, argv );
+		ivt->VTex( CubemapsFSFactory, pGameDir, iArg, (char **)argv );
 	}
 
 	g_pFileSystem->RemoveFile( pTXTName, NULL );

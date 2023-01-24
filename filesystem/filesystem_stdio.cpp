@@ -1201,8 +1201,12 @@ CStdioFile *CStdioFile::FS_fopen( const char *filename, const char *options, int
 			// so use flock here to mimic that behavior
 			
 			ThreadId_t curThread = ThreadGetCurrentId();
-			
+
+#ifdef ANDROID
+			int fd = fileno( m_pFile );
+#else
 			int fd = fileno_unlocked( pFile );
+#endif
 			int iLockID = m_LockedFDMap.Find( fd );
 			int ret = flock( fd, LOCK_EX | LOCK_NB );
 			if ( ret < 0 )

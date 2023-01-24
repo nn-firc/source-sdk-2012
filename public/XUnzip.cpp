@@ -4266,8 +4266,8 @@ ZRESULT TUnzip::Unzip(int index,void *dst,unsigned int len,DWORD flags)
 	{
 #ifdef _WIN32
 		SetFileTime(h,&ze.ctime,&ze.atime,&ze.mtime);
-#elif defined( _PS3 )
-		// PS3 TODO: SetFileTime
+#elif defined( _PS3 ) || defined( ANDROID )
+		//TODO: SetFileTime
 #else
 		struct timeval tv[2];
 		tv[0].tv_sec = ze.atime;
