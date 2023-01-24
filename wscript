@@ -21,6 +21,7 @@ int main() { return FT_Init_FreeType( NULL ); }
 FC_CHECK='''extern "C" {
 #include <fontconfig/fontconfig.h>
 }
+
 int main() { return (int)FcInit(); }
 '''
 
@@ -257,6 +258,7 @@ def configure(conf):
 		flags += [
 			'-I'+os.path.abspath('.')+'/thirdparty/curl/include',
 			'-I'+os.path.abspath('.')+'/thirdparty/SDL',
+			'-I'+os.path.abspath('.')+'/thirdparty/fontconfig',
 			'-I'+os.path.abspath('.')+'/thirdparty/freetype/include',
 			'-I'+os.path.abspath('.')+'/thirdparty/android/jpeglib',
 			'-llog',
