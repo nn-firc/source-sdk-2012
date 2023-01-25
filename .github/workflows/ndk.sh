@@ -6,6 +6,6 @@ unzip android-ndk-r10e-linux-x86_64.zip
 export ANDROID_NDK_HOME=$PWD/android-ndk-r10e/
 export NDK_HOME=$PWD/android-ndk-r10e/
 export PATH=$PWD/clang+llvm-11.1.0-x86_64-linux-gnu-ubuntu-16.04/bin:$PATH
-./waf configure -T release --64bits --android=aarch64,host,21 --prefix=/home/runner/work/csgo-sdk-2017/csgo-sdk-2017/csgo-android
+./waf configure -T release --64bits --togles --android=aarch64,host,21 --prefix=/home/runner/work/csgo-sdk-2017/csgo-sdk-2017/csgo-android
 ./waf install -j4 --strip
 
