@@ -26,7 +26,7 @@ void RecvProxy_ShortSubOne( const CRecvProxyData *pData, void *pStruct, void *pO
 
 RecvProp RecvPropIntWithMinusOneFlag( const char *pVarName, int offset, int sizeofVar, RecvVarProxyFn proxyFn )
 {
-	return RecvPropInt( pVarName, offset, sizeofVar, 0, proxyFn );
+	return RecvPropInt( (char *)pVarName, offset, sizeofVar, 0, proxyFn );
 }
 
 //-----------------------------------------------------------------------------
@@ -65,7 +65,7 @@ RecvProp RecvPropEHandle(
 	int sizeofVar,
 	RecvVarProxyFn proxyFn )
 {
-	return RecvPropInt( pVarName, offset, sizeofVar, 0, proxyFn );
+	return RecvPropInt( (char *)pVarName, offset, sizeofVar, 0, proxyFn );
 }
 
 
@@ -75,7 +75,7 @@ RecvProp RecvPropBool(
 	int sizeofVar )
 {
 	Assert( sizeofVar == sizeof( bool ) );
-	return RecvPropInt( pVarName, offset, sizeofVar );
+	return RecvPropInt( (char *)pVarName, offset, sizeofVar );
 }
 
 
@@ -141,7 +141,7 @@ RecvProp RecvPropTime(
 	int sizeofVar/*=SIZEOF_IGNORE*/ )
 {
 //	return RecvPropInt( pVarName, offset, sizeofVar, 0, RecvProxy_Time );
-	return RecvPropFloat( pVarName, offset, sizeofVar );
+	return RecvPropFloat( (char *)pVarName, offset, sizeofVar );
 };
 
 //-----------------------------------------------------------------------------

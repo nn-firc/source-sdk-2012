@@ -106,7 +106,7 @@ float FASTCALL _SSE_VectorNormalize (Vector& vec)
 	if ( v[0] || v[1] || v[2] )
 	{
 #if defined __arm__ || defined __aarch64__
-		float rsqrt = _SSE_RSqrtAccurate( v[0] * v[0] + v[1] * v[1] + v[2] * v[2] );
+		float rsqrt = FastRSqrt( v[0] * v[0] + v[1] * v[1] + v[2] * v[2] );
 		r[0] = v[0] * rsqrt;
 		r[1] = v[1] * rsqrt;
 		r[2] = v[2] * rsqrt;

@@ -518,7 +518,7 @@ static void CmdLib_getwd( char *out, int outSize )
 	_getcwd( out, outSize );
 	Q_strncat( out, "\\", outSize, COPY_ALL_CHARACTERS );
 #else
-	getwd( out );
+	getcwd( out, outSize );
 	strcat( out, "/" );
 #endif
 	Q_FixSlashes( out );

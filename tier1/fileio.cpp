@@ -47,7 +47,11 @@
 #if defined( _PS3 )
 #include <fcntl.h>
 #else
+#ifdef ANDROID
+#include <fcntl.h>
+#else
 #include <sys/fcntl.h>
+#endif
 #include <sys/statvfs.h>
 #endif
 #include <sched.h>
@@ -171,7 +175,7 @@ static int FileSelect( const char *name, const char *mask );
 
 #define _rmdir rmdir
 
-#if !defined( _PS3 )
+#if !defined( _PS3 ) && !defined( ANDROID )
 #define _S_IREAD S_IREAD
 #define _S_IWRITE S_IWRITE
 #else

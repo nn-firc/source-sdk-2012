@@ -88,7 +88,7 @@ protected:
 	virtual void		OnHasNewItems();
 	virtual void		ValidateInventoryPositions( void );
 	
-	virtual void		SOCacheSubscribed( GCSDK::SOID_t owner, GCSDK::ESOCacheEvent eEvent ) OVERRIDE;
+	virtual void		SOCacheSubscribed( GCSDK::SOID_t owner, GCSDK::ESOCacheEvent eEvent );
 
 	// Extracts the position that should be used to sort items in the inventory from the backend position.
 	// Necessary if your inventory packs a bunch of info into the position instead of using it just as a position.
