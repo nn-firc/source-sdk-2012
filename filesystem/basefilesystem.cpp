@@ -5917,6 +5917,8 @@ bool CBaseFileSystem::SetFileWritable( char const *pFileName, bool writable, con
 	int pmode = writable ? ( _S_IWRITE | _S_IREAD ) : ( _S_IREAD );
 #elif defined( _PS3 )
 	int pmode = writable ? ( S_IWUSR | S_IRUSR ) : ( S_IRUSR );
+#elif defined( ANDROID )
+	int pmode = writable ? ( S_IWUSR | S_IRUSR ) : ( S_IRUSR );
 #else
 	int pmode = writable ? ( S_IWRITE | S_IREAD ) : ( S_IREAD );
 #endif
