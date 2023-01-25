@@ -351,7 +351,7 @@ void FastSinCos( float x, float* s, float* c )  // any x
 }
 #endif
 #elif defined __arm__ || defined __aarch64__
-void _SSE_SinCos(float x, float* s, float* c)
+void FastSinCos(float x, float* s, float* c)
 {
 #if defined( POSIX )
         sincosf(x, s, c);
