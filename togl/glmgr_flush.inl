@@ -13,6 +13,7 @@ FORCEINLINE uint32 bitmix32(uint32 a)
 }
 
 #ifndef OSX
+
 FORCEINLINE GLuint GLMContext::FindSamplerObject( const GLMTexSamplingParams &desiredParams )
 {
 	int h = bitmix32( desiredParams.m_bits + desiredParams.m_borderColor ) & ( cSamplerObjectHashSize - 1 );
@@ -38,7 +39,8 @@ FORCEINLINE GLuint GLMContext::FindSamplerObject( const GLMTexSamplingParams &de
 
 	return m_samplerObjectHash[h].m_samplerObject;
 }
-#endif
+
+#endif // !OSX
 
 // BE VERY CAREFUL WHAT YOU DO IN HERE. This is called on every batch, even seemingly simple changes can kill perf.
 FORCEINLINE void GLMContext::FlushDrawStates( uint nStartIndex, uint nEndIndex, uint nBaseVertex )	// shadersOn = true for draw calls, false for clear calls
@@ -146,7 +148,6 @@ FORCEINLINE void GLMContext::FlushDrawStates( uint nStartIndex, uint nEndIndex, 
 
 		bool bShaderShadow = ( m_drawingProgram[kGLMFragmentProgram]->m_nShadowDepthSamplerMask & nCurMask ) != 0;
 		
-		// NOTE - Check shader name hardcoded into ShadowDepthSamplerMaskFromName() in dxabstract.cpp!!
 		if ( bShaderShadow )
 		{
 			// Shader expects shadow depth sampling at this sampler index
@@ -195,7 +196,8 @@ FORCEINLINE void GLMContext::FlushDrawStates( uint nStartIndex, uint nEndIndex, 
 				}
 			}
 
-			gGL->glUseProgram( (GLuint)pNewPair->m_program );
+            gGL->glUseProgramObjectARB(pNewPair->m_program);
+			//gGL->glUseProgram( (GLuint)pNewPair->m_program );
 			
 			GL_BATCH_PERF( m_FlushStats.m_nTotalProgramPairChanges++; )
 
@@ -562,7 +564,7 @@ FORCEINLINE void GLMContext::FlushDrawStates( uint nStartIndex, uint nEndIndex, 
 
 			SetBufAndVertexAttribPointer( nIndex, pBuf->GetHandle(), 
 				pStream->m_stride, pDeclElem->m_gldecl.m_datatype, pDeclElem->m_gldecl.m_normalized, pDeclElem->m_gldecl.m_nCompCount, 
-				reinterpret_cast< const GLvoid * >( reinterpret_cast< intp >( pBuf->m_pPseudoBuf ) + nBufOffset ), 
+				reinterpret_cast< const GLvoid * >( reinterpret_cast< intp >( pBuf->m_pPseudoBuf ) + nBufOffset ),
 				pBuf->m_nRevision );
 
 			if ( !( m_lastKnownVertexAttribMask & nMask ) )

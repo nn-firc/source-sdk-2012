@@ -1,4 +1,26 @@
-//============ Copyright (c) Valve Corporation, All rights reserved. ============
+//========= Copyright Valve Corporation, All rights reserved. ============//
+//                       TOGL CODE LICENSE
+//
+//  Copyright 2011-2014 Valve Corporation
+//  All Rights Reserved.
+//
+//  Permission is hereby granted, free of charge, to any person obtaining a copy
+//  of this software and associated documentation files (the "Software"), to deal
+//  in the Software without restriction, including without limitation the rights
+//  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+//  copies of the Software, and to permit persons to whom the Software is
+//  furnished to do so, subject to the following conditions:
+//
+//  The above copyright notice and this permission notice shall be included in
+//  all copies or substantial portions of the Software.
+//
+//  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+//  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+//  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+//  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+//  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+//  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+//  THE SOFTWARE.
 //
 // cglmprogram.cpp
 //
@@ -8,7 +30,7 @@
 
 #include "filesystem.h"
 #include "tier1/fmtstr.h"
-#include "tier1/keyvalues.h"
+#include "tier1/KeyValues.h"
 #include "tier0/fasttimer.h"
 
 #if GLMDEBUG && defined( _MSC_VER )
@@ -38,8 +60,8 @@ static int			gShaderLinkCount = 0;
 static CCycleCount	gShaderLinkQueryTime;
 CON_COMMAND( gl_shader_compile_time_dump, "Dump  stats shader compile time." )
 {
-	ConMsg( "Shader Compile Time: %ld ms (Count: %d) / Query: %ld ms \n", gShaderCompileTime.GetMilliseconds(), gShaderCompileCount, gShaderCompileQueryTime.GetMilliseconds() );
-	ConMsg( "Shader Link Time   : %ld ms (Count: %d) / Query: %ld ms \n", gShaderLinkTime.GetMilliseconds(), gShaderLinkCount, gShaderLinkQueryTime.GetMilliseconds() );
+	ConMsg( "Shader Compile Time: %u ms (Count: %d) / Query: %u ms \n", (uint32)gShaderCompileTime.GetMilliseconds(), gShaderCompileCount, (uint32)gShaderCompileQueryTime.GetMilliseconds() );
+	ConMsg( "Shader Link Time   : %u ms (Count: %d) / Query: %u ms \n", (uint32)gShaderLinkTime.GetMilliseconds(), gShaderLinkCount, (uint32)gShaderLinkQueryTime.GetMilliseconds() );
 }
 
 //===============================================================================
@@ -111,11 +133,11 @@ CGLMProgram::CGLMProgram( GLMContext *ctx, EGLMProgramType type )
 
 	m_nCentroidMask = 0;
 	m_nShadowDepthSamplerMask = 0;
-		
+
 	m_labelName[0]	= '\0';
 	m_labelIndex	= -1;
 	m_labelCombo	= -1;
-		
+
 	// no text has arrived yet.  That's done in SetProgramText.
 }
 
@@ -135,7 +157,8 @@ CGLMProgram::~CGLMProgram( )
 	GLMShaderDesc *glslDesc = &m_descs[kGLMGLSL];
 	if (glslDesc->m_object.glsl)
 	{
-		gGL->glDeleteShader( (uint)glslDesc->m_object.glsl );	// why do I need a cast here again ?
+		//gGL->glDeleteShader( (uint)glslDesc->m_object.glsl );	// why do I need a cast here again ?
+        gGL->glDeleteObjectARB( glslDesc->m_object.glsl ); // because you call the wrong api
 		glslDesc->m_object.glsl = 0;
 	}
 
@@ -366,7 +389,7 @@ void	CGLMProgram::Compile( EGLMProgramLang lang )
 			char *lastCharOfSection = section + arbDesc->m_textLength;	// actually it's one past the last textual character
 			lastCharOfSection;
 
-			#if GLMDEBUG
+			#if GLMDEBUG				
 				if(noisy)
 				{
 					GLMPRINTF((">-D- CGLMProgram::Compile submitting following text for ARB %s program (name %d) ---------------------",
@@ -766,10 +789,7 @@ bool CGLMProgram::CheckValidity( EGLMProgramLang lang )
 
 	if ( !bValid )
 	{
-		GLMDebugPrintf( "Compile of \"%s\" Failed:\n", m_shaderName );
-#if !GLM_FREE_SHADER_TEXT
-		Plat_DebugString( m_text );
-#endif
+		GLMDebugPrintf( "Compile of \"%s\" Failed:\n%s\n", m_shaderName, m_text ? m_text : "" );
 	}
 	AssertOnce( bValid );
 
@@ -795,7 +815,7 @@ void	CGLMProgram::LogSlow( EGLMProgramLang lang )
 				m_type==kGLMVertexProgram ? "VS" : "FS",
 				this,
 				lang==kGLMGLSL ? "GLSL" : "ARB",
-				(int)(lang==kGLMGLSL ? (int)desc->m_object.glsl : (int)desc->m_object.arb),
+				(int)(lang==kGLMGLSL ? (intp)desc->m_object.glsl : (int)desc->m_object.arb),
 				m_text
 		);
 #endif
@@ -809,7 +829,7 @@ void	CGLMProgram::LogSlow( EGLMProgramLang lang )
 					m_type==kGLMVertexProgram ? "VS" : "FS",
 					this,
 					lang==kGLMGLSL ? "GLSL" : "ARB",
-					(int)(lang==kGLMGLSL ? (int)desc->m_object.glsl : (int)desc->m_object.arb),
+					(int)(lang==kGLMGLSL ? (intp)desc->m_object.glsl : (int)desc->m_object.arb),
 					desc->m_slowMark+1
 			);
 		}
@@ -965,7 +985,7 @@ bool CGLMShaderPair::ValidateProgramPair()
 
 		if (m_valid)
 		{
-			gGL->glUseProgram( m_program );
+			gGL->glUseProgramObjectARB( m_program );
 
 			m_ctx->NewLinkedProgram();
 

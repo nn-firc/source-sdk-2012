@@ -1,4 +1,26 @@
-//============ Copyright (c) Valve Corporation, All rights reserved. ============
+//========= Copyright Valve Corporation, All rights reserved. ============//
+//                       TOGL CODE LICENSE
+//
+//  Copyright 2011-2014 Valve Corporation
+//  All Rights Reserved.
+//
+//  Permission is hereby granted, free of charge, to any person obtaining a copy
+//  of this software and associated documentation files (the "Software"), to deal
+//  in the Software without restriction, including without limitation the rights
+//  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+//  copies of the Software, and to permit persons to whom the Software is
+//  furnished to do so, subject to the following conditions:
+//
+//  The above copyright notice and this permission notice shall be included in
+//  all copies or substantial portions of the Software.
+//
+//  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+//  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+//  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+//  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+//  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+//  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+//  THE SOFTWARE.
 //
 // cglmtex.cpp
 //
@@ -12,18 +34,21 @@
 // memdbgon -must- be the last include file in a .cpp file.
 #include "tier0/memdbgon.h"
 
-
 #if defined(OSX)
 #include "appframework/ilaunchermgr.h"
 extern ILauncherMgr *g_pLauncherMgr;
 #endif
-
 
 //===============================================================================
 
 #if GLMDEBUG
 CGLMTex *g_pFirstCGMLTex;
 #endif
+
+ConVar gl_pow2_tempmem( "gl_pow2_tempmem", "0", FCVAR_INTERNAL_USE,
+                        "If set, use power-of-two allocations for temporary texture memory during uploads. "
+                        "May help with fragmentation on certain systems caused by heavy churn of large allocations." );
+
 #define TEXSPACE_LOGGING 0
 
 // encoding layout to an index where the bits read
@@ -116,8 +141,11 @@ const GLMTexFormatDesc g_formatDescTable[] =
 	{ "_V8U8",			D3DFMT_V8U8,			GL_RGB8,							0,									GL_RG,					GL_BYTE,						1, 2 },
 	
 	{ "_R32F",			D3DFMT_R32F,			GL_R32F,							GL_R32F,							GL_RED,					GL_FLOAT,						1, 4 },
+//$ TODO: Need to merge bitmap changes over from Dota to get these formats.
+#if 0
 	{ "_A2R10G10B10",	D3DFMT_A2R10G10B10,		GL_RGB10_A2,						GL_RGB10_A2,						GL_RGBA,				GL_UNSIGNED_INT_10_10_10_2,		1, 4 },
 	{ "_A2B10G10R10",	D3DFMT_A2B10G10R10,		GL_RGB10_A2,						GL_RGB10_A2,						GL_BGRA,				GL_UNSIGNED_INT_10_10_10_2,		1, 4 },
+#endif
 
 	/*
 		// NV shadow depth tex
@@ -199,8 +227,8 @@ bool	GLMGenTexels( GLMGenTexelParams *params )
 			InsertTexelComponentFixed( params->g, 4, temp32 );
 			InsertTexelComponentFixed( params->b, 4, temp32 );
 			chunksize = 2;
-		break;
-		
+		break;		
+
 		case D3DFMT_X8R8G8B8:	// B G R X
 			InsertTexelComponentFixed( 0.0, 8, temp32 );
 			InsertTexelComponentFixed( params->r, 8, temp32 );
@@ -676,7 +704,6 @@ void CGLMTexLayoutTable::DumpStats( )
 	}
 }
 
-
 ConVar gl_texmsaalog ( "gl_texmsaalog", "0");
 
 ConVar gl_rt_forcergba ( "gl_rt_forcergba", "1" );	// on teximage of a renderable tex, pass GL_RGBA in place of GL_BGRA
@@ -697,6 +724,7 @@ CGLMTex::CGLMTex( GLMContext *ctx, GLMTexLayout *layout, uint levels, const char
 	}
 	g_pFirstCGMLTex = this;
 #endif
+
 	// caller has responsibility to make 'ctx' current, but we check to be sure.
 	ctx->CheckCurrent();
 						
@@ -730,8 +758,7 @@ CGLMTex::CGLMTex( GLMContext *ctx, GLMTexLayout *layout, uint levels, const char
 	m_rtAttachCount = 0;
 	
 	// come up with a GL name for this texture.
-	// for MTGL friendliness, we should generate our own names at some point..
-	gGL->glGenTextures( 1, &m_texName );
+	m_texName = ctx->CreateTex( m_texGLTarget, m_layout->m_format->m_glIntFormat );
 
 	m_pBlitSrcFBO = NULL;
 	m_pBlitDstFBO = NULL;
@@ -795,8 +822,8 @@ CGLMTex::CGLMTex( GLMContext *ctx, GLMTexLayout *layout, uint levels, const char
 	
 	// OK, our texture now exists and is bound on the active TMU.  Not drawable yet though.
 		
-	// if not an RT, create backing storage and fill it
-	if ( !(layout->m_key.m_texFlags & kGLMTexRenderable) )
+	// Create backing storage and fill it
+	if ( !(layout->m_key.m_texFlags & kGLMTexRenderable) && m_texClientStorage )
 	{
 		m_backing = (char *)malloc( m_layout->m_storageTotalSize );
 		memset( m_backing, 0, m_layout->m_storageTotalSize );
@@ -899,7 +926,7 @@ CGLMTex::CGLMTex( GLMContext *ctx, GLMTexLayout *layout, uint levels, const char
 	#endif
 	
 	//if (pushRenderableSlices || pushTexSlices)
-    	if ( !( ( layout->m_key.m_texFlags & kGLMTexMipped ) && ( levels == m_layout->m_mipCount ) ) )
+	if ( !( ( layout->m_key.m_texFlags & kGLMTexMipped ) && ( levels == ( unsigned ) m_layout->m_mipCount ) ) )
 	{
 		for( int face=0; face <m_layout->m_faceCount; face++)
 		{
@@ -953,6 +980,7 @@ CGLMTex::~CGLMTex( )
 	}
 	m_pNextTex = m_pPrevTex = NULL;
 #endif
+
 	if ( !(m_layout->m_key.m_texFlags & kGLMTexRenderable) )
 	{
 		int formindex = sEncodeLayoutAsIndex( &m_layout->m_key );
@@ -992,7 +1020,7 @@ CGLMTex::~CGLMTex( )
 	// if all that is OK, then delete the underlying tex
 	if ( m_texName )
 	{
-		gGL->glDeleteTextures( 1, &m_texName );
+		m_ctx->DestroyTex( m_texGLTarget, m_layout, m_texName );
 		m_texName = 0;
 	}
 		
@@ -1045,10 +1073,11 @@ void CGLMTex::CalcTexelDataOffsetAndStrides( int sliceIndex, int x, int y, int z
 		yStride = format->m_bytesPerSquareChunk * (m_layout->m_slices[sliceIndex].m_xSize / format->m_chunkSize);
 		zStride = yStride * (m_layout->m_slices[sliceIndex].m_ySize / format->m_chunkSize);
 		
-		// compressed format.  scale the x,y values into chunks. Z isn't chunked.
+		// compressed format.  scale the x,y,z values into chunks.
 		// assert if any of them are not multiples of a chunk.
 		int chunkx = x / format->m_chunkSize;
 		int chunky = y / format->m_chunkSize;
+		int chunkz = z / format->m_chunkSize;
 		
 		if ( (chunkx * format->m_chunkSize) != x)
 		{
@@ -1060,9 +1089,14 @@ void CGLMTex::CalcTexelDataOffsetAndStrides( int sliceIndex, int x, int y, int z
 			GLMStop();
 		}
 		
+		if ( (chunkz * format->m_chunkSize) != z)
+		{
+			GLMStop();
+		}
+		
 		offset = chunkx * format->m_bytesPerSquareChunk;	// lateral offset
 		offset += (chunky * yStride);						// chunk row offset
-		offset += (z * zStride);						// should be zero for 2D tex		
+		offset += (chunkz * zStride);						// should be zero for 2D tex		
 	}
 	
 	*offsetOut	= offset;
@@ -1237,14 +1271,14 @@ void CGLMTex::WriteTexels( GLMTexLockDesc *desc, bool writeWholeSlice, bool noDa
 	{
 		m_maxActiveMip = desc->m_req.m_mip;
 
-		//gGL->glTexParameteri( target, GL_TEXTURE_MAX_LEVEL, desc->m_req.m_mip);
+		gGL->glTexParameteri( target, GL_TEXTURE_MAX_LEVEL, desc->m_req.m_mip);
 	}
 	
 	if (desc->m_req.m_mip < m_minActiveMip)
 	{
 		m_minActiveMip = desc->m_req.m_mip;
 		
-		//gGL->glTexParameteri( target, GL_TEXTURE_BASE_LEVEL, desc->m_req.m_mip);
+		gGL->glTexParameteri( target, GL_TEXTURE_BASE_LEVEL, desc->m_req.m_mip);
 	}
 
 	if (needsExpand)
@@ -1495,9 +1529,24 @@ void CGLMTex::Lock( GLMTexLockParams *params, char** addressOut, int* yStrideOut
 	// so step 1 is unambiguous.  If there's no backing storage, make some.
 	if (!m_backing)
 	{
-		m_backing = (char *)malloc( m_layout->m_storageTotalSize );
-		memset( m_backing, 0, m_layout->m_storageTotalSize );
-		
+		if ( gl_pow2_tempmem.GetBool() )
+		{
+			uint32_t unStoragePow2 = m_layout->m_storageTotalSize;
+			// Round up to next power of 2
+			unStoragePow2--;
+			unStoragePow2 |= unStoragePow2 >> 1;
+			unStoragePow2 |= unStoragePow2 >> 2;
+			unStoragePow2 |= unStoragePow2 >> 4;
+			unStoragePow2 |= unStoragePow2 >> 8;
+			unStoragePow2 |= unStoragePow2 >> 16;
+			unStoragePow2++;
+			m_backing = (char *)calloc( unStoragePow2, 1 );
+		}
+		else
+		{
+			m_backing = (char *)calloc( m_layout->m_storageTotalSize, 1 );
+		}
+
 		// clear the kSliceStorageValid bit on all slices
 		for( int i=0; i<m_layout->m_sliceCount; i++)
 		{
@@ -1710,8 +1759,7 @@ void CGLMTex::Unlock( GLMTexLockParams *params )
 		{
 			m_sliceFlags[slice] &= ~( kSliceLocked | kSliceFullyDirty );
 		}
-        
-        
+		
 		// The 3D texture upload code seems to rely on the host copy, probably
 		// because it reuploads the whole thing each slice; we only use 3D textures
 		// for the 32x32x32 colorpsace conversion lookups and debugging the problem
@@ -1742,12 +1790,13 @@ void CGLMTex::HandleSRGBMismatch( bool srgb, int &srgbFlipCount )
 
 		m_srgbFlipCount++;
 
+#if GLMDEBUG
 		//policy: print the ones that have flipped 1 or N times
-		bool print_allflips		= CommandLine()->FindParm("-glmspewallsrgbflips");
-		bool print_firstflips	= CommandLine()->FindParm("-glmspewfirstsrgbflips");
-		bool print_freqflips	= CommandLine()->FindParm("-glmspewfreqsrgbflips");
-		bool print_crawls		= CommandLine()->FindParm("-glmspewsrgbcrawls");
-		bool print_maxcrawls	= CommandLine()->FindParm("-glmspewsrgbmaxcrawls");
+		static bool print_allflips		= CommandLine()->FindParm("-glmspewallsrgbflips");
+		static bool print_firstflips	= CommandLine()->FindParm("-glmspewfirstsrgbflips");
+		static bool print_freqflips	= CommandLine()->FindParm("-glmspewfreqsrgbflips");
+		static bool print_crawls		= CommandLine()->FindParm("-glmspewsrgbcrawls");
+		static bool print_maxcrawls	= CommandLine()->FindParm("-glmspewsrgbmaxcrawls");
 		bool print_it = false;
 
 		if (print_allflips)
@@ -1809,6 +1858,7 @@ void CGLMTex::HandleSRGBMismatch( bool srgb, int &srgbFlipCount )
 			}
 #endif
 		}
+#endif // GLMDEBUG
 
 #if GLMDEBUG && 0
 		//"toi" = texture of interest
@@ -1821,7 +1871,8 @@ void CGLMTex::HandleSRGBMismatch( bool srgb, int &srgbFlipCount )
 #endif
 
 		// re-submit the tex unless we're stifling it
-		if (!CommandLine()->FindParm( "-glmnosrgbflips" ))
+		static bool s_nosrgbflips = CommandLine()->FindParm( "-glmnosrgbflips" );
+		if ( !s_nosrgbflips )
 		{
 			ResetSRGB( srgb, false );
 		}
@@ -1916,7 +1967,7 @@ void CGLMTex::ResetSRGB( bool srgb, bool noDataWrite )
 				WriteTexels( &desc, true, noDataWrite );	// write whole slice. and avoid pushing real bits if the caller requests (RT's)
 			}
 		}
-		
+
 		// put it back
 		m_ctx->BindTexToTMU( tmu0save, 0 );
 	}

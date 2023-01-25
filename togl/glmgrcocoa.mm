@@ -27,59 +27,8 @@
 // some glue to let GLMgr call into NS/ObjC classes.
 // ------------------------------------------------------------------------------------ //
 
-bool NewNSGLContext( unsigned long *attribs, PseudoNSGLContextPtr nsglShareCtx, PseudoNSGLContextPtr *nsglCtxOut, CGLContextObj *cglCtxOut )
-{
-	NSAutoreleasePool	*tempPool = [[NSAutoreleasePool alloc] init ];
-	NSOpenGLPixelFormat	*pixFmt = NULL; 
-	NSOpenGLContext		*nsglCtx = NULL;
-
-	bool result = true;		// optimism
-	
-	if (result)
-	{
-		pixFmt = [[NSOpenGLPixelFormat alloc] initWithAttributes:(NSOpenGLPixelFormatAttribute*)attribs];
-		if (!pixFmt)
-		{
-			Debugger();	// bad news
-			result = false;
-		}
-	}
-
-	if (result)
-	{
-		nsglCtx = [[NSOpenGLContext alloc] initWithFormat: pixFmt shareContext: (NSOpenGLContext*) nsglShareCtx ];
-		if (!nsglCtx)
-		{
-			Debugger();
-			result = false;
-		}
-	}
-
-	if (result)
-	{
-		[nsglCtx makeCurrentContext];
-		
-		*nsglCtxOut = nsglCtx;
-		*cglCtxOut = (CGLContextObj)[ (NSOpenGLContext*)nsglCtx CGLContextObj ];
-	}
-	else
-	{
-		*nsglCtxOut = NULL;
-		*cglCtxOut = NULL;
-	}
-
-	[tempPool release];
-	
-	return result;
-}
-
 CGLContextObj GetCGLContextFromNSGL( PseudoNSGLContextPtr nsglCtx )
 {
 	return (CGLContextObj)[ (NSOpenGLContext*)nsglCtx CGLContextObj];
-}
-
-void DelNSGLContext( PseudoNSGLContextPtr nsglCtx )
-{
-	[ (NSOpenGLContext*)nsglCtx release ];
 }
 
