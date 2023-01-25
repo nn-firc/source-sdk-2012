@@ -5,35 +5,42 @@ from waflib import Utils
 import os
 
 top = '.'
-PROJECT_NAME = 'launcher'
+PROJECT_NAME = 'togl'
 
 def options(opt):
 	# stub
 	return
 
 def configure(conf):
-	conf.define('LAUNCHERONLY',1)
+	conf.define('TOGL_DLL_EXPORT',1)
+	conf.env.append_unique('DEFINES',['strncpy=use_Q_strncpy_instead',
+		'_snprintf=use_Q_snprintf_instead'])
 
 def build(bld):
 	source = [
-		'../public/filesystem_init.cpp',
-		'launcher.cpp',
-		'reslistgenerator.cpp',
-		'android.cpp',
-		'../public/tier0/memoverride.cpp'
+		'dx9asmtogl2.cpp',
+		'dxabstract.cpp',
+		'glentrypoints.cpp',	
+		'glmgr.cpp',			
+		'glmgrbasics.cpp',	
+		'cglmtex.cpp',		
+		'cglmfbo.cpp',		
+		'cglmprogram.cpp',	
+		'cglmbuffer.cpp',	
+		'cglmquery.cpp',
+		'decompress.c'
 	]
 
 	includes = [
 		'.',
 		'../public',
 		'../public/tier0',
-		'../public/tier1',
-		'../common'
+		'../public/tier1'
 	] + bld.env.INCLUDES_SDL2
 
 	defines = []
 
-	libs = ['tier0','appframework','tier1','tier2','tier3','vstdlib','interfaces','steam_api','SDL2','togl']
+	libs = ['tier0','tier1','tier2','interfaces','vstdlib','mathlib']
 
 	install_path = bld.env.LIBDIR
 

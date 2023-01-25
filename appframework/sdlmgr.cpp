@@ -14,6 +14,9 @@
 #include "togl/rendermechanism.h"
 #include "tier0/fasttimer.h"
 
+#ifdef TOGLES
+#include <EGL/egl.h>
+#endif
 
 // NOTE: This has to be the last file included! (turned off below, since this is included like a header)
 #include "tier0/memdbgon.h"
@@ -46,6 +49,24 @@ COpenGLEntryPoints *gGL = NULL;
 
 #if defined( WIN32 ) && defined( DX_TO_GL_ABSTRACTION )
 #define PATH_MAX MAX_PATH
+#endif
+
+#if defined ANDROID || defined TOGLES
+static void *l_gl4es = NULL;
+static void *l_egl = NULL;
+static void *l_gles = NULL;
+
+typedef void *(*t_glGetProcAddress)( const char * );
+typedef EGLBoolean (*t_eglBindAPI)(EGLenum api);
+typedef EGLBoolean (*t_eglInitialize)(EGLDisplay display, EGLint *major, EGLint *minor);
+typedef EGLDisplay (*t_eglGetDisplay)(NativeDisplayType native_display);
+typedef char const *(*t_eglQueryString)(EGLDisplay display, EGLint name);
+
+t_eglBindAPI _eglBindAPI;
+t_glGetProcAddress _glGetProcAddress;
+t_eglInitialize _eglInitialize;
+t_eglGetDisplay _eglGetDisplay;
+t_eglQueryString _eglQueryString;
 #endif
 
 static void DebugPrintf( const char *pMsg, ... )
@@ -118,14 +139,35 @@ void	CheckGLError( int line )
 //-----------------------------------------------------------------------------
 #if !defined( DEDICATED )
 
+#ifdef TOGLES
+void *VoidFnPtrLookup_GlMgr( const char *fn, bool &okay, const bool bRequired, void *fallback)
+#else
 void *VoidFnPtrLookup_GlMgr( const char *libname, const char *fn, bool &okay, const bool bRequired, void *fallback)
+#endif
 {
 	void *retval = NULL;
+#ifndef TOGLES // TODO(nillerusr): remove this hack
 	if ((!okay) && (!bRequired))  // always look up if required (so we get a complete list of crucial missing symbols).
 		return NULL;
+#endif
 
 	// The SDL path would work on all these platforms, if we were using SDL there, too...
-#if defined( USE_SDL )
+#if defined ANDROID || defined TOGLES
+	// SDL does the right thing, so we never need to use tier0 in this case.
+	if( _glGetProcAddress )
+	{
+		retval = _glGetProcAddress(fn);
+
+		if( !retval && l_gles )
+			retval = dlsym( l_gles, fn );
+	}
+	//printf("CDynamicFunctionOpenGL: SDL_GL_GetProcAddress(\"%s\") returned %p\n", fn, retval);
+	if ((retval == NULL) && (fallback != NULL))
+	{
+		//printf("CDynamicFunctionOpenGL: Using fallback %p for \"%s\"\n", fallback, fn);
+		retval = fallback;
+	}
+#elif defined( USE_SDL )
 	// SDL does the right thing, so we never need to use tier0 in this case.
 	retval = SDL_GL_GetProcAddress(fn);
 	//printf("CDynamicFunctionOpenGL: SDL_GL_GetProcAddress(\"%s\") returned %p\n", fn, retval);
@@ -143,7 +185,11 @@ void *VoidFnPtrLookup_GlMgr( const char *libname, const char *fn, bool &okay, co
 	// Note that a non-NULL response doesn't mean it's safe to call the function!
 	//  You always have to check that the extension is supported;
 	//  an implementation MAY return NULL in this case, but it doesn't have to (and doesn't, with the DRI drivers).
+#ifdef TOGLES // TODO(nillerusr): remove this hack
+	okay = retval != NULL;
+#else
 	okay = (okay && (retval != NULL));
+#endif
 	if (bRequired && !okay)
 	{
 		// We can't continue execution, because one or more GL function pointers will be NULL.
@@ -470,7 +516,11 @@ InitReturnVal_t CSDLMgr::Init()
 			SDL_GL_SetAttribute( SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG );
 		}
 
+#if defined( TOGLES )
+		if (SDL_GL_LoadLibrary("libGLESv3.so") == -1)
+#else
 		if (SDL_GL_LoadLibrary(NULL) == -1)
+#endif
 			Error( "SDL_GL_LoadLibrary(NULL) failed: %s", SDL_GetError() );
 #endif
 	}
@@ -545,6 +595,59 @@ InitReturnVal_t CSDLMgr::Init()
 	*(attCursor++) = (int) (key); \
 	*(attCursor++) = (int) (value);
 
+#ifdef TOGLES
+	l_egl = dlopen("libEGL.so", RTLD_LAZY);
+	l_gles = dlopen("libGLESv3.so", RTLD_LAZY);
+
+	if( l_egl )
+	{
+		_glGetProcAddress = (t_glGetProcAddress)dlsym(l_egl, "eglGetProcAddress");
+	}
+
+	SET_GL_ATTR(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
+	SET_GL_ATTR(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
+	SET_GL_ATTR(SDL_GL_CONTEXT_MINOR_VERSION, 0);
+
+	_eglInitialize = (t_eglInitialize)dlsym(l_egl, "eglInitialize");
+	_eglGetDisplay = (t_eglGetDisplay)dlsym(l_egl, "eglGetDisplay");
+	_eglQueryString = (t_eglQueryString)dlsym(l_egl, "eglQueryString");
+
+	if( _eglInitialize && _eglInitialize && _eglQueryString )
+	{
+		EGLDisplay display = _eglGetDisplay(EGL_DEFAULT_DISPLAY);
+		if( _eglInitialize(display, NULL, NULL) != -1
+			&& strstr(_eglQueryString(display, EGL_EXTENSIONS) ,"EGL_KHR_gl_colorspace") )
+				SET_GL_ATTR(SDL_GL_FRAMEBUFFER_SRGB_CAPABLE, 1)
+	}
+#elif ANDROID
+	bool m_bOGL = false;
+
+	l_egl = dlopen("libEGL.so", RTLD_LAZY);
+
+	if( l_egl )
+	{
+		_eglBindAPI = (t_eglBindAPI)dlsym(l_egl, "eglBindAPI");
+
+		if( _eglBindAPI && _eglBindAPI(EGL_OPENGL_API) )
+		{
+			Msg("OpenGL support found!\n");
+			m_bOGL = true;
+		}
+	}
+
+
+	if( m_bOGL )
+	{
+		_glGetProcAddress = (t_glGetProcAddress)dlsym(l_egl, "eglGetProcAddress");
+		SET_GL_ATTR(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+	}
+	else
+	{
+		l_gl4es = dlopen("libgl4es.so", RTLD_LAZY);
+		_glGetProcAddress = (t_glGetProcAddress)dlsym(l_gl4es, "gl4es_glGetProcAddress");
+	}
+#endif
+
 	SET_GL_ATTR(SDL_GL_RED_SIZE, 8);
 	SET_GL_ATTR(SDL_GL_GREEN_SIZE, 8);
 	SET_GL_ATTR(SDL_GL_BLUE_SIZE, 8);
@@ -613,7 +716,11 @@ void CSDLMgr::Shutdown()
 #endif
 
 	if (gGL && m_readFBO)
+#ifdef TOGLES
+		gGL->glDeleteFramebuffers(1, &m_readFBO);
+#else
 		gGL->glDeleteFramebuffersEXT(1, &m_readFBO);
+#endif
 	m_readFBO = 0;
 
 	DestroyGameWindow();
@@ -758,11 +865,26 @@ bool CSDLMgr::CreateHiddenGameWindow( const char *pTitle, bool bWindowed, int wi
 
 	SDL_GL_MakeCurrent(m_Window, m_GLContext);
 
+#if defined ANDROID && !defined TOGLES
+	if( l_gl4es )
+	{
+		_glGetProcAddress = (t_glGetProcAddress)dlsym(l_gl4es, "gl4es_GetProcAddress" );
+		void (*initialize_gl4es)( );
+		initialize_gl4es = (void(*)())dlsym(l_gl4es, "initialize_gl4es" );
+		initialize_gl4es();
+	}
+#endif
+
 	// !!! FIXME: note for later...we never delete this context anywhere, I think.
 	// !!! FIXME:  when we do get around to that, don't forget to delete/NULL gGL!
 
+#ifdef TOGLES
+    static CDynamicFunctionOpenGL< true, const GLubyte *( APIENTRY *)(GLenum name), const GLubyte * > glGetString( "glGetString");
+    static CDynamicFunctionOpenGL< true, GLvoid ( APIENTRY *)(GLenum pname, GLint *params), GLvoid > glGetIntegerv( "glGetIntegerv");
+#else
     static CDynamicFunctionOpenGL< true, const GLubyte *( APIENTRY *)(GLenum name), const GLubyte * > glGetString( NULL, "glGetString");
     static CDynamicFunctionOpenGL< true, GLvoid ( APIENTRY *)(GLenum pname, GLint *params), GLvoid > glGetIntegerv( NULL, "glGetIntegerv");
+#endif
 
 	const char *pszString = ( const char * )glGetString(GL_VENDOR);
 	pszString = ( const char * )glGetString(GL_RENDERER);
@@ -778,11 +900,13 @@ bool CSDLMgr::CreateHiddenGameWindow( const char *pTitle, bool bWindowed, int wi
 		Warning( "SDL failed to create GL compatibility profile (whichProfile=%x!\n", whichProfile );
 	}
 
+#ifndef TOGLES
 	// If we specified -gl_debug, make sure the extension string is present now.
 	if ( CommandLine()->FindParm( "-gl_debug" ) )
 	{
 		Assert( V_strstr(pszString, "GL_ARB_debug_output") );
 	}
+#endif
 
 	gGL = GetOpenGLEntryPoints(VoidFnPtrLookup_GlMgr);
 
@@ -805,7 +929,11 @@ bool CSDLMgr::CreateHiddenGameWindow( const char *pTitle, bool bWindowed, int wi
 		DebugPrintf("\n");
 	}
 
+#ifdef TOGLES
+	gGL->glGenFramebuffers(1, &m_readFBO);
+#else
 	gGL->glGenFramebuffersEXT(1, &m_readFBO);
+#endif
 
 	gGL->glViewport(0, 0, width, height);    /* Reset The Current Viewport And Perspective Transformation */
 	gGL->glScissor(0, 0, width, height);    /* Reset The Current Viewport And Perspective Transformation */

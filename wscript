@@ -178,7 +178,7 @@ def define_platform(conf):
 def options(opt):
 	grp = opt.add_option_group('Common options')
 
-	grp.add_option('-8', '--64bits', action = 'store_true', dest = 'ALLOW64', default = False,
+	grp.add_option('-8', '--64bits', action = 'store_true', dest = 'ALLOW64', default = True,
 		help = 'allow targetting 64-bit engine [default: %default]')
 
 	grp.add_option('-d', '--dedicated', action = 'store_true', dest = 'DEDICATED', default = False,
@@ -222,10 +222,10 @@ def configure(conf):
 
 	define_platform(conf)
 
-#	if conf.env.TOGLES:
-#		projects['game'] += ['togles']
-#	elif conf.env.GL:
-	projects['game'] += ['togl']
+	if conf.env.TOGLES:
+		projects['game'] += ['togles']
+	elif conf.env.GL:
+		projects['game'] += ['togl']
 
 
 	if conf.env.DEST_OS in ['win32', 'linux', 'darwin'] and conf.env.DEST_CPU == 'x86_64':
@@ -375,9 +375,9 @@ def build(bld):
 	if bld.env.DEDICATED:
 		bld.add_subproject(projects['dedicated'])
 	else:
-#		if bld.env.TOGLES:
-#			projects['game'] += ['togles']
-#		elif bld.env.GL:
-		projects['game'] += ['togl']
+		if bld.env.TOGLES:
+			projects['game'] += ['togles']
+		elif bld.env.GL:
+			projects['game'] += ['togl']
 
 		bld.add_subproject(projects['game'])

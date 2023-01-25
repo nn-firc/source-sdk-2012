@@ -451,6 +451,16 @@ CSysModule *Sys_LoadModule( const char *pModuleName )
 
 		bool bUseLibPrefix = false;
 
+#ifdef ANDROID
+		struct stat statBuf;
+		char *libPath = getenv("APP_LIB_PATH");
+
+
+		Q_snprintf(szAbsoluteModuleName, sizeof(szAbsoluteModuleName), "%s/lib%s", libPath ,pModuleName);
+		if( stat(szAbsoluteModuleName, &statBuf) != 0 )
+			Q_snprintf(szAbsoluteModuleName, sizeof(szAbsoluteModuleName), "%s/%s", libPath ,pModuleName);
+#else
+
 #ifdef POSIX
 		struct stat statBuf;
 		Q_snprintf(szModuleName, sizeof(szModuleName), "bin/lib%s", pModuleName);
@@ -461,6 +471,7 @@ CSysModule *Sys_LoadModule( const char *pModuleName )
 			Q_snprintf( szAbsoluteModuleName, sizeof(szAbsoluteModuleName), "%s/bin/lib%s", szCwd, pModuleName );
 		else
 			Q_snprintf( szAbsoluteModuleName, sizeof(szAbsoluteModuleName), "%s/bin/%s", szCwd, pModuleName );
+#endif
 
 		hDLL = Sys_LoadLibrary( szAbsoluteModuleName );
 #endif // _PS3

@@ -98,6 +98,11 @@ int MessageBox( HWND hWnd, const char *message, const char *header, unsigned uTy
 #define RELAUNCH_FILE "/tmp/hl2_relaunch"
 #endif
 
+#if defined ( ANDROID )
+#include <android/log.h>
+#include "jni.h"
+#endif
+
 #if defined( DEVELOPMENT_ONLY ) || defined( ALLOW_TEXT_MODE )
 #define ALLOW_MULTI_CLIENTS_PER_MACHINE 1
 #endif
@@ -303,7 +308,11 @@ const char * GetExecutableFilename()
 //-----------------------------------------------------------------------------
 char *GetBaseDirectory( void )
 {
+#ifdef ANDROID
+	return getenv("VALVE_GAME_PATH");
+#else
 	return g_szBasedir;
+#endif
 }
 #else
 const char *GetBaseDirectory( void )
@@ -1115,8 +1124,10 @@ bool GrabSourceMutex()
 	CRC32_Init(&gameCRC);
 	CRC32_ProcessBuffer( &gameCRC, (void *)pchGameParam, Q_strlen( pchGameParam ) );
 	CRC32_Final( &gameCRC );
-	
-#ifdef LINUX
+
+#ifdef ANDROID
+	return true;
+#elif defined (LINUX)
 	/*
 	 * Linux
 	 */
@@ -1467,6 +1478,8 @@ public:
 };
 #endif
 
+extern void InitGL4ES();
+
 //-----------------------------------------------------------------------------
 // Purpose: The real entry point for the application
 // Input  : hInstance - 
@@ -1483,6 +1496,10 @@ int LauncherMain( int argc, char **argv )
 extern "C" DLL_EXPORT int LauncherMain( int argc, char **argv )
 #endif
 {
+#if defined LINUX && defined USE_SDL && defined TOGLES
+	SDL_SetHint(SDL_HINT_VIDEO_X11_FORCE_EGL, "1");
+#endif
+
 #ifdef WIN32
 	SetAppInstance( hInstance );
 #endif
