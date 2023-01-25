@@ -17,7 +17,7 @@ CSGO Assets: DepotID: 731 ManifestID: 7043469183016184477
 
 2. Install pacages:
 ```
-SDL2 SDL2_mixer rt openal curl ssl z crypto dl pthread fontconfig freetype GL python
+SDL2 rt curl ssl z crypto dl pthread fontconfig freetype GL python
 ```
 
 3. Waf build:
