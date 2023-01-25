@@ -365,7 +365,7 @@ COpenGLEntryPoints::COpenGLEntryPoints(const char *libname)
 	// !!! FIXME:  GL_NV_fence code entirely).
  	if ((m_bHave_OpenGL) && ((!m_bHave_GL_NV_fence) && (!m_bHave_GL_ARB_sync) && (!m_bHave_GL_APPLE_fence)))
  	{
- 		Error( "Required OpenGL extension \"GL_NV_fence\", \"GL_ARB_sync\", or \"GL_APPLE_fence\" is not supported. Please upgrade your OpenGL driver." );
+ 		Warning( "Required OpenGL extension \"GL_NV_fence\", \"GL_ARB_sync\", or \"GL_APPLE_fence\" is not supported. Please upgrade your OpenGL driver.\n" );
  	}
 
 	// same extension, different name.
@@ -462,7 +462,7 @@ COpenGLEntryPoints::COpenGLEntryPoints(const char *libname)
 #ifndef OSX
 	if ( !m_bHave_GL_EXT_texture_sRGB_decode )
  	{
- 		Error( "Required OpenGL extension \"GL_EXT_texture_sRGB_decode\" is not supported. Please update your OpenGL driver.\n" );
+ 		Warning( "Required OpenGL extension \"GL_EXT_texture_sRGB_decode\" is not supported. Please update your OpenGL driver.\n" );
  	}
 #endif
 }
