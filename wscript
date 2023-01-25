@@ -318,6 +318,7 @@ def configure(conf):
 			conf.check(lib='ssl', uselib_store='SSL')
 		conf.check(lib='curl', uselib_store='CURL')
 		conf.check(lib='android_support', uselib_store='ANDROID_SUPPORT')
+		conf.check(lib='expat', uselib_store='EXPAT')
 
 	if conf.env.DEST_OS != 'win32':
 		conf.check_cc(lib='dl', mandatory=False)

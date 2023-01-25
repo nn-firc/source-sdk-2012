@@ -56,7 +56,7 @@ SendProp SendPropBool(
 	int sizeofVar )
 {
 	Assert( sizeofVar == sizeof( bool ) );
-	return SendPropInt( pVarName, offset, sizeofVar, 1, SPROP_UNSIGNED );
+	return SendPropInt( (char *)pVarName, offset, sizeofVar, 1, SPROP_UNSIGNED );
 }
 
 
@@ -67,12 +67,12 @@ SendProp SendPropEHandle(
 	int sizeofVar,
 	SendVarProxyFn proxyFn )
 {
-	return SendPropInt( pVarName, offset, sizeofVar, NUM_NETWORKED_EHANDLE_BITS, SPROP_UNSIGNED|flags, proxyFn );
+	return SendPropInt( (char *)pVarName, offset, sizeofVar, NUM_NETWORKED_EHANDLE_BITS, SPROP_UNSIGNED|flags, proxyFn );
 }
 
 SendProp SendPropIntWithMinusOneFlag( const char *pVarName, int offset, int sizeofVar, int nBits, SendVarProxyFn proxyFn )
 {
-	return SendPropInt( pVarName, offset, sizeofVar, nBits, SPROP_UNSIGNED, proxyFn );
+	return SendPropInt( (char *)pVarName, offset, sizeofVar, nBits, SPROP_UNSIGNED, proxyFn );
 }
 
 //-----------------------------------------------------------------------------
@@ -135,7 +135,7 @@ SendProp SendPropTime(
 {
 //	return SendPropInt( pVarName, offset, sizeofVar, TIME_BITS, 0, SendProxy_Time );
 	// FIXME:  Re-enable above when it doesn't cause lots of deltas
-	return SendPropFloat( pVarName, offset, sizeofVar, -1, SPROP_NOSCALE );
+	return SendPropFloat( (char *)pVarName, offset, sizeofVar, -1, SPROP_NOSCALE );
 }
 
 #if !defined( NO_ENTITY_PREDICTION ) && defined( USE_PREDICTABLEID )
@@ -175,7 +175,7 @@ SendProp SendPropPredictableId(
 	int offset,
 	int sizeofVar )
 {
-	return SendPropInt( pVarName, offset, sizeofVar, PREDICTABLE_ID_BITS, SPROP_UNSIGNED, SendProxy_PredictableIdToInt );
+	return SendPropInt( (char *)pVarName, offset, sizeofVar, PREDICTABLE_ID_BITS, SPROP_UNSIGNED, SendProxy_PredictableIdToInt );
 }
 
 #endif
@@ -183,7 +183,7 @@ SendProp SendPropPredictableId(
 void SendProxy_StringT_To_String( const SendProp *pProp, const void *pStruct, const void *pVarData, DVariant *pOut, int iElement, int objectID )
 {
 	string_t &str = *((string_t*)pVarData);
-	pOut->m_pString = STRING( str );
+	pOut->m_pString = (char *)STRING( (string_t)str );
 }
 
 
@@ -192,7 +192,7 @@ SendProp SendPropStringT( const char *pVarName, int offset, int sizeofVar )
 	// Make sure it's the right type.
 	Assert( sizeofVar == sizeof( string_t ) );
 
-	return SendPropString( pVarName, offset, DT_MAX_STRING_BUFFERSIZE, 0, SendProxy_StringT_To_String );
+	return SendPropString( (char *)pVarName, offset, DT_MAX_STRING_BUFFERSIZE, 0, SendProxy_StringT_To_String );
 }
 
 
