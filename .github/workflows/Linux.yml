@@ -1,4 +1,4 @@
-name: Build
+name: Linux
 
 on:
   push:
@@ -24,10 +24,10 @@ jobs:
 
     - uses: actions/upload-artifact@v3
       with:
-            name: Release 64bits
+            name: Release x64
             path: /home/runner/work/csgo-sdk-2017/csgo-sdk-2017/csgo-release
 
     - uses: actions/upload-artifact@v3
       with:
-            name: Debug 64bits
+            name: Debug x64
             path: /home/runner/work/csgo-sdk-2017/csgo-sdk-2017/csgo-debug
