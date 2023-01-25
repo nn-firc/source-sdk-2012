@@ -1,28 +1,6 @@
-//========= Copyright Valve Corporation, All rights reserved. ============//
-//                       TOGL CODE LICENSE
+//============ Copyright (c) Valve Corporation, All rights reserved. ============
 //
-//  Copyright 2011-2014 Valve Corporation
-//  All Rights Reserved.
-//
-//  Permission is hereby granted, free of charge, to any person obtaining a copy
-//  of this software and associated documentation files (the "Software"), to deal
-//  in the Software without restriction, including without limitation the rights
-//  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-//  copies of the Software, and to permit persons to whom the Software is
-//  furnished to do so, subject to the following conditions:
-//
-//  The above copyright notice and this permission notice shall be included in
-//  all copies or substantial portions of the Software.
-//
-//  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-//  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-//  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-//  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-//  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-//  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-//  THE SOFTWARE.
-//
-// cglmbuffer.cpp
+// cglmbuffer.cpp 
 //
 //===============================================================================
 
@@ -31,7 +9,7 @@
 // memdbgon -must- be the last include file in a .cpp file.
 #include "tier0/memdbgon.h"
 
-// 7LS TODO : took out cmdline here
+// LINUXTODO : took out cmdline here
 bool g_bUsePseudoBufs = false; //( Plat_GetCommandLineA() ) ? ( strstr( Plat_GetCommandLineA(), "-gl_enable_pseudobufs" ) != NULL ) : false;
 #ifdef OSX
 // Significant perf degradation on some OSX parts if static buffers not disabled
@@ -1097,7 +1075,7 @@ void CGLMBuffer::Unlock( int nActualSize, const void *pActualData )
 		m_nPinnedMemoryOfs = -1;
 	}
 	else
-#endif // !OSX
+#endif // OSX
 	if ( m_bUsingPersistentBuffer )
 	{
 		if ( nActualSize )
@@ -1108,7 +1086,7 @@ void CGLMBuffer::Unlock( int nActualSize, const void *pActualData )
 			//DevMsg( "   <-- actualSize=%d, persistOffset = %d\n", nActualSize, pTempBuffer->GetOffset() );
 		}
 	}
-	else if ( m_pStaticBuffer )
+    else if ( m_pStaticBuffer )
 	{
 #if TOGL_SUPPORT_NULL_DEVICE
 		if ( !g_bNullD3DDevice )

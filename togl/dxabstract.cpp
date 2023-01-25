@@ -1,31 +1,10 @@
-//========= Copyright Valve Corporation, All rights reserved. ============//
-//                       TOGL CODE LICENSE
-//
-//  Copyright 2011-2014 Valve Corporation
-//  All Rights Reserved.
-//
-//  Permission is hereby granted, free of charge, to any person obtaining a copy
-//  of this software and associated documentation files (the "Software"), to deal
-//  in the Software without restriction, including without limitation the rights
-//  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-//  copies of the Software, and to permit persons to whom the Software is
-//  furnished to do so, subject to the following conditions:
-//
-//  The above copyright notice and this permission notice shall be included in
-//  all copies or substantial portions of the Software.
-//
-//  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-//  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-//  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-//  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-//  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-//  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-//  THE SOFTWARE.
+//================ Copyright (c) Valve Corporation. All Rights Reserved. =================
 //
 // dxabstract.cpp
 //
 //==================================================================================================
 #include "togl/rendermechanism.h"
+#include "tier0/dynfunction.h"
 #include "tier0/vprof_telemetry.h"
 #include "tier0/dbg.h"
 #include "tier0/threadtools.h"
@@ -36,9 +15,7 @@
 #include "mathlib/vmatrix.h"
 #include "materialsystem/IShader.h"
 
-#include "glmgr_flush.inl"
-
-#if defined(OSX) || defined(LINUX) || (defined (WIN32) && defined( DX_TO_GL_ABSTRACTION )) || defined(PLATFORM_BSD)
+#if defined(OSX) || defined(LINUX) || (defined (WIN32) && defined( DX_TO_GL_ABSTRACTION ))
 	#include "appframework/ilaunchermgr.h"
 	extern ILauncherMgr *g_pLauncherMgr;
 #endif
@@ -160,7 +137,7 @@ const float& D3DXMATRIX::operator()( int row, int column ) const
 
 bool D3DXMATRIX::operator != ( CONST D3DXMATRIX& src ) const 
 {
-	return V_memcmp( (void*)this, (void*)&src, sizeof(this) ) != 0;
+ 	return V_memcmp( (void*)this, (void*)&src, sizeof(this) ) != 0;
 }
 
 // ------------------------------------------------------------------------------------------------------------------------------ //
@@ -1172,7 +1149,8 @@ static void FillD3DCaps9( const GLMRendererInfoFields &glmRendererInfo, D3DCAPS9
 	pCaps->MaxUserClipPlanes			=	2;		// assume good news
 
 	// is user asking for it to be off ?
-	if ( CommandLine()->CheckParm( "-nouserclip" ) )
+	if ( CommandLine()->CheckParm( "-nouserclip" ) ||
+         ( !glmRendererInfo.m_hasNativeClipVertexMode ) )
 	{
 		pCaps->MaxUserClipPlanes		=	0;
 	}
@@ -1252,7 +1230,7 @@ HRESULT IDirect3D9::GetAdapterIdentifier( UINT Adapter, DWORD Flags, D3DADAPTER_
 #ifndef OSX
 	if( glmRendererInfo.m_rendererID )
 #endif
-	{
+    {
 		const char *pRenderer = GLMDecode( eGL_RENDERER, glmRendererInfo.m_rendererID & 0x00FFFF00 );
 
 		Q_snprintf( pIdentifier->Driver, sizeof(pIdentifier->Driver), "OpenGL %s (%08x)",
@@ -1266,7 +1244,7 @@ HRESULT IDirect3D9::GetAdapterIdentifier( UINT Adapter, DWORD Flags, D3DADAPTER_
 #ifndef OSX
 	else
 	{
-		static CDynamicFunctionOpenGL< true, const GLubyte *( APIENTRY *)(GLenum name), const GLubyte * > glGetString("glGetString");
+		static CDynamicFunctionOpenGL< true, const GLubyte *( APIENTRY *)(GLenum name), const GLubyte * > glGetString( NULL, "glGetString" );
 
 		const char *pszStringVendor = ( const char * )glGetString( GL_VENDOR );		// NVIDIA Corporation
 		const char *pszStringRenderer = ( const char * )glGetString( GL_RENDERER );   // GeForce GTX 680/PCIe/SSE2
@@ -1278,8 +1256,8 @@ HRESULT IDirect3D9::GetAdapterIdentifier( UINT Adapter, DWORD Flags, D3DADAPTER_
 			pszStringVendor, pszStringRenderer, pszStringVersion,
 			glmDisplayInfo.m_displayPixelWidth, glmDisplayInfo.m_displayPixelHeight );
 	}
-#endif // !OSX
-
+#endif
+    
 	pIdentifier->VendorId				= glmRendererInfo.m_pciVendorID;	// 4318;
 	pIdentifier->DeviceId				= glmRendererInfo.m_pciDeviceID;	// 401;
 	pIdentifier->SubSysId				= 0;								// 3358668866;
@@ -1357,8 +1335,6 @@ HRESULT IDirect3D9::CheckDeviceFormat(UINT Adapter,D3DDEVTYPE DeviceType,D3DFORM
 													legalUsage |=	D3DUSAGE_RENDERTARGET | D3DUSAGE_QUERY_SRGBREAD | D3DUSAGE_QUERY_SRGBWRITE | D3DUSAGE_QUERY_POSTPIXELSHADER_BLENDING;
 						break;
 
-//$ TODO: Need to merge bitmap changes over from Dota to get these formats.
-#if 0
 						case D3DFMT_A2R10G10B10:	legalUsage	=	D3DUSAGE_DYNAMIC | D3DUSAGE_AUTOGENMIPMAP | D3DUSAGE_QUERY_FILTER;
 													legalUsage |=	D3DUSAGE_RENDERTARGET | D3DUSAGE_QUERY_SRGBREAD | D3DUSAGE_QUERY_SRGBWRITE | D3DUSAGE_QUERY_POSTPIXELSHADER_BLENDING;
 						break;
@@ -1366,7 +1342,6 @@ HRESULT IDirect3D9::CheckDeviceFormat(UINT Adapter,D3DDEVTYPE DeviceType,D3DFORM
 						case D3DFMT_A2B10G10R10:	legalUsage	=	D3DUSAGE_DYNAMIC | D3DUSAGE_AUTOGENMIPMAP | D3DUSAGE_QUERY_FILTER;
 													legalUsage |=	D3DUSAGE_RENDERTARGET | D3DUSAGE_QUERY_SRGBREAD | D3DUSAGE_QUERY_SRGBWRITE | D3DUSAGE_QUERY_POSTPIXELSHADER_BLENDING;
 						break;
-#endif
 
 						case D3DFMT_R32F:			legalUsage	=	D3DUSAGE_DYNAMIC | D3DUSAGE_AUTOGENMIPMAP | D3DUSAGE_QUERY_FILTER;
 													legalUsage |=	D3DUSAGE_RENDERTARGET | D3DUSAGE_QUERY_SRGBREAD | D3DUSAGE_QUERY_SRGBWRITE | D3DUSAGE_QUERY_POSTPIXELSHADER_BLENDING;
@@ -1732,13 +1707,13 @@ HRESULT IDirect3D9::CreateDevice(UINT Adapter,D3DDEVTYPE DeviceType,VD3DHWND hFo
 	GL_BATCH_PERF_CALL_TIMER;
 
 #if GLMDEBUG
-	GLMDebugPrintf( "WARNING: GLMEBUG is 1, perf. is going to be low!" );
-	Warning( "WARNING: GLMEBUG is 1, perf. is going to be low!" );
+	Plat_DebugString( "WARNING: GLMEBUG is 1, perf. is going to be low!");
+	Warning( "WARNING: GLMEBUG is 1, perf. is going to be low!");
 #endif
 #if !TOGL_SUPPORT_NULL_DEVICE	
 	if (DeviceType == D3DDEVTYPE_NULLREF)
 	{
-		Error( "Must define TOGL_SUPPORT_NULL_DEVICE to use the NULL device" );
+		Error("Must define TOGL_SUPPORT_NULL_DEVICE	to use the NULL device");
 		DebuggerBreak();
 		return E_FAIL;
 	}
@@ -1876,7 +1851,7 @@ HRESULT IDirect3DQuery9::GetData(void* pData,DWORD dwSize,DWORD dwGetDataFlags)
 	GL_BATCH_PERF_CALL_TIMER;
 	Assert( m_device->m_nValidMarker == D3D_DEVICE_VALID_MARKER );
 	HRESULT	result = S_FALSE ;
-	uintp nCurThreadId = ThreadGetCurrentId();
+	DWORD nCurThreadId = ThreadGetCurrentId();
 
 	// Make sure calling thread owns the GL context.
 	Assert( m_ctx->m_nCurOwnerThreadId == nCurThreadId );
@@ -2474,8 +2449,8 @@ HRESULT	IDirect3DDevice9::Create( IDirect3DDevice9Params *params )
 	InitStates();
 
 	GLScissorEnable_t		defScissorEnable		= { true };
-	GLScissorBox_t			defScissorBox			= { 0,0, (GLsizei)m_params.m_presentationParameters.BackBufferWidth, (GLsizei)m_params.m_presentationParameters.BackBufferHeight };
-	GLViewportBox_t			defViewportBox			= { 0,0, (GLsizei)m_params.m_presentationParameters.BackBufferWidth, (GLsizei)m_params.m_presentationParameters.BackBufferHeight, m_params.m_presentationParameters.BackBufferWidth | ( m_params.m_presentationParameters.BackBufferHeight << 16 ) };
+	GLScissorBox_t			defScissorBox			= { 0,0, m_params.m_presentationParameters.BackBufferWidth,m_params.m_presentationParameters.BackBufferHeight };
+	GLViewportBox_t			defViewportBox			= { 0,0, m_params.m_presentationParameters.BackBufferWidth,m_params.m_presentationParameters.BackBufferHeight, m_params.m_presentationParameters.BackBufferWidth | ( m_params.m_presentationParameters.BackBufferHeight << 16 ) };
 	GLViewportDepthRange_t	defViewportDepthRange	= { 0.1, 1000.0 };
 	GLCullFaceEnable_t		defCullFaceEnable		= { true };
 	GLCullFrontFace_t		defCullFrontFace		= { GL_CCW };
@@ -2701,8 +2676,8 @@ HRESULT IDirect3DDevice9::Reset(D3DPRESENT_PARAMETERS* pPresentationParameters)
 	InitStates();
 
 	GLScissorEnable_t		defScissorEnable		= { true };
-	GLScissorBox_t			defScissorBox			= { 0,0, (GLsizei)m_params.m_presentationParameters.BackBufferWidth, (GLsizei)m_params.m_presentationParameters.BackBufferHeight };
-	GLViewportBox_t			defViewportBox			= { 0,0, (GLsizei)m_params.m_presentationParameters.BackBufferWidth, (GLsizei)m_params.m_presentationParameters.BackBufferHeight, m_params.m_presentationParameters.BackBufferWidth | ( m_params.m_presentationParameters.BackBufferHeight << 16 ) };
+	GLScissorBox_t			defScissorBox			= { 0,0, m_params.m_presentationParameters.BackBufferWidth,m_params.m_presentationParameters.BackBufferHeight };
+	GLViewportBox_t			defViewportBox			= { 0,0, m_params.m_presentationParameters.BackBufferWidth,m_params.m_presentationParameters.BackBufferHeight, m_params.m_presentationParameters.BackBufferWidth | ( m_params.m_presentationParameters.BackBufferHeight << 16 ) };
 	GLViewportDepthRange_t	defViewportDepthRange	= { 0.1, 1000.0 };
 	GLCullFaceEnable_t		defCullFaceEnable		= { true };
 	GLCullFrontFace_t		defCullFrontFace		= { GL_CCW };
@@ -2760,7 +2735,8 @@ HRESULT IDirect3DDevice9::SetViewport(CONST D3DVIEWPORT9* pViewport)
 
 HRESULT IDirect3DDevice9::GetViewport( D3DVIEWPORT9* pViewport )
 {
-	// 7LS - unfinished, used in scaleformuirenderimpl.cpp (only width and height required)
+	// TODO - GetViewport() only used in scaleformuirenderimpl.cpp where only width and height required - unfinished otherwise.
+
 	GL_BATCH_PERF_CALL_TIMER;
 	Assert( GetCurrentOwnerThreadId() == ThreadGetCurrentId() );
 	GLMPRINTF(("-X- IDirect3DDevice9::GetViewport " ));
@@ -3685,7 +3661,6 @@ HRESULT IDirect3DDevice9::StretchRect(IDirect3DSurface9* pSourceSurface,CONST RE
 // This returns a mask, since multiple GLSL "varyings" can be tagged with centroid
 static uint32 CentroidMaskFromName( bool bPixelShader, const char *pName )
 {
-	// Important note: This code has been customized for TF2 - don't blindly merge it into other branches!
 	if ( !pName )
 		return 0;
 	
@@ -3702,11 +3677,11 @@ static uint32 CentroidMaskFromName( bool bPixelShader, const char *pName )
 		}
 		else if ( V_stristr( pName, "water_ps" ) )
 		{
-			return 0xC0;
+			return 0xE0;
 		}
 		else if ( V_stristr( pName, "shadow_ps" ) )
 		{
-			return 0x1F;
+			return 0xE;
 		}
 		else if ( V_stristr( pName, "ShatteredGlass_ps" ) )
 		{
@@ -3736,11 +3711,11 @@ static uint32 CentroidMaskFromName( bool bPixelShader, const char *pName )
 		}
 		else if ( V_stristr( pName, "water_vs" ) )
 		{
-			return 0xC0;
+			return 0xE0;
 		}
 		else if ( V_stristr( pName, "shadow_vs" ) )
 		{
-			return 0x1F;
+			return 0xE;
 		}
 		else if ( V_stristr( pName, "ShatteredGlass_vs" ) )
 		{
@@ -3762,15 +3737,11 @@ static uint32 CentroidMaskFromName( bool bPixelShader, const char *pName )
 static int ShadowDepthSamplerMaskFromName( const char *pName )
 {
 	if ( !pName )
-		return 0;
-
+		return 0;	
+	
 	if ( V_stristr( pName, "water_ps" ) )
 	{
 		return (1<<7);
-	}
-	else if ( V_stristr( pName, "skin_ps" ) )
-	{
-		return (1<<4);
 	}
 	else if ( V_stristr( pName, "infected_ps" ) )
 	{
@@ -3798,7 +3769,7 @@ static int ShadowDepthSamplerMaskFromName( const char *pName )
 	}
 	else if ( V_stristr( pName, "worldtwotextureblend_ps" ) ) 
 	{
-		return (1<<2);
+		return (1<<7);
 	}
 	else if ( V_stristr( pName, "teeth_flashlight_ps" ) ) 
 	{
@@ -3812,31 +3783,10 @@ static int ShadowDepthSamplerMaskFromName( const char *pName )
 	{
 		return (1<<15);
 	}
-	else if ( V_stristr( pName, "deferred_global_light_ps" ) )
+	else if ( V_stristr( pName, "character_ps" ) )
 	{
-		return (1<<14);
+		return (1 << 8);
 	}
-	else if ( V_stristr( pName, "global_lit_simple_ps" ) )
-	{
-		return (1<<14);
-	}
-	else if ( V_stristr( pName, "lightshafts_ps" ) )
-	{
-		return (1<<1);
-	}
-	else if ( V_stristr( pName, "multiblend_combined_ps" ) )
-	{
-		return (1<<14);
-	}
-	else if ( V_stristr( pName, "multiblend_ps" ) )
-	{
-		return (1<<14);
-	}
-	else if ( V_stristr( pName, "customhero_ps" ) )
-	{
-		return (1<<14);
-	}
-
 	// This shader doesn't have a shadow depth map sampler
 	return 0;
 }
@@ -3861,7 +3811,9 @@ HRESULT IDirect3DDevice9::CreatePixelShader(CONST DWORD* pFunction,IDirect3DPixe
 	{
 		if ( *pCentroidMask != nCentroidMask )
 		{
-			GLMDebugPrintf( "IDirect3DDevice9::CreatePixelShader: shaderapi's centroid mask (0x%08X) differs from mask derived from shader name (0x%08X) for shader %s\n", *pCentroidMask, nCentroidMask, pDebugLabel );
+			char buf[256];
+			V_snprintf( buf, sizeof( buf ), "IDirect3DDevice9::CreatePixelShader: shaderapi's centroid mask (0x%08X) differs from mask derived from shader name (0x%08X) for shader %s\n", *pCentroidMask, nCentroidMask, pDebugLabel );
+			Plat_DebugString( buf );
 		}
 		// It would be great if we could use these centroid masks passed in from shaderapi - but unfortunately they're only available for pixel shaders, and we also need to compute matching masks for vertex shaders!
 		//nCentroidMask = *pCentroidMask;
@@ -4105,7 +4057,9 @@ HRESULT IDirect3DDevice9::SetPixelShaderConstantFNonInline(UINT StartRegister,CO
 	const uint nRegToWatch = 3;
 	if ( ( ( StartRegister + Vector4fCount ) > nRegToWatch ) && ( StartRegister <= nRegToWatch ) )
 	{
-		GLMDebugPrintf( "-- %f %f %f %f\n", pConstantData[(nRegToWatch - StartRegister)*4+0], pConstantData[(nRegToWatch - StartRegister)*4+1], pConstantData[(nRegToWatch - StartRegister)*4+2], pConstantData[(nRegToWatch - StartRegister)*4+3] );
+		char buf[256];
+		V_snprintf( buf, sizeof(buf ), "-- %f %f %f %f\n", pConstantData[(nRegToWatch - StartRegister)*4+0], pConstantData[(nRegToWatch - StartRegister)*4+1], pConstantData[(nRegToWatch - StartRegister)*4+2], pConstantData[(nRegToWatch - StartRegister)*4+3] );
+		Plat_DebugString( buf );
 	}
 #endif
 	m_ctx->SetProgramParametersF( kGLMFragmentProgram, StartRegister, (float *)pConstantData, Vector4fCount );
@@ -4186,7 +4140,7 @@ HRESULT IDirect3DDevice9::CreateVertexShader(CONST DWORD* pFunction, IDirect3DVe
 			// If using GLSL, enabling a uniform buffer specifically for bone registers. (Not currently supported with ARB shaders, which are not optimized at all anyway.)
 			glslVertexShaderOptions |= D3DToGL_OptionGenerateBoneUniformBuffer;
 		}
-
+        
 		g_D3DToOpenGLTranslatorGLSL.TranslateShader( (uint32 *) pFunction, &tempbuf, &bVertexShader, glslVertexShaderOptions, -1, nCentroidMask, pDebugLabel );
 			
 		transbuf.PutString( (char*)tempbuf.Base() );
@@ -5296,11 +5250,9 @@ HRESULT IDirect3DDevice9::DrawPrimitive(D3DPRIMITIVETYPE PrimitiveType,UINT Star
 	return S_OK;
 }
 
-// 7LS - TODO
 #ifndef DX_TO_GL_ABSTRACTION
 HRESULT IDirect3DDevice9::DrawPrimitiveUP(D3DPRIMITIVETYPE PrimitiveType,UINT PrimitiveCountx,CONST void* pVertexStreamZeroData,UINT VertexStreamZeroStride)
 {
-// 7LS
 	GL_BATCH_PERF_CALL_TIMER;
 	GL_PUBLIC_ENTRYPOINT_CHECKS( this );
 	DXABSTRACT_BREAK_ON_ERROR();
@@ -5326,9 +5278,10 @@ HRESULT IDirect3DDevice9::DrawPrimitiveUP(D3DPRIMITIVETYPE PrimitiveType,UINT Pr
 //	PrimitiveCount
 //	[in] Number of primitives to render. The number of vertices used is a function of the primitive count and the primitive type. The maximum number of primitives allowed is determined by checking the MaxPrimitiveCount member of the D3DCAPS9 structure.
 
-// BE VERY CAREFUL what you do in this function. It's extremely hot, and calling the wrong GL API's in here will crush perf. on NVidia threaded drivers.
-#if 1 //ifndef OSX
+#include "glmgr_flush.inl"
 
+// BE VERY CAREFUL what you do in this function. It's extremely hot, and calling the wrong GL API's in here will crush perf. on NVidia threaded drivers.
+#ifndef OSX
 HRESULT IDirect3DDevice9::DrawIndexedPrimitive( D3DPRIMITIVETYPE Type, INT BaseVertexIndex, UINT MinVertexIndex, UINT NumVertices, UINT startIndex, UINT primCount )
 {
 	tmZone( TELEMETRY_LEVEL2, TMZF_NONE, "%s", __FUNCTION__ );
@@ -5339,7 +5292,7 @@ HRESULT IDirect3DDevice9::DrawIndexedPrimitive( D3DPRIMITIVETYPE Type, INT BaseV
 	{
 		UpdateBoundFBO();
 	}
-
+		
 	g_nTotalDrawsOrClears++;
 
 #if GL_BATCH_PERF_ANALYSIS
@@ -5478,201 +5431,199 @@ draw_failed:
 	Assert( 0 );
 	return E_FAIL;
 }
-
 #else
 
-// OSX 10.6 support
+// legacy (10.6) path that we're re-enabling for all OSX users as a result of perf regressions
 
 HRESULT IDirect3DDevice9::FlushIndexBindings( void )
 {
-	// push index buffer state
-	m_ctx->SetIndexBuffer( m_indices.m_idxBuffer->m_idxBuffer );
-	return S_OK;
+    // push index buffer state
+    m_ctx->SetIndexBuffer( m_indices.m_idxBuffer->m_idxBuffer );
+    return S_OK;
 }
 
 HRESULT IDirect3DDevice9::FlushVertexBindings( uint baseVertexIndex )
 {
-	// push vertex buffer state for the current vertex decl
-	// in this variant we just walk the attrib map in the VS and do a pull for each one.
-	// if we can't find a match in the vertex decl, we may fall back to the secret 'dummy' VBO that GLM maintains
-
-	GLMVertexSetup	setup;
-	memset( &setup, 0, sizeof( setup ) );
-
-	IDirect3DVertexDeclaration9 *vxdecl = m_pVertDecl;
-	unsigned char *vshAttribMap = m_vertexShader->m_vtxAttribMap;
-
-	// this loop could be tightened if we knew the number of live entries in the shader attrib map.
-	// which of course would be easy to do in the create shader function or even in the translator.
-
-	GLMVertexAttributeDesc *dstAttr = setup.m_attrs;
-	for( int i=0; i<16; i++,dstAttr++ )
-	{
-		unsigned char vshattrib = vshAttribMap[ i ];
-		if (vshattrib != 0xBB)
-		{
-			// try to find the match in the decl.
-			// idea: put some inverse table in the decl which could accelerate this search.
-
-			D3DVERTEXELEMENT9_GL *elem = m_pVertDecl->m_elements;
-			for( int j=0; j< m_pVertDecl->m_elemCount; j++,elem++)
-			{
-				// if it matches, install it, change vshattrib so the code below does not trigger, then end the loop
-				if ( ((vshattrib>>4) == elem->m_dxdecl.Usage) && ((vshattrib & 0x0F) == elem->m_dxdecl.UsageIndex) )
-				{
-					// targeting attribute #i in the setup with element data #j from the decl
-
-					*dstAttr = elem->m_gldecl;
-
-					// then fix buffer, stride, offset - note that we honor the base vertex index here by fiddling the offset
-					int streamIndex = elem->m_dxdecl.Stream;
-					dstAttr->m_pBuffer = m_streams[ streamIndex ].m_vtxBuffer->m_vtxBuffer;
-					dstAttr->m_stride = m_streams[ streamIndex ].m_stride;
-					dstAttr->m_offset += m_streams[ streamIndex ].m_offset + (baseVertexIndex * dstAttr->m_stride); 
-
-					// set mask
-					setup.m_attrMask |= (1 << i);
-
-					// end loop
-					vshattrib = 0xBB;
-					j = 999;
-				}
-			}
-
-			// if vshattrib is not 0xBB here, that means we could not find a source in the decl for it
-			if (vshattrib != 0xBB)
-			{
-				// fill out attr the same way as usual, we just pass NULL for the buffer and ask GLM to have mercy on us
-
-				dstAttr->m_pBuffer = NULL;
-				dstAttr->m_stride = 0;
-				dstAttr->m_offset = 0;
-
-				// only implement certain usages... if we haven't seen it before, stop.
-				switch (vshattrib >> 4)	// aka usage
-				{
-				case	D3DDECLUSAGE_POSITION:
-				case	D3DDECLUSAGE_BLENDWEIGHT:
-				case	D3DDECLUSAGE_BLENDINDICES:
-					Debugger();
-					break;
-
-				case	D3DDECLUSAGE_NORMAL:
-					dstAttr->m_nCompCount = 3;
-					dstAttr->m_datatype = GL_FLOAT;
-					dstAttr->m_normalized = false;
-					break;
-
-				case	D3DDECLUSAGE_PSIZE:
-					Debugger();
-					break;
-
-				case	D3DDECLUSAGE_TEXCOORD:
-					dstAttr->m_nCompCount = 3;
-					dstAttr->m_datatype = GL_FLOAT;
-					dstAttr->m_normalized = false;
-					break;
-
-				case	D3DDECLUSAGE_TANGENT:
-				case	D3DDECLUSAGE_BINORMAL:
-				case	D3DDECLUSAGE_TESSFACTOR:
-				case	D3DDECLUSAGE_PLUGH:
-					Debugger();
-					break;
-
-				case	D3DDECLUSAGE_COLOR:
-					dstAttr->m_nCompCount = 4;
-					dstAttr->m_datatype = GL_UNSIGNED_BYTE;
-					dstAttr->m_normalized = true;
-					break;
-
-				case	D3DDECLUSAGE_FOG:
-				case	D3DDECLUSAGE_DEPTH:
-				case	D3DDECLUSAGE_SAMPLE:
-					Debugger();
-					break;
-				}
-			}
-		}
-	}
-
-	// copy active program's vertex attrib map into the vert setup info
-	memcpy(&setup.m_vtxAttribMap, m_vertexShader->m_vtxAttribMap, sizeof(m_vertexShader->m_vtxAttribMap));
-
-	m_ctx->SetVertexAttributes(&setup);
-	return S_OK;
+    // push vertex buffer state for the current vertex decl
+    // in this variant we just walk the attrib map in the VS and do a pull for each one.
+    // if we can't find a match in the vertex decl, we may fall back to the secret 'dummy' VBO that GLM maintains
+    
+    GLMVertexSetup	setup;
+    memset( &setup, 0, sizeof( setup ) );
+    
+    IDirect3DVertexDeclaration9 *vxdecl = m_pVertDecl;
+    unsigned char *vshAttribMap = m_vertexShader->m_vtxAttribMap;
+    
+    // this loop could be tightened if we knew the number of live entries in the shader attrib map.
+    // which of course would be easy to do in the create shader function or even in the translator.
+    
+    GLMVertexAttributeDesc *dstAttr = setup.m_attrs;
+    for( int i=0; i<16; i++,dstAttr++ )
+    {
+        unsigned char vshattrib = vshAttribMap[ i ];
+        if (vshattrib != 0xBB)
+        {
+            // try to find the match in the decl.
+            // idea: put some inverse table in the decl which could accelerate this search.
+            
+            D3DVERTEXELEMENT9_GL *elem = m_pVertDecl->m_elements;
+            for( int j=0; j< m_pVertDecl->m_elemCount; j++,elem++)
+            {
+                // if it matches, install it, change vshattrib so the code below does not trigger, then end the loop
+                if ( ((vshattrib>>4) == elem->m_dxdecl.Usage) && ((vshattrib & 0x0F) == elem->m_dxdecl.UsageIndex) )
+                {
+                    // targeting attribute #i in the setup with element data #j from the decl
+                    
+                    *dstAttr = elem->m_gldecl;
+                    
+                    // then fix buffer, stride, offset - note that we honor the base vertex index here by fiddling the offset
+                    int streamIndex = elem->m_dxdecl.Stream;
+                    dstAttr->m_pBuffer = m_streams[ streamIndex ].m_vtxBuffer->m_vtxBuffer;
+                    dstAttr->m_stride = m_streams[ streamIndex ].m_stride;
+                    dstAttr->m_offset += m_streams[ streamIndex ].m_offset + (baseVertexIndex * dstAttr->m_stride);
+                    
+                    // set mask
+                    setup.m_attrMask |= (1 << i);
+                    
+                    // end loop
+                    vshattrib = 0xBB;
+                    j = 999;
+                }
+            }
+            
+            // if vshattrib is not 0xBB here, that means we could not find a source in the decl for it
+            if (vshattrib != 0xBB)
+            {
+                // fill out attr the same way as usual, we just pass NULL for the buffer and ask GLM to have mercy on us
+                
+                dstAttr->m_pBuffer = NULL;
+                dstAttr->m_stride = 0;
+                dstAttr->m_offset = 0;
+                
+                // only implement certain usages... if we haven't seen it before, stop.
+                switch (vshattrib >> 4)	// aka usage
+                {
+                    case	D3DDECLUSAGE_POSITION:
+                    case	D3DDECLUSAGE_BLENDWEIGHT:
+                    case	D3DDECLUSAGE_BLENDINDICES:
+                        Debugger();
+                        break;
+                        
+                    case	D3DDECLUSAGE_NORMAL:
+                        dstAttr->m_nCompCount = 3;
+                        dstAttr->m_datatype = GL_FLOAT;
+                        dstAttr->m_normalized = false;
+                        break;
+                        
+                    case	D3DDECLUSAGE_PSIZE:
+                        Debugger();
+                        break;
+                        
+                    case	D3DDECLUSAGE_TEXCOORD:
+                        dstAttr->m_nCompCount = 3;
+                        dstAttr->m_datatype = GL_FLOAT;
+                        dstAttr->m_normalized = false;
+                        break;
+                        
+                    case	D3DDECLUSAGE_TANGENT:
+                    case	D3DDECLUSAGE_BINORMAL:
+                    case	D3DDECLUSAGE_TESSFACTOR:
+                    case	D3DDECLUSAGE_PLUGH:
+                        Debugger();
+                        break;
+                        
+                    case	D3DDECLUSAGE_COLOR:
+                        dstAttr->m_nCompCount = 4;
+                        dstAttr->m_datatype = GL_UNSIGNED_BYTE;
+                        dstAttr->m_normalized = true;
+                        break;
+                        
+                    case	D3DDECLUSAGE_FOG:
+                    case	D3DDECLUSAGE_DEPTH:
+                    case	D3DDECLUSAGE_SAMPLE:
+                        Debugger();
+                        break;
+                }
+            }
+        }
+    }
+    
+    // copy active program's vertex attrib map into the vert setup info
+    memcpy(&setup.m_vtxAttribMap, m_vertexShader->m_vtxAttribMap, sizeof(m_vertexShader->m_vtxAttribMap));
+    
+    m_ctx->SetVertexAttributes(&setup);
+    return S_OK;
 }
 
 
 // OSX path offering support for 10.6 (we do not have support for glDrawRangeElementsBaseVertex)
 HRESULT IDirect3DDevice9::DrawIndexedPrimitive( D3DPRIMITIVETYPE Type,INT BaseVertexIndex,UINT MinVertexIndex,UINT NumVertices,UINT startIndex,UINT primCount )
 {
-	Assert( m_ctx->m_nCurOwnerThreadId == ThreadGetCurrentId() );
-
-	TOGL_NULL_DEVICE_CHECK;
-	if ( m_bFBODirty )
-	{
-		UpdateBoundFBO();
-	}
-
-	g_nTotalDrawsOrClears++;
-
+    Assert( m_ctx->m_nCurOwnerThreadId == ThreadGetCurrentId() );
+    
+    TOGL_NULL_DEVICE_CHECK;
+    if ( m_bFBODirty )
+    {
+        UpdateBoundFBO();
+    }
+    
+    g_nTotalDrawsOrClears++;
+    
 #if GL_BATCH_PERF_ANALYSIS
-	m_nTotalPrims += primCount;
-	CFastTimer tm;
-	CFlushDrawStatesStats& flushStats = m_ctx->m_FlushStats;
-	tm.Start();
-	flushStats.Clear();
+    m_nTotalPrims += primCount;
+    CFastTimer tm;
+    CFlushDrawStatesStats& flushStats = m_ctx->m_FlushStats;
+    tm.Start();
+    flushStats.Clear();
 #endif
-
+    
 #if GLMDEBUG
-	if ( gl.m_FogEnable )
-	{
-		GLMPRINTF(("-D- IDirect3DDevice9::DrawIndexedPrimitive is seeing enabled fog..."));
-	}
+    if ( gl.m_FogEnable )
+    {
+        GLMPRINTF(("-D- IDirect3DDevice9::DrawIndexedPrimitive is seeing enabled fog..."));
+    }
 #endif
-
-	if ( ( !m_indices.m_idxBuffer ) || ( !m_vertexShader ) )
-		goto draw_failed;    
-
-	this->FlushIndexBindings( );
-	this->FlushVertexBindings( BaseVertexIndex );
-	m_ctx->FlushDrawStates( MinVertexIndex, MinVertexIndex + NumVertices - 1, 0 );
-
-	if (gl.m_FogEnable)
-	{
-		GLMPRINTF(("-D- IDirect3DDevice9::DrawIndexedPrimitive is seeing enabled fog..."));
-	}
-
-	switch(Type)
-	{
-	case	D3DPT_POINTLIST:
-		Debugger();
-		break;
-
-	case	D3DPT_LINELIST:
-		GLMPRINTF(("-X- IDirect3DDevice9::DrawIndexedPrimitive( D3DPT_LINELIST ) - ignored."));
-		//			Debugger();
-		m_ctx->DrawRangeElements( (GLenum)GL_LINES, (GLuint)MinVertexIndex, (GLuint)(MinVertexIndex + NumVertices), (GLsizei)primCount*2, (GLenum)GL_UNSIGNED_SHORT, (const GLvoid *)(startIndex * sizeof(short)), m_indices.m_idxBuffer->m_idxBuffer );
-		break;
-
-	case	D3DPT_TRIANGLELIST:
-		m_ctx->DrawRangeElements(GL_TRIANGLES, (GLuint)MinVertexIndex, (GLuint)(MinVertexIndex + NumVertices), (GLsizei)primCount*3, (GLenum)GL_UNSIGNED_SHORT, (const GLvoid *)(startIndex * sizeof(short)), m_indices.m_idxBuffer->m_idxBuffer );
-		break;
-
-	case D3DPT_TRIANGLESTRIP:
-		// enabled... Debugger();
-		m_ctx->DrawRangeElements(GL_TRIANGLE_STRIP, (GLuint)MinVertexIndex, (GLuint)(MinVertexIndex + NumVertices), (GLsizei)(2+primCount), (GLenum)GL_UNSIGNED_SHORT, (const GLvoid *)(startIndex * sizeof(short)), m_indices.m_idxBuffer->m_idxBuffer );
-		break;
-	}
-
-	return S_OK;
-
+    
+    if ( ( !m_indices.m_idxBuffer ) || ( !m_vertexShader ) )
+        goto draw_failed;    
+    
+    this->FlushIndexBindings( );
+    this->FlushVertexBindings( BaseVertexIndex );
+    m_ctx->FlushDrawStates( MinVertexIndex, MinVertexIndex + NumVertices - 1, 0 );
+    
+    if (gl.m_FogEnable)
+    {
+        GLMPRINTF(("-D- IDirect3DDevice9::DrawIndexedPrimitive is seeing enabled fog..."));
+    }
+    
+    switch(Type)
+    {
+        case	D3DPT_POINTLIST:
+            Debugger();
+            break;
+            
+        case	D3DPT_LINELIST:
+            GLMPRINTF(("-X- IDirect3DDevice9::DrawIndexedPrimitive( D3DPT_LINELIST ) - ignored."));
+            //			Debugger();
+            m_ctx->DrawRangeElements( (GLenum)GL_LINES, (GLuint)MinVertexIndex, (GLuint)(MinVertexIndex + NumVertices), (GLsizei)primCount*2, (GLenum)GL_UNSIGNED_SHORT, (const GLvoid *)(startIndex * sizeof(short)), m_indices.m_idxBuffer->m_idxBuffer );
+            break;
+            
+        case	D3DPT_TRIANGLELIST:
+            m_ctx->DrawRangeElements(GL_TRIANGLES, (GLuint)MinVertexIndex, (GLuint)(MinVertexIndex + NumVertices), (GLsizei)primCount*3, (GLenum)GL_UNSIGNED_SHORT, (const GLvoid *)(startIndex * sizeof(short)), m_indices.m_idxBuffer->m_idxBuffer );
+            break;
+            
+        case D3DPT_TRIANGLESTRIP:
+            // enabled... Debugger();
+            m_ctx->DrawRangeElements(GL_TRIANGLE_STRIP, (GLuint)MinVertexIndex, (GLuint)(MinVertexIndex + NumVertices), (GLsizei)(2+primCount), (GLenum)GL_UNSIGNED_SHORT, (const GLvoid *)(startIndex * sizeof(short)), m_indices.m_idxBuffer->m_idxBuffer );
+            break;
+    }
+    
+    return S_OK;
+    
 draw_failed:
-	Assert( 0 );
-	return E_FAIL;
+    Assert( 0 );
+    return E_FAIL;
 }
-
 #endif // #ifndef OSX
 
 HRESULT IDirect3DDevice9::DrawIndexedPrimitiveUP(D3DPRIMITIVETYPE PrimitiveType,UINT MinVertexIndex,UINT NumVertices,UINT PrimitiveCount,CONST void* pIndexData,D3DFORMAT IndexDataFormat,CONST void* pVertexStreamZeroData,UINT VertexStreamZeroStride)
@@ -5889,10 +5840,33 @@ void IDirect3DDevice9::SetGammaRamp(UINT iSwapChain,DWORD Flags,CONST D3DGAMMARA
 	GL_BATCH_PERF_CALL_TIMER;
 	Assert( GetCurrentOwnerThreadId() == ThreadGetCurrentId() );
 	
-	if ( g_pLauncherMgr )
+#ifdef OSX
+    
+	// just slam it directly for the time being
+	// this code is OS X specific
+    
+    CGDisplayErr cgErr;
+    
+	CGGammaValue	redt[256];
+	CGGammaValue	grnt[256];
+	CGGammaValue	blut[256];
+	for( int i=0; i<256; i++)
+	{
+		redt[i] = ((float)pRamp->red[i]) / 65535.0f;
+		grnt[i] = ((float)pRamp->green[i]) / 65535.0f;
+		blut[i] = ((float)pRamp->blue[i]) / 65535.0f;
+	}
+	cgErr = CGSetDisplayTransferByTable( 0, 256, redt, grnt, blut );
+
+#else
+    
+    if ( g_pLauncherMgr )
+
 	{
 		g_pLauncherMgr->SetGammaRamp( pRamp->red, pRamp->green, pRamp->blue );
 	}
+    
+#endif
 }
 
 void TOGLMETHODCALLTYPE IDirect3DDevice9::SaveGLState()
@@ -6371,8 +6345,7 @@ HRESULT IDirect3DDevice9::SetSamplerStateNonInline( DWORD Sampler, D3DSAMPLERSTA
 
 void IDirect3DDevice9::SetSamplerStatesNonInline(
 	DWORD Sampler, DWORD AddressU, DWORD AddressV, DWORD AddressW,
-	DWORD MinFilter, DWORD MagFilter, DWORD MipFilter, 
-	DWORD MinLod, float LodBias)
+	DWORD MinFilter, DWORD MagFilter, DWORD MipFilter )
 {
 	GL_BATCH_PERF_CALL_TIMER;
 	GL_PUBLIC_ENTRYPOINT_CHECKS( this );
@@ -6381,7 +6354,7 @@ void IDirect3DDevice9::SetSamplerStatesNonInline(
 
 	m_ctx->SetSamplerDirty( Sampler );
 
-	m_ctx->SetSamplerStates( Sampler, AddressU, AddressV, AddressW, MinFilter, MagFilter, MipFilter, MinLod, LodBias );
+	m_ctx->SetSamplerStates( Sampler, AddressU, AddressV, AddressW, MinFilter, MagFilter, MipFilter );
 }
 
 HRESULT IDirect3DDevice9::SetTextureNonInline(DWORD Stage,IDirect3DBaseTexture9* pTexture)
@@ -6479,8 +6452,7 @@ HRESULT	ID3DXMatrixStack::Create()
 	m_stack.EnsureCapacity( 16 );	// 1KB ish
 	m_stack.AddToTail();
 	m_stackTop = 0;				// top of stack is at index 0 currently
-	m_mark = false;
-
+	
 	LoadIdentity();
 	
 	return S_OK;
@@ -6631,17 +6603,13 @@ D3DXVECTOR3* D3DXVec3TransformCoord(D3DXVECTOR3 *pOut, CONST D3DXVECTOR3 *pV, CO
 {
 	D3DXVECTOR3 vOut;
 
+	vOut.x = vOut.y = vOut.z = 0.0f;
 	float norm = (pM->m[0][3] * pV->x) + (pM->m[1][3] * pV->y) + (pM->m[2][3] *pV->z) + pM->m[3][3];
 	if ( norm )
 	{
-		float norm_inv = 1.0f / norm;
-		vOut.x = (pM->m[0][0] * pV->x + pM->m[1][0] * pV->y + pM->m[2][0] * pV->z + pM->m[3][0]) * norm_inv;
-		vOut.y = (pM->m[0][1] * pV->x + pM->m[1][1] * pV->y + pM->m[2][1] * pV->z + pM->m[3][1]) * norm_inv;
-		vOut.z = (pM->m[0][2] * pV->x + pM->m[1][2] * pV->y + pM->m[2][2] * pV->z + pM->m[3][2]) * norm_inv;
-	}
-	else
-	{
-		vOut.x = vOut.y = vOut.z = 0.0f;
+		vOut.x = (pM->m[0][0] * pV->x + pM->m[1][0] * pV->y + pM->m[2][0] * pV->z + pM->m[3][0]) / norm;
+		vOut.y = (pM->m[0][1] * pV->x + pM->m[1][1] * pV->y + pM->m[2][1] * pV->z + pM->m[3][1]) / norm;
+		vOut.z = (pM->m[0][2] * pV->x + pM->m[1][2] * pV->y + pM->m[2][2] * pV->z + pM->m[3][2]) / norm;
 	}
 
 	*pOut = vOut;
@@ -6675,13 +6643,13 @@ D3DXMATRIX* D3DXMatrixInverse( D3DXMATRIX *pOut, FLOAT *pDeterminant, CONST D3DX
 	Assert( sizeof( D3DXMATRIX ) == (16 * sizeof(float) ) );
 	Assert( sizeof( VMatrix ) == (16 * sizeof(float) ) );
 	Assert( pDeterminant == NULL );	// homey don't play that
-
+	
 	VMatrix *origM = (VMatrix*)pM;
 	VMatrix *destM = (VMatrix*)pOut;
-
+	
 	bool success = MatrixInverseGeneral( *origM, *destM ); (void)success;
 	Assert( success );
-
+	
 	return pOut;
 }
 

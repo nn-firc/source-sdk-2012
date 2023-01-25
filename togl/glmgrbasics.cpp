@@ -1,26 +1,4 @@
-//========= Copyright Valve Corporation, All rights reserved. ============//
-//                       TOGL CODE LICENSE
-//
-//  Copyright 2011-2014 Valve Corporation
-//  All Rights Reserved.
-//
-//  Permission is hereby granted, free of charge, to any person obtaining a copy
-//  of this software and associated documentation files (the "Software"), to deal
-//  in the Software without restriction, including without limitation the rights
-//  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-//  copies of the Software, and to permit persons to whom the Software is
-//  furnished to do so, subject to the following conditions:
-//
-//  The above copyright notice and this permission notice shall be included in
-//  all copies or substantial portions of the Software.
-//
-//  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-//  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-//  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-//  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-//  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-//  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-//  THE SOFTWARE.
+//============ Copyright (c) Valve Corporation, All rights reserved. ============
 //
 // glmgrbasics.cpp
 //
@@ -35,9 +13,7 @@
 
 #ifdef OSX
 #include <OpenGL/OpenGL.h>
-#ifdef CGLPROFILER_ENABLE
-#include <OpenGL/CGLProfilerFunctionEnum.h>
-#endif
+
 #endif
 
 #include "tier0/valve_minmax_off.h"
@@ -2602,21 +2578,7 @@ const char	*GLMDecodeMask( GLMThing_t kind, unsigned long value )
 
 bool	GLMDetectOGLP( void )
 {
-	bool result = false;
-#if defined( OSX ) && defined( CGLPROFILER_ENABLE )
-	GLint forceFlush;
-	CGLError error = CGLGetParameter(CGLGetCurrentContext(), kCGLCPEnableForceFlush, &forceFlush);
-	result = error == 0;
-	if (result)
-	{
-		// enable a breakpoint on color4sv
-		int oglp_bkpt[3] = { kCGLFEglColor4sv, kCGLProfBreakBefore, 1 };
-		
-		CGLSetOption( kCGLGOEnableBreakpoint, (GLint)oglp_bkpt );			
-	}
-	
-#endif
-	return result;
+	return false;
 }
 
 
@@ -2628,11 +2590,7 @@ bool	GLMDetectOGLP( void )
 #include <sys/types.h>  
 #ifndef _WIN32
 	#include <unistd.h>  
-#ifdef LINUX
-#include <linux/sysctl.h>
-#else
-#include <sys/sysctl.h>
-#endif
+	#include <linux/sysctl.h>  
 #endif
 
 // From Technical Q&A QA1361  
@@ -2812,14 +2770,6 @@ uint	GLMDebugFlavorMask( uint *newValue )
 //===============================================================================
 void GLMEnableTrace( bool on )
 {
-#if GLMDEBUG
-#if defined( OSX ) && defined( CGLPROFILER_ENABLE )
-	if ( GLMDebugChannelMask() & (1<<eGLProfiler) )
-	{
-		CGLSetOption(kCGLGOEnableFunctionTrace, on ? GL_TRUE : GL_FALSE );
-	}
-#endif
-#endif
 }
 
 //===============================================================================
@@ -2838,13 +2788,6 @@ void	GLMStringOut( char *string )
 		puts( string );
 #endif
 	}
-
-#if defined( OSX ) && defined( CGLPROFILER_ENABLE )
-	if ( GLMDebugChannelMask() & (1<<eGLProfiler) )
-	{
-		CGLSetOption( kCGLGOComment, (GLint)string );
-	}
-#endif
 
 	if ( GLMDebugChannelMask() & (1<<eGLProfiler) )
 	{
@@ -3110,6 +3053,34 @@ void	GLMSetIndent( int indent )
 	g_glm_indent = indent;
 }
 
+#endif
+
+#if 0 // defined in platform.h
+inline uint64 Plat_Rdtsc()
+{
+#if defined( _X360 )
+	return ( uint64 )__mftb32();
+#elif defined( _WIN64 )
+	return ( uint64 )__rdtsc();
+#elif defined( _WIN32 )
+  #if defined( _MSC_VER ) && ( _MSC_VER >= 1400 )
+	return ( uint64 )__rdtsc();
+  #else
+    __asm rdtsc;
+	__asm ret;
+  #endif
+#elif defined( __i386__ )
+	uint64 val;
+	__asm__ __volatile__ ( "rdtsc" : "=A" (val) );
+	return val;
+#elif defined( __x86_64__ )
+	uint32 lo, hi;
+	__asm__ __volatile__ ( "rdtsc" : "=a" (lo), "=d" (hi));
+	return ( ( ( uint64 )hi ) << 32 ) | lo;
+#else
+	#error
+#endif
+}
 #endif
 
 // PIX tracking - you can call these outside of GLMDEBUG=true
@@ -3420,7 +3391,7 @@ public:
 		COMPILE_TIME_ASSERT( ( int )cMaxQueryZones > ( int )cMaxQueryZoneStackSize );
 		if ( m_nNumOutstandingQueryZones >= ( cMaxQueryZones - cMaxQueryZoneStackSize ) )
 		{
-			tmMessage( TELEMETRY_LEVEL2, TMMF_ICON_NOTE | TMMF_SEVERITY_WARNING, "CGPUTimestampManager::EndZone: Too many outstanding query zones - forcing a pipeline flush! This is probably expensive." );
+			TM_MESSAGE( TELEMETRY_LEVEL2, TMMF_ICON_NOTE | TMMF_SEVERITY_WARNING, "CGPUTimestampManager::EndZone: Too many outstanding query zones - forcing a pipeline flush! This is probably expensive." );
 
 			FlushOutstandingQueries( true );
 		}
@@ -3445,14 +3416,14 @@ public:
 
 		FlushOutstandingQueries( false );
 
-		tmMessage( TELEMETRY_LEVEL2, 0, "Total PIX timespan GPU work count: %u", m_nTotalSpanWorkCount );
+		TM_MESSAGE( TELEMETRY_LEVEL2, 0, "Total PIX timespan GPU work count: %u", m_nTotalSpanWorkCount );
 		
 		m_nTotalSpanWorkCount = 0;
 	}
 
 	void FlushOutstandingQueries( bool bForce )
 	{
-		tmZone( TELEMETRY_LEVEL2, 0, "FlushOutstandingQueries: %u", m_nNumOutstandingQueryZones );
+		TM_ZONE( TELEMETRY_LEVEL2, 0, "FlushOutstandingQueries: %u", m_nNumOutstandingQueryZones );
 
 		if ( bForce )
 		{
@@ -3592,12 +3563,12 @@ private:
 
 		for ( uint i = 0; i < 10; i++ )
 		{
-			uint64 t0 = Plat_Rdtsc();
+			TmU64 t0 = Plat_Rdtsc();
 			double d0 = Plat_FloatTime();
 
 			ThreadSleep( 250 );
 
-			uint64 t1 = Plat_Rdtsc();
+			TmU64 t1 = Plat_Rdtsc();
 			double d1 = Plat_FloatTime();
 
 			double flRdtscToS = ( d1 - d0 ) / ( t1 - t0 );
@@ -3624,9 +3595,13 @@ private:
 
 	inline void NewTimeSpan( uint64 nStartGPUTime, uint64 nEndGPUTime, const char *pName, uint nTotalDraws )
 	{
+		// LINUXTODO- telemetry define off, so need this ifdef here to build
+#if defined( RAD_TELEMETRY_ENABLED ) 
+
 		// apparently we must use level0 for timespans?
 		tmBeginTimeSpanAt( TELEMETRY_LEVEL0, 1, 0, nStartGPUTime, "%s [C:%u]", pName ? pName : "", nTotalDraws );
 		tmEndTimeSpanAt( TELEMETRY_LEVEL0, 1, 0, nEndGPUTime, "%s [C:%u]", pName ? pName : "", nTotalDraws );
+#endif
 	}
 
 	void FlushFinishedZones()
@@ -3718,7 +3693,7 @@ void GLMGPUTimestampManagerTick()
 	g_GPUTimestampManager.Tick();
 }
 
-#endif // !OSX
+#endif // OSX
 
 static uint g_nPIXEventIndex;
 
@@ -3728,17 +3703,14 @@ void GLMBeginPIXEvent( const char *str )
 	char szName[1024];
 	V_snprintf( szName, sizeof( szName ), "[ID:%u FR:%u] %s", g_nPIXEventIndex, g_GPUTimestampManager.GetCurFrame(), str );
 	const char *p = tmDynamicString( TELEMETRY_LEVEL2, szName ); //p can be null if tm is getting shut down
-	tmEnter( TELEMETRY_LEVEL2, TMZF_NONE, "PIX %s", p ? p : ""  );
+	TM_ENTER( TELEMETRY_LEVEL2, TMZF_NONE, "PIX %s", p ? p : ""  );
 
 	g_nPIXEventIndex++;
 			
 	g_GPUTimestampManager.BeginZone( p );
-#endif // !OSX
-	V_strncpy( sg_pPIXName, str, 128 );
-
-#if defined( OSX ) && defined( CGLPROFILER_ENABLE )
-	CGLSetOption( kCGLGOComment, (GLint)sg_pPIXName );
 #endif
+    
+	V_strncpy( sg_pPIXName, str, 128 );
 
 	if ( gGL->m_bHave_GL_GREMEDY_string_marker )
 	{
@@ -3750,11 +3722,6 @@ void GLMEndPIXEvent( void )
 {
 #ifndef OSX
 	g_GPUTimestampManager.EndZone();
-#endif
-
-#if defined( OSX ) && defined( CGLPROFILER_ENABLE )
-	CGLSetOption( kCGLGOComment, (GLint)sg_pPIXName );
-#endif
 
 	if ( gGL->m_bHave_GL_GREMEDY_string_marker )
 	{
@@ -3763,7 +3730,8 @@ void GLMEndPIXEvent( void )
 
 	sg_pPIXName[0] = '\0';
 		
-	tmLeave( TELEMETRY_LEVEL2 );
+	TM_LEAVE( TELEMETRY_LEVEL2 );
+#endif
 }
 
 //===============================================================================
@@ -3906,31 +3874,15 @@ float	GLMKnobToggle( char *knobname )
 // helpers for CGLSetOption - no op if no profiler
 void	GLMProfilerClearTrace( void )
 {
-#if defined( OSX ) && defined( CGLPROFILER_ENABLE )
-	CGLSetOption( kCGLGOResetFunctionTrace, 0 );
-#else
-	Assert( !"impl me" );
-#endif
 }
 
 void	GLMProfilerEnableTrace( bool enable )
 {
-#if defined( OSX ) && defined( CGLPROFILER_ENABLE )
-	CGLSetOption( kCGLGOEnableFunctionTrace, enable ? GL_TRUE : GL_FALSE );
-#else
-	Assert( !"impl me" );
-#endif
 }
 
 // helpers for CGLSetParameter - no op if no profiler
 void	GLMProfilerDumpState( void )
 {
-#if defined( OSX ) && defined( CGLPROFILER_ENABLE )
-	CGLContextObj curr = CGLGetCurrentContext();
-	CGLSetParameter( curr, kCGLCPDumpState, (const GLint*)1 );
-#else
-	Assert( !"impl me" );
-#endif
 }
 
 
@@ -4243,9 +4195,7 @@ CGLMEditableTextItem::~CGLMEditableTextItem( )
 	
 	if (m_mirror)
 	{
-		//free( m_mirror );
-        // MoeMod : should be delete here
-        delete m_mirror;
+		free( m_mirror );
 	}
 }
 

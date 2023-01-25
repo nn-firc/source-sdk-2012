@@ -1,26 +1,3 @@
-//========= Copyright Valve Corporation, All rights reserved. ============//
-//                       TOGL CODE LICENSE
-//
-//  Copyright 2011-2014 Valve Corporation
-//  All Rights Reserved.
-//
-//  Permission is hereby granted, free of charge, to any person obtaining a copy
-//  of this software and associated documentation files (the "Software"), to deal
-//  in the Software without restriction, including without limitation the rights
-//  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-//  copies of the Software, and to permit persons to whom the Software is
-//  furnished to do so, subject to the following conditions:
-//
-//  The above copyright notice and this permission notice shall be included in
-//  all copies or substantial portions of the Software.
-//
-//  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-//  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-//  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-//  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-//  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-//  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-//  THE SOFTWARE.
 //------------------------------------------------------------------------------
 // DX9AsmToGL2.cpp
 //------------------------------------------------------------------------------
@@ -234,9 +211,9 @@ void ReplaceParamName( const char *pSrc, const char *pNewParamName, char *pOut, 
 void GetParamNameWithoutSwizzle( const char *pParam, char *pOut, int nOutLen )
 {
 	char *pParamStart = (char *) pParam;
-	const char *pDot = GetSwizzleDot( pParam );			// dot followed by valid swizzle characters
+    const char *pParamEnd = GetSwizzleDot( pParam );        // dot followed by valid swizzle characters
 	bool bAbsWrapper = false;
-
+    
 	// Check for abs() or -abs() wrapper and strip it off during the fixup
 	if ( !V_strncmp( pParam, "abs(", 4 ) || !V_strncmp( pParam, "-abs(", 5 ) )
 	{
@@ -244,23 +221,29 @@ void GetParamNameWithoutSwizzle( const char *pParam, char *pOut, int nOutLen )
 		const char *pClosingParen = strrchr( pParam, ')' ); // LAST closing paren
 
 		Assert ( pOpenParen && pClosingParen );
-		pClosingParen; // hush compiler
 
 		pParamStart = (char *) pOpenParen;
 		pParamStart++;
 		bAbsWrapper = true;
-	}
-
-	if ( pDot  )
-	{
-		int nToCopy = MIN( nOutLen-1, pDot - pParamStart );
-		memcpy( pOut, pParamStart, nToCopy );
-		pOut[nToCopy] = 0;
-	}
-	else
-	{
-		V_strncpy( pOut, pParamStart, bAbsWrapper ? nOutLen - 1 : nOutLen );
-	}
+        
+        if ( !pParamEnd )
+        {
+            pParamEnd = pClosingParen;
+        }
+    }
+  	
+    if ( pParamEnd )
+    {
+        int nToCopy = MIN( nOutLen-1, pParamEnd - pParamStart );
+        memcpy( pOut, pParamStart, nToCopy );
+        pOut[nToCopy] = 0;
+    
+    }
+    else
+    {
+        V_strncpy( pOut, pParamStart, nOutLen );
+    }
+    
 }
 
 bool DoParamNamesMatch( const char *pParam1, const char *pParam2 )
@@ -382,7 +365,7 @@ CUtlString EnsureNumSwizzleComponents( const char *pSrcRegisterName, int nCompon
 
 static void TranslationError()
 {
-	GLMDebugPrintf( "D3DToGL: GLSL translation error!\n" );
+	Plat_DebugString( "D3DToGL: GLSL translation error!\n" );
 	DebuggerBreakIfDebugging();
 	
 	Error( "D3DToGL: GLSL translation error!\n" );
@@ -611,8 +594,10 @@ bool D3DToGL::OpenIntrinsic( uint32 inst, char* buff, int nBufLen, uint32 destDi
 			TranslationError();
 			break;
 		case D3DSIO_DSX:
+            V_snprintf( buff, nBufLen, "dFdx" );
+            break;
 		case D3DSIO_DSY:
-			TranslationError();
+            V_snprintf( buff, nBufLen, "dFdy" );
 			break;
 		case D3DSIO_TEXLDD:
 			V_snprintf( buff, nBufLen, "texldd" );
@@ -825,8 +810,10 @@ void D3DToGL::PrintOpcode( uint32 inst, char* buff, int nBufLen )
 			TranslationError();
 			break;
 		case D3DSIO_DSX:
+            V_snprintf( buff, nBufLen, "dFdx" );
+            break;
 		case D3DSIO_DSY:
-			TranslationError();
+            V_snprintf( buff, nBufLen, "dFdy" );
 			break;
 		case D3DSIO_TEXLDD:
 			V_snprintf( buff, nBufLen, "texldd" );
@@ -1108,7 +1095,7 @@ void D3DToGL::PrintParameterToString ( uint32 dwToken, uint32 dwSourceOrDest, ch
 	uint32 dwSrcModifier = D3DSPSM_NONE;
 
 	// Clear string to zero length
-	pRegisterName[ 0 ] = 0;
+	V_snprintf( pRegisterName, nBufLen, "" );
 
 	dwRegType = GetRegTypeFromToken( dwToken );
 
@@ -2092,32 +2079,23 @@ static uint PrintDoubleInt( char *pBuf, uint nBufSize, double f, uint nMinChars 
 
 		if ( bAnyDigitsLeft )
 		{
-			uint n = remainder % 100U; remainder /= 100U;
-			memcpy( reinterpret_cast<uint16*>(pDst - 1), &(reinterpret_cast<const uint16*>(pDigits)[n]), sizeof(uint16) );
-			n = remainder % 100U; remainder /= 100U;
-			memcpy( reinterpret_cast<uint16*>(pDst - 3), &(reinterpret_cast<const uint16*>(pDigits)[n]), sizeof(uint16) );
+			uint n = remainder % 100U; remainder /= 100U; *reinterpret_cast<uint16*>(pDst - 1) = reinterpret_cast<const uint16*>(pDigits)[n]; 
+			n = remainder % 100U; remainder /= 100U; *reinterpret_cast<uint16*>(pDst - 1 - 2) = reinterpret_cast<const uint16*>(pDigits)[n]; 
 			Assert( remainder < 100U );
-			memcpy( reinterpret_cast<uint16*>(pDst - 5), &(reinterpret_cast<const uint16*>(pDigits)[remainder]), sizeof(uint16) );
+			*reinterpret_cast<uint16*>(pDst - 1 - 4) = reinterpret_cast<const uint16*>(pDigits)[remainder]; 
 			pDst -= 6;
 		}
 		else
 		{
-			uint n = remainder % 100U; remainder /= 100U;
-			memcpy( reinterpret_cast<uint16*>(pDst - 1), &(reinterpret_cast<const uint16*>(pDigits)[n]), sizeof(uint16) );
-			--pDst; if ( ( n >= 10 ) || ( remainder ) ) --pDst;
-
+			uint n = remainder % 100U; remainder /= 100U; *reinterpret_cast<uint16*>(pDst - 1) = reinterpret_cast<const uint16*>(pDigits)[n]; --pDst; if ( ( n >= 10 ) || ( remainder ) ) --pDst;
 			if ( remainder )
 			{
-				n = remainder % 100U; remainder /= 100U;
-				memcpy( reinterpret_cast<uint16*>(pDst - 1), &(reinterpret_cast<const uint16*>(pDigits)[n]), sizeof(uint16) );
-
-				--pDst; if ( ( n >= 10 ) || ( remainder ) ) --pDst;
+				n = remainder % 100U; remainder /= 100U; *reinterpret_cast<uint16*>(pDst - 1) = reinterpret_cast<const uint16*>(pDigits)[n]; --pDst; if ( ( n >= 10 ) || ( remainder ) ) --pDst;
 
 				if ( remainder )
 				{
 					Assert( remainder < 100U );
-					memcpy( reinterpret_cast<uint16*>(pDst - 1), &(reinterpret_cast<const uint16*>(pDigits)[remainder]), sizeof(uint16) );
-					--pDst; if ( remainder >= 10 ) --pDst;
+					*reinterpret_cast<uint16*>(pDst - 1) = reinterpret_cast<const uint16*>(pDigits)[remainder]; --pDst; if ( remainder >= 10 ) --pDst;
 				}
 			}
 		}
@@ -2238,7 +2216,7 @@ static void TestFloatConversion()
 
 		if ( flMaxErr1 > flMaxErr2 )
 		{
-			GLMDebugPrintf( "!\n" );
+			Plat_DebugString( "!\n" );
 		}
 	}
 }
@@ -2331,7 +2309,7 @@ void D3DToGL::Handle_DEF()
 
 		if ( flMaxErr1 > flMaxErr2 )
 		{
-			GLMDebugPrintf( "!\n" );
+			Plat_DebugString( "!\n" );
 		}
 #endif
 
@@ -2865,6 +2843,14 @@ void D3DToGL::Handle_UnaryOp( uint32 nInstruction )
 			m_nHighestRegister = DXABSTRACT_VS_PARAM_SLOTS - 1;
 		}
 	}
+    else if ( nInstruction == D3DSIO_DSX )
+    {
+        PrintToBufWithIndents( *m_pBufALUCode, "%s = dFdx( %s );\n", sParam1.String(), sParam2.String() );
+    }
+    else if ( nInstruction == D3DSIO_DSY )
+	{
+		PrintToBufWithIndents( *m_pBufALUCode, "%s = dFdy( %s );\n", sParam1.String(), sParam2.String() );
+	}
 	else
 	{
 		Error( "Unsupported instruction" );
@@ -3119,7 +3105,7 @@ int D3DToGL::TranslateShader( uint32* code, CUtlBuffer *pBufDisassembledCode, bo
 	m_nLoopDepth = 0;
 
 	// debugging
-	m_bSpew = (options & D3DToGL_OptionSpew) != 0;
+    m_bSpew = (options & D3DToGL_OptionSpew) != 0;
 	
 	// These are not accessed below in a way that will cause them to glow, so
 	// we could overflow these and/or the buffer pointed to by pDisassembledCode
@@ -3199,9 +3185,9 @@ int D3DToGL::TranslateShader( uint32* code, CUtlBuffer *pBufDisassembledCode, bo
 	m_dwMinorVersion = D3DSHADER_VERSION_MINOR( dwToken );
 
 	// If pixel shader
-	const char *glslExtText = "#extension GL_ARB_shader_texture_lod : require\n";//m_bUseBindlessTexturing ? "#extension GL_NV_bindless_texture : require\n" : "";
-	// 7ls
-	const char *glslVersionText = m_bUseBindlessTexturing ? "330 compatibility" : "120";
+    const char *glslExtText = "#extension GL_ARB_shader_texture_lod : require\n";//m_bUseBindlessTexturing ? "#extension GL_NV_bindless_texture : require\n" : "";
+
+    const char *glslVersionText = m_bUseBindlessTexturing ? "330 compatibility" : "120";
 
 	if ( ( dwToken & 0xFFFF0000 ) == 0xFFFF0000 )
 	{
@@ -3304,11 +3290,14 @@ int D3DToGL::TranslateShader( uint32* code, CUtlBuffer *pBufDisassembledCode, bo
 			case D3DSIO_CALL:
 			case D3DSIO_LOOP:
 			case D3DSIO_BREAKP:
-			case D3DSIO_DSX:
-			case D3DSIO_DSY:
 				TranslationError();
 				break;
 
+            case D3DSIO_DSX:
+            case D3DSIO_DSY:
+                Handle_UnaryOp( nInstruction );
+                break;
+                
 			case D3DSIO_IFC:
 			{
 				static const char *s_szCompareStrings[ 7 ] =
@@ -3719,8 +3708,6 @@ int D3DToGL::TranslateShader( uint32* code, CUtlBuffer *pBufDisassembledCode, bo
 				StrcatToALUCode( "vTempPos.y = -vTempPos.y; // y' = -y \n" );
 			}
 
-			// Apply half pixel offset (0.5f pixel offset D3D) to output vertices to account for the pixel center difference between D3D9 and OpenGL.
-			// This is the actual work in the shader. This works out to be 0.5 pixels wide because clip space is 2 units wide (-1, 1).
 			StrcatToALUCode( "vTempPos.xy += vcscreen.xy * vTempPos.w;\n" );
 
 			StrcatToALUCode( "gl_Position = vTempPos;\n" );
