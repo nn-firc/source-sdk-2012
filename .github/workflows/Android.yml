@@ -14,18 +14,22 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
-    - name: Build
-      run: bash .github/workflows/ndk.sh
-    - uses: actions/checkout@v3
     - name: Build apk
       run: |
+        wget https://github.com/llvm/llvm-project/releases/download/llvmorg-11.1.0/clang+llvm-11.1.0-x86_64-linux-gnu-ubuntu-20.10.tar.xz -o /dev/null
+        tar xpvf clang+llvm-11.1.0-x86_64-linux-gnu-ubuntu-20.10.tar.xz
+        wget https://dl.google.com/android/repository/android-ndk-r10e-linux-x86_64.zip -o /dev/null
+        unzip android-ndk-r10e-linux-x86_64.zip
+        export ANDROID_NDK_HOME=$PWD/android-ndk-r10e/
+        export NDK_HOME=$PWD/android-ndk-r10e/
+        export PATH=$PWD/clang+llvm-11.1.0-x86_64-linux-gnu-ubuntu-20.10/bin:$PATH
+        ./waf configure -T release --64bits --togles --android=aarch64,host,21 --prefix=/home/runner/work/csgo-sdk-2017/csgo-sdk-2017/csgo-android
+        ./waf install -j4 --strip
         sudo apt install -y make openjdk-8-jdk openjdk-8-jre ant-contrib
         git clone https://github.com/nn-firc/csgo-sdk-android.git --depth 1
-        cp -r $HOME/csgo-android/lib csgo-sdk-android/libs
-        cp -r /home/runner/work/csgo-sdk-2017/csgo-sdk-2017/lib/android/aarch64/libSDL2.so csgo-sdk-android/libs/arm64-v8a
-        cd csgo-sdk-android
-        JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64 ANDROID_HOME=android-sdk ant release
-        cd ..
+        cp -r csgo-android/lib csgo-sdk-android/libs
+        cp -r lib/android/aarch64/libSDL2.so csgo-sdk-android/libs/arm64-v8a
+        cd csgo-sdk-android && JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64 ANDROID_HOME=android-sdk ant release && cd ..
     - uses: actions/upload-artifact@v3
       with:
             name: Release Android
