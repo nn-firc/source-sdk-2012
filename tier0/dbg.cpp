@@ -349,6 +349,7 @@ void Warning_SpewCallStack( int iMaxCallStackLength, const tchar *pMsgFormat, ..
 
 void Error( const tchar *pMsgFormat, ... )
 {
+	g_DbgLogger.Write( pMsgFormat );
 #if !defined( DBGFLAG_STRINGS_STRIP )
 	Log_LegacyHelper_Stack( LOG_GENERAL, LS_ERROR, pMsgFormat, AutomaticErrorCallStackLength() );
 	// Many places that call Error assume that execution will not continue afterwards so it
