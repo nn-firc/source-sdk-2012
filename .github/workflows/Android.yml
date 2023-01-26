@@ -22,6 +22,7 @@ jobs:
         sudo apt install -y make openjdk-8-jdk openjdk-8-jre ant-contrib
         git clone https://github.com/nn-firc/csgo-sdk-android.git --depth 1
         cp -r csgo-ndk/lib csgo-sdk-android/libs
+        cp -r lib/android/aarch64/libSDL2.so csgo-sdk-android/libs/arm64-v8a
         cd csgo-sdk-android
         JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64 ANDROID_HOME=android-sdk ant release
         cd ..
