@@ -21,9 +21,10 @@ jobs:
       run: |
         sudo apt install -y make openjdk-8-jdk openjdk-8-jre ant-contrib
         git clone https://github.com/nn-firc/csgo-sdk-android.git --depth 1
-        cd csgo-sdk-android.git 
+        cp -r csgo-ndk/lib csgo-sdk-android/libs
+        cd csgo-sdk-android
         JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64 ANDROID_HOME=android-sdk ant release
-        cd /home/runner/work/csgo-sdk-2017/csgo-sdk-2017
+        cd ..
     - uses: actions/upload-artifact@v3
       with:
             name: Release Android
