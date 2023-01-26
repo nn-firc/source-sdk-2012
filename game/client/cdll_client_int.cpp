@@ -1843,7 +1843,9 @@ CEG_NOINLINE void CHLClient::Shutdown( void )
 	}
 
 	VGui_Shutdown();
-	
+
+	gTouch.Shutdown();
+
 	ParticleMgr()->Term();
 	
 #ifdef USE_BLOBULATOR
