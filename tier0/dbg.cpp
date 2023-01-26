@@ -332,11 +332,13 @@ CLoggingSystem *GetGlobalLoggingSystem();
 
 void Msg( const tchar* pMsgFormat, ... )
 {
+	g_DbgLogger.Write( pMsgFormat );
 	Log_LegacyHelper( LOG_GENERAL, LS_MESSAGE, pMsgFormat );
 }
 
 void Warning( const tchar *pMsgFormat, ... )
 {
+	g_DbgLogger.Write( pMsgFormat );
 	Log_LegacyHelper_Stack( LOG_GENERAL, LS_WARNING, pMsgFormat, AutomaticWarningCallStackLength() );
 }
 
