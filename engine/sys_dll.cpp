@@ -1200,7 +1200,11 @@ static bool LoadThisDll( char *szDllFilename, bool bServerOnly )
 	CSysModule *pDLL = NULL;
 
 	// check signature, don't let users with modified binaries connect to secure servers, they will get VAC banned
+#ifdef ANDROID
+	if ( !bServerOnly && !Host_AllowLoadModule( szDllFilename, getenv("APP_LIB_PATH"), false ) )
+#else
 	if ( !bServerOnly && !Host_AllowLoadModule( szDllFilename, "GAMEBIN", false ) )
+#endif
 	{
 		// not supposed to load this but we will anyway
 		Host_DisallowSecureServers();
@@ -1209,7 +1213,11 @@ static bool LoadThisDll( char *szDllFilename, bool bServerOnly )
 	// Load DLL, ignore if cannot
 	// ensures that the game.dll is running under Steam
 	// this will have to be undone when we want mods to be able to run
+#ifdef ANDROID
+	if ((pDLL = g_pFileSystem->LoadModule(szDllFilename, getenv("APP_LIB_PATH"), false)) == NULL)
+#else
 	if ((pDLL = g_pFileSystem->LoadModule(szDllFilename, "GAMEBIN", false)) == NULL)
+#endif
 	{
 		ConMsg("Failed to load %s\n", szDllFilename);
 		goto IgnoreThisDLL;

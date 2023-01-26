@@ -365,7 +365,11 @@ void CShaderSystem::LoadModShaderDLLs( int dxSupportLevel )
 	// @wge: Not so sure about this OSX addition, may break modding support!
 	return;	// no more support for custom game shaders to control which DLLs we allow loading
 
+#ifdef ANDROID
+	const char *pModShaderPathID = getenv("APP_LIB_PATH");
+#else
 	const char *pModShaderPathID = "GAMEBIN";
+#endif
 
 	// First load the ones with dx_ prefix.
 	char buf[256];

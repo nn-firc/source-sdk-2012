@@ -2180,7 +2180,11 @@ bool CModAppSystemGroup::Create()
 
 	// Check the signature on the client dll.  If this fails we load it anyway but put this client
 	// into insecure mode so it won't connect to secure servers and get VAC banned
+#ifdef ANDROID
+	if ( !IsServerOnly() && !Host_AllowLoadModule( "libmatchmaking" DLL_EXT_STRING, getenv("APP_LIB_PATH"), false ) )
+#else
 	if ( !IsServerOnly() && !Host_AllowLoadModule( "libmatchmaking" DLL_EXT_STRING, "GAMEBIN", false ) )
+#endif
 	{
 		// not supposed to load this but we will anyway
 		Host_DisallowSecureServers();
@@ -2189,7 +2193,11 @@ bool CModAppSystemGroup::Create()
 	// loads the matchmaking.dll
 	g_pMatchmakingDllModule = g_pFileSystem->LoadModule(
 		IsServerOnly() ? ( "libmatchmaking_ds" DLL_EXT_STRING ) : ( "libmatchmaking" DLL_EXT_STRING ),
+#ifdef ANDROID
+		getenv("APP_LIB_PATH"), false );
+#else
 		"GAMEBIN", false );
+#endif
 
 	if ( g_pMatchmakingDllModule )
 	{
