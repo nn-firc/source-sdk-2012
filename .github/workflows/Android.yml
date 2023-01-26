@@ -16,7 +16,15 @@ jobs:
     - uses: actions/checkout@v3
     - name: Build
       run: bash .github/workflows/ndk.sh
+    - uses: actions/checkout@v3
+    - name: Build apk
+      run: |
+        sudo apt install -y make openjdk-8-jdk openjdk-8-jre ant-contrib
+        git clone https://github.com/nn-firc/csgo-sdk-android.git --depth 1
+        cd csgo-sdk-android.git 
+        JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64 ANDROID_HOME=android-sdk ant release
+        cd /home/runner/work/csgo-sdk-2017/csgo-sdk-2017
     - uses: actions/upload-artifact@v3
       with:
             name: Release Android
-            path: /home/runner/work/csgo-sdk-2017/csgo-sdk-2017/csgo-android
+            path: /home/runner/work/csgo-sdk-2017/csgo-sdk-2017/csgo-sdk-android/bin/csgo-release.apk
