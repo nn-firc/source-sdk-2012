@@ -90,17 +90,24 @@ typedef void* VD3DHANDLE;
 #if !defined(_WINNT_)
 
 	typedef int INT;
-	typedef unsigned int ULONG;
-	typedef int LONG;
 	typedef float FLOAT;
 	typedef unsigned int DWORD;
 	typedef unsigned short WORD;
 	typedef long long LONGLONG;
 	typedef unsigned int UINT;
-	typedef long HRESULT;
 	typedef unsigned char BYTE;
 	#define CONST const
-		
+
+#if !defined( OSX ) || defined( PLATFORM_64BITS )
+	typedef unsigned int ULONG;
+	typedef int LONG;
+	typedef int HRESULT;
+#else
+	typedef unsigned long ULONG;
+	typedef long LONG;
+	typedef long HRESULT;
+#endif		
+
 	#if defined(POSIX)
 		typedef size_t ULONG_PTR;
 	#else
