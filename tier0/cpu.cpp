@@ -263,8 +263,10 @@ static bool IsWin98OrOlder()
 
 static bool CheckSSETechnology(void)
 {
-#if defined( _X360 ) || defined( _PS3 ) || defined( __arm__ ) || defined( __aarch64__ )
+#if defined( _X360 ) || defined( _PS3 )
 	return true;
+#elif defined( __arm__ ) || defined( __aarch64__ )
+	return false;
 #else
 	if ( IsWin98OrOlder() )
 	{
