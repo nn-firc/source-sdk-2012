@@ -2603,17 +2603,23 @@ bool ClientDLL_Load()
 	// Check the signature on the client dll.  If this fails we load it anyway but put this client
 	// into insecure mode so it won't connect to secure servers and get VAC banned
 	// #if 0 the following block and rebuild engine.dll if you want to build your own noCEG client.dll and run on Steam Public in secure mode!
-#if 1
+#ifdef ANDROID
+	if ( !Host_AllowLoadModule( "libclient" DLL_EXT_STRING, getenv("APP_LIB_PATH"), false ) )
+#else
 	if ( !Host_AllowLoadModule( "libclient" DLL_EXT_STRING, "GAMEBIN", false ) )
+#endif
 	{
 		// not supposed to load this but we will anyway
 		Host_DisallowSecureServers();
 	}
-#endif
 
 	// loads the client.dll, but ensures that the client dll is running under Steam
 	// this will have to be undone when we want mods to be able to run
+#ifdef ANDROID
+	g_ClientDLLModule = g_pFileSystem->LoadModule( "libclient" DLL_EXT_STRING, getenv("APP_LIB_PATH"), false );
+#else
 	g_ClientDLLModule = g_pFileSystem->LoadModule( "libclient" DLL_EXT_STRING, "GAMEBIN", false );
+#endif
 	if ( g_ClientDLLModule )
 	{
 		g_ClientFactory = Sys_GetFactory( g_ClientDLLModule );
