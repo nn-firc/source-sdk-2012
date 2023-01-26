@@ -54,6 +54,7 @@ void CInputSystem::InitializeTouch( void )
 	// abort startup if user requests no touch
 	if ( CommandLine()->FindParm("-notouch") ) return;
 
+	m_bTouchInitialized = true;
 	SDL_AddEventWatch(TouchSDLWatcher, this);
 }
 

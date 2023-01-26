@@ -2218,7 +2218,7 @@ bool CInputSystem::GetTouchAccumulators( InputEventType_t &event, int &fingerId,
 	accumX = m_touchAccumX;
 	accumY = m_touchAccumY;
 
-	return true;
+	return m_bTouchInitialized;
 }
 
 void CInputSystem::DisableMouseCapture()
