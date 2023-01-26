@@ -6370,8 +6370,7 @@ HRESULT IDirect3DDevice9::SetSamplerStateNonInline( DWORD Sampler, D3DSAMPLERSTA
 
 void IDirect3DDevice9::SetSamplerStatesNonInline(
 	DWORD Sampler, DWORD AddressU, DWORD AddressV, DWORD AddressW,
-	DWORD MinFilter, DWORD MagFilter, DWORD MipFilter, 
-	DWORD MinLod, float LodBias)
+	DWORD MinFilter, DWORD MagFilter, DWORD MipFilter )
 {
 	GL_BATCH_PERF_CALL_TIMER;
 	GL_PUBLIC_ENTRYPOINT_CHECKS( this );
