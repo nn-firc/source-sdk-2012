@@ -1157,6 +1157,8 @@ public:
 
 	virtual bool IsConnectedUserInfoChangeAllowed( IConVar *pCvar ) = 0;
 
+	virtual void IN_TouchEvent( int type, int fingerId, int x, int y ) = 0;
+
 	virtual char const * GetRichPresenceStatusString() = 0;
 
 	// Returns true if the client can stop recording a demo now.  If the client returns false,

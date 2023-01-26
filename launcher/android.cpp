@@ -107,7 +107,7 @@ DLLEXPORT int LauncherMain( int argc, char **argv );
 void SetLauncherArgs()
 {
 	static char binPath[2048];
-	snprintf(binPath, sizeof binPath, "%s/hl2_linux", getenv("APP_DATA_PATH") );
+	snprintf(binPath, sizeof binPath, "%s/csgo_launcher", getenv("APP_DATA_PATH") );
 	LogPrintf(binPath);
 	D(binPath);
 

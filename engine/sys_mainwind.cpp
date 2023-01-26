@@ -409,6 +409,11 @@ void CGame::DispatchInputEvent( const InputEvent_t &event )
 	case IE_KeyCodeTyped:
 		Key_Event( event );
 		break;
+	case IE_FingerDown:
+	case IE_FingerUp:
+	case IE_FingerMotion:
+		if( g_ClientDLL )
+			g_ClientDLL->IN_TouchEvent( event.m_nType, event.m_nData, event.m_nData2, event.m_nData3 );
 
 	// Broadcast analog values both to VGui & to GameUI
 	case IE_AnalogValueChanged:

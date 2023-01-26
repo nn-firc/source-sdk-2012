@@ -699,7 +699,8 @@ def build(bld):
 		'generated_proto/netmessages.pb.cc',
 		'generated_proto/network_connection.pb.cc',
 		'generated_proto/steammessages.pb.cc',
-		'../../public/tier0/memoverride.cpp'
+		'../../public/tier0/memoverride.cpp',
+		'touch.cpp'
 	]
 
 	includes = [

@@ -19,6 +19,8 @@
 #include "bitbuf.h"
 #include "checksum_md5.h"
 #include "hltvcamera.h"
+#include "touch.h"
+#include "ienginevgui.h"
 #if defined( REPLAY_ENABLED )
 #include "replaycamera.h"
 #endif
@@ -1219,8 +1221,8 @@ void CInput::ControllerMove( int nSlot, float frametime, CUserCmd *cmd )
 	}
 
 	JoyStickMove( frametime, cmd);
-
 	SteamControllerMove( frametime, cmd );
+	gTouch.Move( frametime, cmd );
 }
 
 //-----------------------------------------------------------------------------
@@ -1452,11 +1454,11 @@ void CInput::CreateMove ( int sequence_number, float input_sample_frametime, boo
 	cmd->buttons = GetButtonBits( true );
 #endif
 
-	// Using joystick?
+	// Using joystick or touch?
 #ifdef SIXENSE
-	if ( g_pInputSystem->IsDeviceReadingInput( INPUT_DEVICE_GAMEPAD ) && ( in_joystick.GetInt() || g_pSixenseInput->IsEnabled() ) )
+	if ( g_pInputSystem->IsDeviceReadingInput( INPUT_DEVICE_GAMEPAD ) && ( in_joystick.GetInt() || g_pSixenseInput->IsEnabled() ) || touch_enable.GetInt() )
 #else
-	if ( ( g_pInputSystem->IsDeviceReadingInput( INPUT_DEVICE_GAMEPAD ) && in_joystick.GetInt() ) || g_pInputSystem->MotionControllerActive() || g_pInputSystem->IsSteamControllerActive() )
+	if ( ( g_pInputSystem->IsDeviceReadingInput( INPUT_DEVICE_GAMEPAD ) && in_joystick.GetInt() ) || g_pInputSystem->MotionControllerActive() || g_pInputSystem->IsSteamControllerActive() || touch_enable.GetInt() )
 #endif
 	{
 		if ( cmd->forwardmove > 0 )

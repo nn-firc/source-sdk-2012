@@ -119,6 +119,7 @@
 #endif
 
 #include "mumble.h"
+#include "touch.h"
 
 #include "vscript/ivscript.h"
 #include "activitylist.h"
@@ -979,6 +980,8 @@ public:
 	void					PrecacheMaterial( const char *pMaterialName );
 	void					PrecacheMovie( const char *pMovieName );
 
+	virtual void IN_TouchEvent( int type, int fingerId, int x, int y );
+
 	virtual void			SetBlurFade( float scale );
 	
 	virtual void			ResetHudCloseCaption();
@@ -1306,6 +1309,8 @@ CEG_NOINLINE bool InitGameSystems( CreateInterfaceFn appSystemFactory )
 		ACTIVE_SPLITSCREEN_PLAYER_GUARD_VGUI( hh );
 		GetHud().Init();
 	}
+
+	gTouch.Init();
 
 	for ( int hh = 0; hh < MAX_SPLITSCREEN_PLAYERS; ++hh )
 	{
@@ -2142,6 +2147,21 @@ bool CHLClient::IN_IsKeyDown( const char *name, bool& isdown )
 int CHLClient::IN_KeyEvent( int eventcode, ButtonCode_t keynum, const char *pszCurrentBinding )
 {
 	return input->KeyEvent( eventcode, keynum, pszCurrentBinding );
+}
+
+void CHLClient::IN_TouchEvent( int type, int fingerId, int x, int y )
+{
+	if( enginevgui->IsGameUIVisible() )
+		return;
+
+	touch_event_t ev;
+
+	ev.type = type;
+	ev.fingerid = fingerId;
+	ev.x = x;
+	ev.y = y;
+
+	gTouch.ProcessEvent( &ev );
 }
 
 void CHLClient::ExtraMouseSample( float frametime, bool active )

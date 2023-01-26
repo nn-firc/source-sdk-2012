@@ -22,6 +22,7 @@
 #include <vgui_controls/Panel.h>
 #include <keyvalues.h>
 #include "filesystem.h"
+#include "touch.h"
 #include "matsys_controls/matsyscontrols.h"
 
 #ifdef SIXENSE
@@ -463,6 +464,7 @@ void VGui_CreateGlobalPanels( void )
 
 	// Debugging or related tool
 	fps->Create( toolParent );
+	touch_panel->Create( toolParent );
 #if defined( TRACK_BLOCKING_IO )
 	iopanel->Create( gameDLLPanel );
 #endif
@@ -498,9 +500,11 @@ void VGui_Shutdown()
 	iopanel->Destroy();
 #endif
 	fps->Destroy();
+	touch_panel->Destroy();
 
 	messagechars->Destroy();
 	loadingdisc->Destroy();
+	touch_panel->Destroy();
 	for ( int hh = 0; hh < MAX_SPLITSCREEN_PLAYERS; ++hh )
 	{
 		ACTIVE_SPLITSCREEN_PLAYER_GUARD_VGUI( hh );
