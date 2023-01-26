@@ -1,26 +1,3 @@
-//========= Copyright Valve Corporation, All rights reserved. ============//
-//                       TOGL CODE LICENSE
-//
-//  Copyright 2011-2014 Valve Corporation
-//  All Rights Reserved.
-//
-//  Permission is hereby granted, free of charge, to any person obtaining a copy
-//  of this software and associated documentation files (the "Software"), to deal
-//  in the Software without restriction, including without limitation the rights
-//  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-//  copies of the Software, and to permit persons to whom the Software is
-//  furnished to do so, subject to the following conditions:
-//
-//  The above copyright notice and this permission notice shall be included in
-//  all copies or substantial portions of the Software.
-//
-//  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-//  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-//  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-//  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-//  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-//  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-//  THE SOFTWARE.
 // !!! FIXME: Some of these aren't base OpenGL...pick out the extensions.
 // !!! FIXME: Also, look up these -1, -1 versions numbers.
 GL_FUNC(OpenGL,true,GLenum,glGetError,(void),())
@@ -63,9 +40,7 @@ GL_FUNC_VOID(OpenGL,true,glDrawArrays,(GLenum a,GLint b,GLsizei c),(a,b,c))
 GL_FUNC_VOID(OpenGL,true,glDrawBuffer,(GLenum a),(a))
 GL_FUNC_VOID(OpenGL,true,glDrawBuffers,(GLsizei a,const GLenum *b),(a,b))
 GL_FUNC_VOID(OpenGL,true,glDrawRangeElements,(GLenum a,GLuint b,GLuint c,GLsizei d,GLenum e,const GLvoid *f),(a,b,c,d,e,f))
-#if 1 //ifndef OSX // 10.6/GL 2.1 compatability
 GL_FUNC_VOID(OpenGL,true,glDrawRangeElementsBaseVertex,(GLenum a,GLuint b,GLuint c,GLsizei d,GLenum e,const GLvoid *f, GLenum g),(a,b,c,d,e,f,g))
-#endif
 GL_FUNC_VOID(OpenGL,true,glEnable,(GLenum a),(a))
 GL_FUNC_VOID(OpenGL,true,glEnableVertexAttribArray,(GLuint a),(a))
 GL_FUNC_VOID(OpenGL,true,glEnd,(void),())
@@ -116,8 +91,6 @@ GL_FUNC_VOID(OpenGL,true,glUniform1iARB,(GLint a,GLint b),(a,b))
 GL_FUNC_VOID(OpenGL,true,glUniform4fv,(GLint a,GLsizei b,const GLfloat *c),(a,b,c))
 GL_FUNC(OpenGL,true,GLboolean,glUnmapBuffer,(GLenum a),(a))
 GL_FUNC_VOID(OpenGL,true,glUseProgram,(GLuint a),(a))
-GL_FUNC_VOID(OpenGL,true,glUseProgramObjectARB,(GLhandleARB a),(a))
-GL_FUNC_VOID(OpenGL,true,glValidateProgramARB,(GLhandleARB a),(a))
 GL_FUNC_VOID(OpenGL,true,glVertex3f,(GLfloat a,GLfloat b,GLfloat c),(a,b,c))
 GL_FUNC_VOID(OpenGL,true,glVertexAttribPointer,(GLuint a,GLint b,GLenum c,GLboolean d,GLsizei e,const GLvoid *f),(a,b,c,d,e,f))
 GL_FUNC_VOID(OpenGL,true,glViewport,(GLint a,GLint b,GLsizei c,GLsizei d),(a,b,c,d))
@@ -222,7 +195,6 @@ GL_FUNC_VOID(GL_ARB_debug_output,false,glDebugMessageControlARB,(GLenum a, GLenu
 GL_EXT(GL_EXT_direct_state_access,-1,-1)
 GL_FUNC_VOID(GL_EXT_direct_state_access,false,glBindMultiTextureEXT,(GLenum a,GLuint b, GLuint c),(a,b,c))
 GL_EXT(GL_NV_bindless_texture,-1,-1)
-
 #ifndef OSX
 GL_FUNC_VOID(OpenGL, true, glGenSamplers, (GLuint a, GLuint *b), (a, b))
 GL_FUNC_VOID(OpenGL, true, glDeleteSamplers, (GLsizei a, const GLuint *b), (a, b))
@@ -247,17 +219,14 @@ GL_FUNC_VOID(OpenGL,true,glQueryCounter,(GLuint id, GLenum target), (id, target)
 GL_FUNC_VOID(OpenGL,true,glGetQueryObjectiv,(GLuint id, GLenum pname, GLint *params), (id, pname, params))
 GL_FUNC_VOID(OpenGL,true,glGetQueryObjectui64v,(GLuint id, GLenum pname, GLuint64 *params), (id, pname, params))
 GL_FUNC_VOID(OpenGL,true,glCopyBufferSubData,(GLenum readtarget, GLenum writetarget, GLintptr readoffset, GLintptr writeoffset, GLsizeiptr size),(readtarget, writetarget, readoffset, writeoffset, size))
-#endif // !OSX
-
+#endif
 GL_EXT(GL_AMD_pinned_memory,-1,-1)
 GL_EXT(GL_EXT_framebuffer_multisample_blit_scaled,-1,-1)
-
 #ifndef OSX
 GL_FUNC_VOID(OpenGL,true,glGenVertexArrays,(GLsizei n, GLuint *arrays),(n, arrays))
 GL_FUNC_VOID(OpenGL,true,glDeleteVertexArrays,(GLsizei n, GLuint *arrays),(n, arrays))
 GL_FUNC_VOID(OpenGL,true,glBindVertexArray,(GLuint a),(a))
-#endif // !OSX
-
+#endif
 GL_EXT(GL_EXT_texture_sRGB_decode,-1,-1)
 GL_FUNC_VOID(OpenGL,true,glPushClientAttrib,(GLbitfield a),(a))
 GL_FUNC_VOID(OpenGL,true,glPopClientAttrib,(void),())
