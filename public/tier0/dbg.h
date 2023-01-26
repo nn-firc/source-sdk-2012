@@ -39,6 +39,14 @@
 
 class Color;
 
+class IDbgLogger
+{
+public:
+	virtual void Init(const char *logfile) = 0;
+	virtual void Write(const char *data) = 0;
+};
+
+PLATFORM_INTERFACE IDbgLogger *DebugLogger();
 
 //-----------------------------------------------------------------------------
 // Usage model for the Dbg library

@@ -42,6 +42,77 @@
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
+class CDbgLogger : public IDbgLogger
+{
+public:
+	CDbgLogger();
+	~CDbgLogger();
+
+	void Init(const char *logfile);
+	void Write(const char *data);
+
+private:
+	FILE *file;
+	float flStartTime;
+	bool bShouldLog;
+};
+
+
+CDbgLogger::CDbgLogger()
+{
+	bShouldLog = false;
+	flStartTime = Plat_FloatTime();
+}
+
+void CDbgLogger::Init(const char *logfile)
+{
+	time_t timeCur;
+	struct tm tmStruct;
+
+	char szTime[256];
+
+	bShouldLog = true;
+
+	time( &timeCur );
+	Plat_gmtime( &timeCur, &tmStruct );
+	Plat_ctime( &timeCur, szTime, sizeof(szTime) );
+
+	file = fopen(logfile, "w+");
+	fprintf(file, ">>> Engine started at %s\n", szTime);
+	fflush(file);
+}
+
+CDbgLogger::~CDbgLogger()
+{
+	if( !bShouldLog )
+		return;
+
+	time_t timeCur;
+	struct tm tmStruct;
+
+	char szTime[256];
+
+	time( &timeCur );
+	Plat_gmtime( &timeCur, &tmStruct );
+	Plat_ctime( &timeCur, szTime, sizeof(szTime) );
+
+	fprintf(file, "\n>>> Engine closed at %s\n", szTime);
+	fclose(file);
+}
+
+void CDbgLogger::Write(const char *data)
+{
+	if( !bShouldLog )
+		return;
+
+	fprintf(file, "[%.4f] ", Plat_FloatTime() - flStartTime);
+	fprintf(file, "%s", data);
+	fflush(file);
+}
+
+static CDbgLogger g_DbgLogger;
+IDbgLogger *DebugLogger() { return &g_DbgLogger; }
+
 #if defined( ENABLE_RUNTIME_STACK_TRANSLATION )
 #pragma optimize( "g", off ) //variable argument functions seem to screw up stack walking unless this optimization is disabled
 // Disable this warning: dbg.cpp(479): warning C4748: /GS can not protect parameters and local variables from local buffer overrun because optimizations are disabled in function
