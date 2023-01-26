@@ -22,7 +22,11 @@ typedef int SOCKET;
 #define INVALID_SOCKET (~0)
 #endif
 
+#ifdef TOGLES
+#include "togles/rendermechanism.h"
+#else
 #include "togl/rendermechanism.h"
+#endif
 #include "vertexshaderdx8.h"
 #include "tier1/utlcommon.h"
 #include "tier1/utlsymbol.h"

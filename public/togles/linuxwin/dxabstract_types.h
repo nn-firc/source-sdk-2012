@@ -90,8 +90,8 @@ typedef void* VD3DHANDLE;
 #if !defined(_WINNT_)
 
 	typedef int INT;
-	typedef unsigned long ULONG;
-	typedef long LONG;
+	typedef unsigned int ULONG;
+	typedef int LONG;
 	typedef float FLOAT;
 	typedef unsigned int DWORD;
 	typedef unsigned short WORD;

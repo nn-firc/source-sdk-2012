@@ -127,7 +127,11 @@ typedef intp PixelShader_t;
 #define D3DSAMP_NOTSUPPORTED					D3DSAMP_FORCE_DWORD
 #define D3DRS_NOTSUPPORTED						D3DRS_FORCE_DWORD
 
+#ifdef TOGLES
+#include "togles/rendermechanism.h"
+#else
 #include "togl/rendermechanism.h"
+#endif
 
 #if defined( _X360 )
 

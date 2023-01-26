@@ -6,7 +6,11 @@
 //
 //=============================================================================//
 #define DISABLE_PROTECTED_THINGS
+#ifdef TOGLES
+#include "togles/rendermechanism.h"
+#else
 #include "togl/rendermechanism.h"
+#endif
 #include "hardwareconfig.h"
 #include "shaderapi/ishaderutil.h"
 #include "shaderapi_global.h"

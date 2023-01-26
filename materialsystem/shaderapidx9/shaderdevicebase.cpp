@@ -6,7 +6,11 @@
 //
 //=============================================================================//
 #define DISABLE_PROTECTED_THINGS
+#ifdef TOGLES
+#include "togles/rendermechanism.h"
+#else
 #include "togl/rendermechanism.h"
+#endif
 #include "shaderdevicebase.h"
 #include "tier1/keyvalues.h"
 #include "tier1/convar.h"

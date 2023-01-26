@@ -1,7 +1,3 @@
-#ifdef TOGLES
-#include "togles/rendermechanism.h"
-#else
-
 #ifndef RENDERMECHANISM_H
 #define RENDERMECHANISM_H
 
@@ -51,6 +47,4 @@
 #endif // defined(DX_TO_GL_ABSTRACTION)
 
 #endif // RENDERMECHANISM_H
-
-#endif
 

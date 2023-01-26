@@ -13,7 +13,11 @@
 #include "tier1/callqueue.h"
 #include "tier0/vprof.h"
 #include "tier0/basetypes.h"
+#ifdef TOGLES
+#include "togles/rendermechanism.h"
+#else
 #include "togl/rendermechanism.h"
+#endif
 
 // NOTE: This has to be the last file included!
 #include "tier0/memdbgon.h"

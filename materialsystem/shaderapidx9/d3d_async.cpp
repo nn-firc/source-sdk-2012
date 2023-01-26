@@ -5,7 +5,11 @@
 // methods for muti-core dx9 threading
 //===========================================================================//
 
+#ifdef TOGLES
+#include "togles/rendermechanism.h"
+#else
 #include "togl/rendermechanism.h"
+#endif
 #include "utlsymbol.h"
 #include "utlvector.h"
 #include "utldict.h"

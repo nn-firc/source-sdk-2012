@@ -6,7 +6,11 @@
 //
 //===========================================================================//
 #define DISABLE_PROTECTED_THINGS
+#ifdef TOGLES
+#include "togles/rendermechanism.h"
+#else
 #include "togl/rendermechanism.h"
+#endif
 #include "TransitionTable.h"
 #include "recording.h"
 #include "shaderapidx8.h"

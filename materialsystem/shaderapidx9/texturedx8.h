@@ -13,7 +13,11 @@
 #pragma once
 #endif
 
+#ifdef TOGLES
+#include "togles/rendermechanism.h"
+#else
 #include "togl/rendermechanism.h"
+#endif
 #include "bitmap/imageformat.h"
 #include "locald3dtypes.h"
 #include "shaderapi/ishaderapi.h"

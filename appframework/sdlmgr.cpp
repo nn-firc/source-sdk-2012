@@ -11,7 +11,11 @@
 #include "tier1/keyvalues.h"
 #include "filesystem.h"
 
+#ifdef TOGLES
+#include "togles/rendermechanism.h"
+#else
 #include "togl/rendermechanism.h"
+#endif
 #include "tier0/fasttimer.h"
 
 #ifdef TOGLES

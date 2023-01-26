@@ -6,7 +6,11 @@
 #ifndef WINUTILS_H
 #define WINUTILS_H
 
+#ifdef TOGLES
+#include "togles/rendermechanism.h"
+#else
 #include "togl/rendermechanism.h"
+#endif
 
 #if !defined(_WIN32)
 

@@ -6,7 +6,11 @@
 //
 //===========================================================================//
 #define DISABLE_PROTECTED_THINGS
+#ifdef TOGLES
+#include "togles/rendermechanism.h"
+#else
 #include "togl/rendermechanism.h"
+#endif
 #include "shadershadowdx8.h"
 #include "locald3dtypes.h"
 #include "utlvector.h"

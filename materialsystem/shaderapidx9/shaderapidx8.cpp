@@ -89,7 +89,11 @@ mat_fullbright 1 doesn't work properly on alpha materials in testroom_standards
 #include "itextureinternal.h"
 #include "texturemanager.h"
 #include "bitmap/imageformat.h"
+#ifdef TOGLES
+#include "togles/rendermechanism.h"
+#else
 #include "togl/rendermechanism.h"
+#endif
 
 #if defined( _X360 )
 #include "xbox/xbox_console.h"

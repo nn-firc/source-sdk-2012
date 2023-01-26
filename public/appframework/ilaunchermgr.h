@@ -24,8 +24,13 @@
 #include "appframework/iappsystem.h"
 #include "inputsystem/iinputsystem.h"
 
+#ifdef TOGLES
+#include "togles/linuxwin/glmgrbasics.h"
+#include "togles/linuxwin/glmdisplay.h"
+#else
 #include "togl/glmgrbasics.h"
 #include "togl/glmdisplay.h"
+#endif
 
 // if you rev this version also update materialsystem/cmaterialsystem.cpp CMaterialSystem::Connect as it defines the string directly
 #if defined( USE_SDL )

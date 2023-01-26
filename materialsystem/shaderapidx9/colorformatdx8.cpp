@@ -18,7 +18,11 @@
 ////#include <GL/glext.h>
 ////#include "tier0/dynfunction.h"
 #define DISABLE_PROTECTED_THINGS
+#ifdef TOGLES
+#include "togles/rendermechanism.h"
+#else
 #include "togl/rendermechanism.h"
+#endif
 #include "locald3dtypes.h"
 #include "colorformatdx8.h"
 #include "shaderapidx8_global.h"
