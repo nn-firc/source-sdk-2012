@@ -146,6 +146,7 @@ public:
 	virtual int GetPollCount() const;
 	virtual void SetCursorPosition( int x, int y );
 	void GetRawMouseAccumulators( int& accumX, int& accumY );
+	bool GetTouchAccumulators( InputEventType_t &event, int &fingerId, int& accumX, int& accumY );
 	virtual void GetCursorPosition( int *pX, int *pY );
 	virtual void SetMouseCursorVisible( bool bVisible );
 	virtual void AddUIEventListener();
@@ -425,6 +426,12 @@ public:
 	// Record button state and post the event
 	void JoystickButtonEvent( ButtonCode_t button, int sample );
 
+	// Init touch
+	void InitializeTouch( void );
+
+	// Shut down touch	
+	void ShutdownTouch( void );
+
 	bool IsSteamControllerActive() const;
 	void SetSteamControllerMode( const char *pSteamControllerMode, const void *obj );
 
@@ -518,6 +525,9 @@ public:
 	void JoystickButtonPress( int joystickId, int button ); // button is a SDL_CONTROLLER_BUTTON;
 	void JoystickButtonRelease( int joystickId, int button ); // same as above.
 	void JoystickAxisMotion( int joystickId, int axis, int value );
+	void FingerDown( int fingerId, int x, int y );	
+	void FingerUp( int fingerId, int x, int y );	
+	void FingerMotion( int fingerId, int x, int y );
 
 #endif
 
@@ -550,6 +560,7 @@ private:
 	// Joystick info
 	CUtlFlags<unsigned short> m_JoysticksEnabled;
 	int m_nJoystickCount;
+	bool m_bTouchInitialized;
 	bool m_bXController;
 	bool m_bSteamController;
 	float m_flLastSteamControllerInput;
@@ -570,6 +581,9 @@ private:
 	// raw mouse input
 	bool m_bRawInputSupported;
 	int	 m_mouseRawAccumX, m_mouseRawAccumY;
+
+	InputEventType_t m_touchAccumEvent;
+	int m_touchAccumFingerId, m_touchAccumX, m_touchAccumY;
 
 	// Current mouse capture window
 	PlatWindow_t m_hCurrentCaptureWnd;

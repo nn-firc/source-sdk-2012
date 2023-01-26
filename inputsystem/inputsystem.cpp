@@ -97,6 +97,7 @@ CInputSystem::CInputSystem()
 	m_JoysticksEnabled.ClearAllFlags();
 	m_nJoystickCount = 0;
 	m_nJoystickBaseline = 0;
+	m_bTouchInitialized = false;
 	m_nPollCount = 0;
 	m_uiMouseWheel = 0;
 	m_bXController = false;
@@ -197,6 +198,7 @@ InitReturnVal_t CInputSystem::Init()
 	ButtonCode_UpdateScanCodeLayout();
 
 	joy_xcontroller_found.SetValue( 0 );
+	InitializeTouch();
 
 #if !defined( _GAMECONSOLE )
 	if ( IsPC() )
@@ -2207,6 +2209,16 @@ void CInputSystem::GetRawMouseAccumulators( int& accumX, int& accumY )
 	m_mouseRawAccumX = m_mouseRawAccumY = 0;
 
 #endif
+}
+
+bool CInputSystem::GetTouchAccumulators( InputEventType_t &event, int &fingerId, int& accumX, int& accumY )
+{
+	event = m_touchAccumEvent;
+	fingerId = m_touchAccumFingerId;
+	accumX = m_touchAccumX;
+	accumY = m_touchAccumY;
+
+	return true;
 }
 
 void CInputSystem::DisableMouseCapture()

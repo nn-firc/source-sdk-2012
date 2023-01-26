@@ -22,6 +22,7 @@ def build(bld):
 		'joystick_linux.cpp',#		[$LINUXALL]
 		'steamcontroller.cpp',
 		'key_translation.cpp',
+		'touch_sdl.cpp',
 		'../common/platforminputdevice.cpp',
 	]
 

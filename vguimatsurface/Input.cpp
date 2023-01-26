@@ -108,6 +108,28 @@ bool InputHandleInputEvent( InputContextHandle_t hContext, const InputEvent_t &e
 		}
 		break;
 
+	case IE_FingerDown:
+		{
+			//g_pIInput->InternalCursorMoved( event.m_nData2, event.m_nData3 );
+			g_pIInput->UpdateCursorPosInternal( event.m_nData2, event.m_nData3 );
+			g_pIInput->SetMouseCodeState( MOUSE_LEFT, vgui::BUTTON_PRESSED );
+			g_pIInput->InternalMousePressed( MOUSE_LEFT );
+		}
+		return true;
+	case IE_FingerUp:
+		{
+			g_pIInput->UpdateCursorPosInternal( event.m_nData2, event.m_nData3 );
+			g_pIInput->SetMouseCodeState( MOUSE_LEFT, vgui::BUTTON_RELEASED );			
+			g_pIInput->InternalMouseReleased( MOUSE_LEFT );
+		}
+		return true;
+	case IE_FingerMotion:
+		{
+			//g_pIInput->UpdateCursorPosInternal( event.m_nData2, event.m_nData3 );
+			g_pIInput->InternalCursorMoved( event.m_nData2, event.m_nData3 );
+		}
+		return true;
+
 	case IE_ButtonDoubleClicked:
 		{
 			// NOTE: data2 is the virtual key code (data1 contains the scan-code one)
