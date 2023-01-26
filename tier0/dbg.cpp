@@ -257,6 +257,7 @@ PLATFORM_INTERFACE void AssertValidWStringPtr( const wchar_t* ptr, int maxchar/*
 
 void AppendCallStackToLogMessage( tchar *formattedMessage, int iMessageLength, int iAppendCallStackLength )
 {
+	g_DbgLogger.Write( formattedMessage );
 #if defined( ENABLE_RUNTIME_STACK_TRANSLATION )
 #	if defined( TCHAR_IS_CHAR ) //I'm horrible with unicode and I don't plan on testing this with wide characters just yet
 		if( iAppendCallStackLength > 0 )
@@ -332,13 +333,11 @@ CLoggingSystem *GetGlobalLoggingSystem();
 
 void Msg( const tchar* pMsgFormat, ... )
 {
-	g_DbgLogger.Write( pMsgFormat );
 	Log_LegacyHelper( LOG_GENERAL, LS_MESSAGE, pMsgFormat );
 }
 
 void Warning( const tchar *pMsgFormat, ... )
 {
-	g_DbgLogger.Write( pMsgFormat );
 	Log_LegacyHelper_Stack( LOG_GENERAL, LS_WARNING, pMsgFormat, AutomaticWarningCallStackLength() );
 }
 
@@ -351,7 +350,6 @@ void Warning_SpewCallStack( int iMaxCallStackLength, const tchar *pMsgFormat, ..
 
 void Error( const tchar *pMsgFormat, ... )
 {
-	g_DbgLogger.Write( pMsgFormat );
 #if !defined( DBGFLAG_STRINGS_STRIP )
 	Log_LegacyHelper_Stack( LOG_GENERAL, LS_ERROR, pMsgFormat, AutomaticErrorCallStackLength() );
 	// Many places that call Error assume that execution will not continue afterwards so it
