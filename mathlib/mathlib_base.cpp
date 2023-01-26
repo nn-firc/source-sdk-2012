@@ -4005,7 +4005,7 @@ void MathLib_Init( float gamma, float texGamma, float brightness, int overbright
 
 	// FIXME: Hook SSE into VectorAligned + Vector4DAligned
 
-#if !defined( _GAMECONSOLE )
+#if !defined( _GAMECONSOLE ) && !defined( __arm__ ) && !defined( __aarch64__ )
 	// Grab the processor information:
 	const CPUInformation& pi = GetCPUInformation();
 
