@@ -724,8 +724,6 @@ FSReturnCode_t FileSystem_LoadSearchPaths( CFSSearchPathsInit &initInfo )
 	if ( !initInfo.m_pFileSystem || !initInfo.m_pDirectoryName )
 		return SetupFileSystemError( false, FS_INVALID_PARAMETERS, "FileSystem_LoadSearchPaths: Invalid parameters specified." );
 
-	Msg("filesystem BaseDir: %s\n", baseDir);
-
 	KeyValues *pMainFile, *pFileSystemInfo, *pSearchPaths;
 	FSReturnCode_t retVal = LoadGameInfoFile( initInfo.m_pDirectoryName, pMainFile, pFileSystemInfo, pSearchPaths );
 	if ( retVal != FS_OK )
