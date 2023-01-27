@@ -1548,23 +1548,6 @@ int CHLClient::Init( CreateInterfaceFn appSystemFactory, CGlobalVarsBase *pGloba
 #if defined( CSTRIKE15 )
 	if ( ( g_pGameTypes = (IGameTypes *)appSystemFactory( VENGINE_GAMETYPES_VERSION, NULL )) == NULL )
 		return false;
-
-	// load the p4 lib - not doing it in CS:GO to prevent extra .dlls from being loaded
-	CSysModule *m_pP4Module = Sys_LoadModule( "p4lib" );
-	if ( m_pP4Module )
-	{
-		CreateInterfaceFn factory = Sys_GetFactory( m_pP4Module );
-		if ( factory )
-		{
-			p4 = ( IP4 * )factory( P4_INTERFACE_VERSION, NULL );
-
-			if ( p4 )
-			{
-				p4->Connect( appSystemFactory );
-				p4->Init();
-			}
-		}
-	}
 #endif
 
 #if defined( REPLAY_ENABLED )
