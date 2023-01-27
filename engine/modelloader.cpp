@@ -2185,7 +2185,7 @@ void Mod_LoadFaces( void )
 	int			ti, di;
 
 	int face_lump_to_load = LUMP_FACES;
-	if ( g_pMaterialSystemHardwareConfig->GetHDRType() != HDR_TYPE_NONE &&
+	if ( /* g_pMaterialSystemHardwareConfig->GetHDRType() != HDR_TYPE_NONE && */
 		CMapLoadHelper::LumpSize( LUMP_FACES_HDR ) > 0 )
 	{
 		face_lump_to_load = LUMP_FACES_HDR;
@@ -2630,7 +2630,7 @@ void Mod_LoadLeafs( void )
 		Mod_LoadLeafs_Version_0( lh );
 		break;
 	case 1:
-		if( g_pMaterialSystemHardwareConfig->GetHDRType() != HDR_TYPE_NONE &&
+		if( /* g_pMaterialSystemHardwareConfig->GetHDRType() != HDR_TYPE_NONE && */
 	  		  CMapLoadHelper::LumpSize( LUMP_LEAF_AMBIENT_LIGHTING_HDR ) > 0 )
 		{
 			CMapLoadHelper mlh( LUMP_LEAF_AMBIENT_LIGHTING_HDR );
@@ -5299,7 +5299,7 @@ void CModelLoader::Map_LoadModelGuts( model_t *mod )
 	{
 		MEM_ALLOC_CREDIT_("Mod_LoadWorldlights");
 		COM_TimestampedLog( "  Mod_LoadWorldlights" );
-		if ( g_pMaterialSystemHardwareConfig->GetHDRType() != HDR_TYPE_NONE &&
+		if ( /* g_pMaterialSystemHardwareConfig->GetHDRType() != HDR_TYPE_NONE && */
 			CMapLoadHelper::LumpSize( LUMP_WORLDLIGHTS_HDR ) > 0 )
 		{
 			CMapLoadHelper mlh( LUMP_WORLDLIGHTS_HDR );

@@ -404,7 +404,7 @@ HRESULT IDirect3DDevice9::CreateTexture(UINT Width,UINT Height,UINT Levels,DWORD
 	
 	if (Usage & D3DUSAGE_DYNAMIC)
 	{
-		key.m_texFlags |= kGLMTexDynamic;
+		// GLMPRINTF(("-X- DYNAMIC tex usage ignored.."));	//FIXME
 	}
 	
 	if (Usage & D3DUSAGE_TEXTURE_SRGB)
@@ -617,7 +617,7 @@ HRESULT IDirect3DDevice9::CreateCubeTexture(UINT EdgeLength,UINT Levels,DWORD Us
 		
 	if (Usage & D3DUSAGE_DYNAMIC)
 	{
-		key.m_texFlags |= kGLMTexDynamic;
+		//GLMPRINTF(("-X- DYNAMIC tex usage ignored.."));	//FIXME
 	}
 	
 	if (Usage & D3DUSAGE_TEXTURE_SRGB)
@@ -823,7 +823,7 @@ HRESULT IDirect3DDevice9::CreateVolumeTexture(UINT Width,UINT Height,UINT Depth,
 	
 	if (Usage & D3DUSAGE_DYNAMIC)
 	{
-		key.m_texFlags |= kGLMTexDynamic;
+		GLMPRINTF(("-X- DYNAMIC tex usage ignored.."));	//FIXME
 	}
 	
 	if (Usage & D3DUSAGE_TEXTURE_SRGB)
@@ -1040,8 +1040,6 @@ HRESULT IDirect3DSurface9::LockRect(D3DLOCKED_RECT* pLockedRect,CONST RECT* pRec
 		// smells like readback, force texel readout
 		lockreq.m_readback = true;
 	}
-
-	lockreq.m_readonly = (Flags & D3DLOCK_READONLY) ? true : false;
 
 	char	*lockAddress;
 	int		yStride;

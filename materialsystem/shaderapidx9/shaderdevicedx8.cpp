@@ -989,6 +989,10 @@ bool CShaderDeviceMgrDx8::ComputeCapsFromD3D( HardwareCaps_t *pCaps, int nAdapte
 		D3DFMT_X8R8G8B8, D3DUSAGE_QUERY_FILTER,
 		D3DRTYPE_TEXTURE, D3DFMT_A16B16G16R16 ) == S_OK );
 
+#ifdef TOGLES
+	bSupportsInteger16Textures = caps.SupportInt16Format;
+#endif
+
 	// Does the device support filterable fp16 textures?
 	bool bSupportsFloat16Textures = 		
 		( D3D()->CheckDeviceFormat( nAdapter, DX8_DEVTYPE,

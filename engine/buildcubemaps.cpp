@@ -1128,7 +1128,7 @@ void R_BuildCubemapSamples( int numIterations )
 			}
 		}
 
-		bool bSupportsHDR = g_pMaterialSystemHardwareConfig->GetHDRType() != HDR_TYPE_NONE;
+		bool bSupportsHDR = true; //g_pMaterialSystemHardwareConfig->GetHDRType() != HDR_TYPE_NONE;
 
 		CCubemapCollection uniqueCubemaps;
 

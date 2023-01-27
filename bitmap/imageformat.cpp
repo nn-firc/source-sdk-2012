@@ -381,10 +381,14 @@ ImageFormat D3DFormatToImageFormat( D3DFORMAT format )
 
 	switch ( format )
 	{
-#if !defined( PLATFORM_X360 )
+#ifdef TOGLES
+	case D3DFMT_R8G8B8:
+		return IMAGE_FORMAT_RGB888;
+	case D3DFMT_A8R8G8B8:
+		return IMAGE_FORMAT_RGBA8888;
+#else
 	case D3DFMT_R8G8B8:
 		return IMAGE_FORMAT_BGR888;
-#endif
 #ifndef POSIX
 	case D3DFMT_A8B8G8R8:
 		return IMAGE_FORMAT_RGBA8888;
@@ -393,6 +397,7 @@ ImageFormat D3DFormatToImageFormat( D3DFORMAT format )
 #endif // !POSIX
 	case D3DFMT_A8R8G8B8:
 		return IMAGE_FORMAT_BGRA8888;
+#endif // !TOGLES
 	case D3DFMT_X8R8G8B8:
 		return IMAGE_FORMAT_BGRX8888;
 	case D3DFMT_R5G6B5:
