@@ -58,9 +58,7 @@ void InitGL4ES()
 #include <string.h>
 #include <unistd.h>
 #include <SDL_hints.h>
-
 #include "tier0/threadtools.h"
-#include <sys/system_properties.h>
 
 char *LauncherArgv[512];
 char java_args[4096];
@@ -143,26 +141,12 @@ float GetTotalMemory()
 	return mem/1024/1024.f;
 }
 
-void android_property_print(const char *name)
-{
-	char value[1024];
-
-	if( __system_property_get( name, value ) != 0 )
-		Msg("prop %s=%s\n", name, value);
-}
-
 DLLEXPORT int LauncherMainAndroid( int argc, char **argv )
 {
 	SDL_version ver;
 	SDL_GetVersion( &ver );
 
 	LogPrintf("GetTotalMemory() = %.2f GiB\n", GetTotalMemory());
-	android_property_print("ro.build.version.sdk");
-	android_property_print("ro.product.system.device");
-	android_property_print("ro.product.system.manufacturer");
-	android_property_print("ro.product.system.model");
-	android_property_print("ro.product.system.name");
-
 	LogPrintf("SDL version: %d.%d.%d rev: %s\n", (int)ver.major, (int)ver.minor, (int)ver.patch, SDL_GetRevision());
 
 	SetLauncherArgs();
