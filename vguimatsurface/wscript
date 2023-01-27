@@ -40,7 +40,7 @@ def build(bld):
 
 	defines = []
 
-	libs = ['vgui_surfacelib','bitmap','tier0','vgui_controls','dmxloader','tier1','mathlib','vstdlib','tier2','tier3','interfaces','FT2','FC','SDL2','EXPAT']
+	libs = ['vgui_surfacelib','bitmap','tier0','vgui_controls','dmxloader','tier1','mathlib','vstdlib','tier2','tier3','interfaces','FT2','FC','SDL2']
 
 	if bld.env.DEST_OS == 'android':
 		libs += ['EXPAT']

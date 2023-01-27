@@ -221,6 +221,7 @@ def configure(conf):
 	conf.load('subproject xcompile compiler_c compiler_cxx gitversion clang_compilation_database strip_on_install waf_unit_test enforce_pic')
 
 	define_platform(conf)
+	conf.define('GIT_COMMIT_HASH', conf.env.GIT_VERSION)
 
 	if conf.env.TOGLES:
 		projects['game'] += ['togles']

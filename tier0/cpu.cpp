@@ -212,6 +212,22 @@ static CpuIdResult_t cpuidex( unsigned long function, unsigned long subfunction 
 	return out;
 }
 
+// Return the build's architecture
+const tchar* GetProcessorArchName()
+{
+#if defined( __x86_64__) || defined(_M_X64)
+	return "amd64";
+#elif defined(__i386__) || defined(_X86_) || defined(_M_IX86)
+	return "i386";
+#elif defined __aarch64__
+        return "aarch64";
+#elif defined __arm__ || defined _M_ARM
+        return "arm";
+#else
+#error "Unknown architecture"
+#endif
+}
+
 //-----------------------------------------------------------------------------
 // Purpose: This is a bit of a hack because it appears 
 // Output : Returns true on success, false on failure.

@@ -436,6 +436,10 @@ bool FileSystem_GetExecutableDir( char *exedir, int exeDirLen )
 
 static bool FileSystem_GetBaseDir( char *baseDir, int baseDirLen )
 {
+#ifdef ANDROID
+	strncpy(baseDir, getenv("VALVE_GAME_PATH"), baseDirLen);
+	return true;
+#else
 #ifdef _PS3
 	V_strncpy( baseDir,  g_pPS3PathInfo->GameImagePath(), baseDirLen );
 		
@@ -448,6 +452,7 @@ static bool FileSystem_GetBaseDir( char *baseDir, int baseDirLen )
 	}
 
 	return false;
+#endif
 #endif
 }
 
@@ -718,6 +723,8 @@ FSReturnCode_t FileSystem_LoadSearchPaths( CFSSearchPathsInit &initInfo )
 {
 	if ( !initInfo.m_pFileSystem || !initInfo.m_pDirectoryName )
 		return SetupFileSystemError( false, FS_INVALID_PARAMETERS, "FileSystem_LoadSearchPaths: Invalid parameters specified." );
+
+	Msg("filesystem BaseDir: %s\n", baseDir);
 
 	KeyValues *pMainFile, *pFileSystemInfo, *pSearchPaths;
 	FSReturnCode_t retVal = LoadGameInfoFile( initInfo.m_pDirectoryName, pMainFile, pFileSystemInfo, pSearchPaths );
