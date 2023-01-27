@@ -7285,6 +7285,8 @@ CSysModule *CBaseFileSystem::LoadModule( const char *pFileName, const char *pPat
 		}
 	}
 
+	Msg( "Loading %s\n", pFileName );
+
 	// couldn't load it from any of the search paths, let LoadLibrary try
 	return Sys_LoadModule( pFileName );
 }
