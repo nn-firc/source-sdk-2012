@@ -7281,7 +7281,6 @@ CSysModule *CBaseFileSystem::LoadModule( const char *pFileName, const char *pPat
 		if ( pModule ) 
 		{
 			// we found the binary in one of our search paths
-			Msg( "Loading %s\n", pModule );
 			return pModule;
 		}
 	}
