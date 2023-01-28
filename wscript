@@ -315,8 +315,8 @@ def configure(conf):
 		conf.check(lib='SDL2', uselib_store='SDL2')
 		conf.check(lib='freetype2', uselib_store='FT2')
 		conf.check(lib='fontconfig', uselib_store='FC')
+		conf.check(lib='unwind', uselib_store='UNWIND')
 		if conf.env.DEST_CPU != 'aarch64':
-			conf.check(lib='unwind', uselib_store='UNWIND')
 			conf.check(lib='crypto', uselib_store='CRYPTO')
 			conf.check(lib='ssl', uselib_store='SSL')
 		conf.check(lib='curl', uselib_store='CURL')
