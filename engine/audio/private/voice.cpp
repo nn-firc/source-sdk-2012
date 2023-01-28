@@ -826,7 +826,8 @@ bool Voice_Init(const char *pCodecName, int iVersion )
 	//
 	if (   !V_strcmp( pCodecName, "vaudio_celt" )
 		|| !V_strcmp( pCodecName, "vaudio_speex" )
-		|| !V_strcmp( pCodecName, "vaudio_miles" ) )
+		|| !V_strcmp( pCodecName, "vaudio_miles" )
+		|| !V_strcmp( pCodecName, "vaudio_opus" ) )
 	{
 		g_hVoiceCodecDLL = FileSystem_LoadModule( pCodecName );
 	}
