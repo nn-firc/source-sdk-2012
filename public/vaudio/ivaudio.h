@@ -58,6 +58,9 @@ public:
 
 	virtual IAudioStream	*CreateMP3StreamDecoder( IAudioStreamEvent *pEventHandler ) = 0;
 	virtual void			DestroyMP3StreamDecoder( IAudioStream *pDecoder ) = 0;
+
+	virtual void			*CreateMilesAudioEngine() = 0;
+	virtual void			DestroyMilesAudioEngine( void *pEngine ) = 0;
 };
 
 

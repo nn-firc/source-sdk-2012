@@ -36,7 +36,6 @@ projects={
 		'choreoobjects',
 		'dmxloader',
 		'engine',
-		'engine/voice_codecs/minimp3',
 		'filesystem',
 		'game/client',
 		'game/server',
