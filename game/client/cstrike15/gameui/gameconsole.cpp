@@ -10,6 +10,7 @@
 
 #include "gameconsole.h"
 #include "gameconsoledialog.h"
+#include "loadingdialog.h"
 #include "vgui/ISurface.h"
 
 #include "keyvalues.h"
@@ -52,6 +53,7 @@ CGameConsole::~CGameConsole()
 //-----------------------------------------------------------------------------
 void CGameConsole::Initialize()
 {
+#ifndef _XBOX
 	m_pConsole = vgui::SETUP_PANEL( new CGameConsoleDialog() ); // we add text before displaying this so set it up now!
 
 	// set the console to taking up most of the right-half of the screen
@@ -65,9 +67,8 @@ void CGameConsole::Initialize()
 		(swide / 2) + (offset * 3),
 		stall - (offset * 8));
 
-	m_pConsole->InvalidateLayout( false, true );
-
 	m_bInitialized = true;
+#endif
 }
 
 //-----------------------------------------------------------------------------
@@ -75,11 +76,13 @@ void CGameConsole::Initialize()
 //-----------------------------------------------------------------------------
 void CGameConsole::Activate()
 {
+#ifndef _XBOX
 	if (!m_bInitialized)
 		return;
 
 	vgui::surface()->RestrictPaintToSinglePanel(NULL);
 	m_pConsole->Activate();
+#endif
 }
 
 //-----------------------------------------------------------------------------
@@ -87,33 +90,25 @@ void CGameConsole::Activate()
 //-----------------------------------------------------------------------------
 void CGameConsole::Hide()
 {
+#ifndef _XBOX
 	if (!m_bInitialized)
 		return;
 
 	m_pConsole->Hide();
+#endif
 }
-
-//-----------------------------------------------------------------------------
-// Purpose: skips animation and forces the immediate hiding of the panel
-//-----------------------------------------------------------------------------
-void CGameConsole::HideImmediately ( void )
-{
-	if ( !m_bInitialized )
-		return;
-
-	m_pConsole->SetVisible( false );
-}
-
 
 //-----------------------------------------------------------------------------
 // Purpose: clears the console
 //-----------------------------------------------------------------------------
 void CGameConsole::Clear()
 {
+#ifndef _XBOX
 	if (!m_bInitialized)
 		return;
 
 	m_pConsole->Clear();
+#endif
 }
 
 
@@ -122,10 +117,14 @@ void CGameConsole::Clear()
 //-----------------------------------------------------------------------------
 bool CGameConsole::IsConsoleVisible()
 {
+#ifndef _XBOX
 	if (!m_bInitialized)
 		return false;
 	
 	return m_pConsole->IsVisible();
+#else
+	return false;
+#endif
 }
 
 //-----------------------------------------------------------------------------
@@ -133,27 +132,22 @@ bool CGameConsole::IsConsoleVisible()
 //-----------------------------------------------------------------------------
 void CGameConsole::ActivateDelayed(float time)
 {
+#ifndef _XBOX
 	if (!m_bInitialized)
 		return;
 
 	m_pConsole->PostMessage(m_pConsole, new KeyValues("Activate"), time);
+#endif
 }
 
 void CGameConsole::SetParent( int parent )
 {	
+#ifndef _XBOX
 	if (!m_bInitialized)
 		return;
 
 	m_pConsole->SetParent( static_cast<vgui::VPANEL>( parent ));
-}
-
-void CGameConsole::Shutdown( void )
-{
-	if ( m_pConsole && m_bInitialized)
-	{
-		HideImmediately();
-		m_pConsole->MarkForDeletion();
-	}
+#endif
 }
 
 //-----------------------------------------------------------------------------
@@ -161,10 +155,14 @@ void CGameConsole::Shutdown( void )
 //-----------------------------------------------------------------------------
 void CGameConsole::OnCmdCondump()
 {
+#ifndef _XBOX
 	g_GameConsole.m_pConsole->DumpConsoleTextToFile();
+#endif
 }
 
+#ifndef _XBOX
 CON_COMMAND( condump, "dump the text currently in the console to condumpXX.log" )
 {
 	g_GameConsole.OnCmdCondump();
 }
+#endif

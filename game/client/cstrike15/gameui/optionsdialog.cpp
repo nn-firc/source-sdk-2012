@@ -1,11 +1,10 @@
-//========= Copyright (c) 1996-2005, Valve Corporation, All rights reserved. ============//
+//========= Copyright © 1996-2005, Valve Corporation, All rights reserved. ============//
 //
 // Purpose: 
 //
 // $NoKeywords: $
 //=============================================================================//
 
-#include "basepanel.h"
 #include "optionsdialog.h"
 
 #include "vgui_controls/Button.h"
@@ -40,10 +39,13 @@ using namespace vgui;
 //-----------------------------------------------------------------------------
 COptionsDialog::COptionsDialog(vgui::Panel *parent, OptionsDialogTabStyle iTabStyle) : PropertyDialog(parent, "OptionsDialog")
 {
+	SetProportional( true );
 	SetDeleteSelfOnClose( true );
-	SetBounds(0, 0, 512, 406);
-
-
+	SetBounds( 
+		0, 
+		0, 
+		vgui::scheme()->GetProportionalScaledValueEx( GetScheme(), 512 ),
+		vgui::scheme()->GetProportionalScaledValueEx( GetScheme(), 415 ) );
 	SetSizeable( false );
 
 	// debug timing code, this function takes too long
@@ -85,7 +87,7 @@ COptionsDialog::COptionsDialog(vgui::Panel *parent, OptionsDialogTabStyle iTabSt
 	}
 	else if ( iTabStyle == OPTIONS_DIALOG_ONLY_BINDING_TABS )
 	{
-		SetTitle("#SFUI_Controller_Edit_Keys_Buttons", true);
+		SetTitle("#L4D360UI_Controller_Edit_Keys_Buttons", true);
 
 		AddPage(new COptionsSubKeyboard(this), "#GameUI_Console_UserSettings");
 	}
@@ -128,16 +130,6 @@ void COptionsDialog::Run()
 void COptionsDialog::OpenGammaDialog()
 {
 	m_pOptionsSubVideo->OpenGammaDialog();
-}
-
-//-----------------------------------------------------------------------------
-// Purpose:  To notify BasePanel to restore Scaleform menus, if they are activated.
-//-----------------------------------------------------------------------------
-void COptionsDialog::OnFinishedClose( void )
-{
-	BasePanel()->NotifyVguiDialogClosed();
-
-	BaseClass::OnFinishedClose();
 }
 
 //-----------------------------------------------------------------------------

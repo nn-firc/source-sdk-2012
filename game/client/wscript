@@ -576,6 +576,7 @@ def build(bld):
 		'cstrike15/gameui/gameui_util.cpp',
 		'cstrike15/gameui/keytogglecheckbutton.cpp',
 		'cstrike15/gameui/labeledcommandcombobox.cpp',
+		'cstrike15/gameui/loadingdialog.cpp',
 		'cstrike15/gameui/loadingtippanel.cpp',
 		'cstrike15/gameui/modinfo.cpp',
 		'cstrike15/gameui/mousemessageforwardingpanel.cpp',
