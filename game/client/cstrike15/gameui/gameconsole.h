@@ -34,6 +34,8 @@ public:
 	// clears the console
 	virtual void Clear();
 
+	void HideImmediately( void );
+
 	// returns true if the console is currently in focus
 	virtual bool IsConsoleVisible();
 
@@ -41,6 +43,9 @@ public:
 	void ActivateDelayed(float time);
 
 	void SetParent( int parent );
+
+	// hides and deletes panel
+	void Shutdown( void );
 
 	static void OnCmdCondump();
 private:

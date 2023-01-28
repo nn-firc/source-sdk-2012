@@ -34,6 +34,9 @@ public:
 	virtual bool IsConsoleVisible() = 0;
 
 	virtual void SetParent( int parent ) = 0;
+
+	// hides and deletes panel
+	virtual void Shutdown( void ) = 0;
 };
 
 #define GAMECONSOLE_INTERFACE_VERSION "GameConsole004"

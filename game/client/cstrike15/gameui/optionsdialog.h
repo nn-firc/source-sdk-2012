@@ -40,13 +40,15 @@ public:
 
 	MESSAGE_FUNC( OnGameUIHidden, "GameUIHidden" );	// called when the GameUI is hidden
 
+protected:
+	// [jason] Overriding to let Scaleform know that a vgui dialog closed
+	virtual void OnFinishedClose( void );
+
 private:
 	class COptionsSubAudio *m_pOptionsSubAudio;
 	class COptionsSubVideo *m_pOptionsSubVideo;
 };
 
-
-#define OPTIONS_MAX_NUM_ITEMS 15
 
 struct OptionData_t;
 

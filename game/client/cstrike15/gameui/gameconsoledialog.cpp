@@ -10,8 +10,9 @@
 #include "vgui/IInput.h"
 #include "vgui/ISurface.h"
 #include "vgui/KeyCode.h"
-#include "loadingdialog.h"
 #include "IGameUIFuncs.h"
+#include "CegClientWrapper.h"
+#include "gameconsole.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
@@ -50,10 +51,10 @@ void CGameConsoleDialog::OnCommand(const char *command)
 //-----------------------------------------------------------------------------
 // HACK: Allow F key bindings to operate even when typing in the text entry field
 //-----------------------------------------------------------------------------
-void CGameConsoleDialog::OnKeyCodeTyped(KeyCode code)
+CEG_NOINLINE void CGameConsoleDialog::OnKeyCodeTyped(KeyCode code)
 {
 	BaseClass::OnKeyCodeTyped(code);
-
+	
 	// check for processing
 	if ( m_pConsolePanel->TextEntryHasFocus() )
 	{
@@ -67,10 +68,12 @@ void CGameConsoleDialog::OnKeyCodeTyped(KeyCode code)
 				// submit the entry as a console commmand
 				char szCommand[256];
 				Q_strncpy( szCommand, binding, sizeof( szCommand ) );
-				engine->ClientCmd_Unrestricted( szCommand );
+				engine->ClientCmd_Unrestricted( szCommand, true );
 			}
 		}
 	}
+
+	CEG_PROTECT_VIRTUAL_FUNCTION( CGameConsoleDialog_OnKeyCodeTyped );
 }
 
 
@@ -79,7 +82,7 @@ void CGameConsoleDialog::OnKeyCodeTyped(KeyCode code)
 //-----------------------------------------------------------------------------
 void CGameConsoleDialog::OnCommandSubmitted( const char *pCommand )
 {
-	engine->ClientCmd_Unrestricted( pCommand );
+	engine->ClientCmd_Unrestricted( pCommand, true );
 }
 
 
@@ -88,12 +91,5 @@ void CGameConsoleDialog::OnCommandSubmitted( const char *pCommand )
 //-----------------------------------------------------------------------------
 void CGameConsoleDialog::OnClosedByHittingTilde()
 {
-	if ( !LoadingDialog() )
-	{
-		GameUI().HideGameUI();
-	}
-	else
-	{
-		vgui::surface()->RestrictPaintToSinglePanel( LoadingDialog()->GetVPanel() );
-	}
+	GameConsole().HideImmediately();
 }

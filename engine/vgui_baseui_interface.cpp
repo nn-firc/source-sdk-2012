@@ -1203,7 +1203,7 @@ void CEngineVGui::Shutdown()
 
 	if ( staticGameConsole )
 	{
-		//staticGameConsole->Shutdown();
+		staticGameConsole->Shutdown();
 		staticGameConsole = NULL;
 	}
 

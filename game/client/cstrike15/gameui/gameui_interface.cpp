@@ -41,7 +41,6 @@
 #include "bitmap/tgaloader.h"
 
 #include "gameconsole.h"
-#include "loadingdialog.h"
 #include "cdkeyentrydialog.h"
 #include "modinfo.h"
 #include "game/client/IGameClientExports.h"
@@ -177,8 +176,6 @@ IAchievementMgr *achievementmgr = NULL;
 class CGameUI;
 CGameUI *g_pGameUI = NULL;
 
-class CLoadingDialog;
-vgui::DHANDLE<CLoadingDialog> g_hLoadingDialog;
 vgui::VPANEL g_hLoadingBackgroundDialog = NULL;
 
 static CGameUI g_GameUI;
@@ -674,6 +671,7 @@ void CGameUI::ActivateGameUI()
 void CGameUI::HideGameUI()
 {
 	engine->ExecuteClientCmd("gameui_hide");
+	GameConsole().HideImmediately();
 }
 
 //-----------------------------------------------------------------------------
@@ -891,27 +889,18 @@ void CGameUI::OnDisconnectFromServer( uint8 eSteamLoginFailure )
 	{
 #if defined( INCLUDE_SCALEFORM )
         CLoadingScreenScaleform::DisplayNoSteamConnectionError();
-#else
-	if ( g_hLoadingDialog )
-	{
-		g_hLoadingDialog->DisplayNoSteamConnectionError();
-	}
 #endif
 	}
 	else if ( eSteamLoginFailure == STEAMLOGINFAILURE_VACBANNED )
 	{
 #if defined( INCLUDE_SCALEFORM )
         CLoadingScreenScaleform::DisplayVACBannedError();
-#else
-	g_hLoadingDialog->DisplayVACBannedError();
 #endif
 	}
 	else if ( eSteamLoginFailure == STEAMLOGINFAILURE_LOGGED_IN_ELSEWHERE )
 	{
 #if defined( INCLUDE_SCALEFORM )
         CLoadingScreenScaleform::DisplayLoggedInElsewhereError();
-#else
-	g_hLoadingDialog->DisplayLoggedInElsewhereError();
 #endif
 	}
 }
@@ -1074,22 +1063,6 @@ void CGameUI::StopProgressBar(bool bError, const char *failureReason, const char
 	{
 		CLoadingScreenScaleform::CloseLoadingScreen();
 	}
-#else
-	if (!g_hLoadingDialog.Get())
-		return;
-
-	if ( bError )
-	{
-		// turn the dialog to error display mode
-		g_hLoadingDialog->DisplayGenericError(failureReason, extendedReason);
-	}
-	else
-	{
-		// close loading dialog
-		g_hLoadingDialog->Close();
-		g_hLoadingDialog = NULL;
-	}
-	// should update the background to be in a transition here
 #endif
 // CStrike15 handles error messages elsewhere. (ClientModeCSFullscreen::OnEvent)
 #if !defined( CSTRIKE15 )
@@ -1112,9 +1085,7 @@ bool CGameUI::SetProgressBarStatusText(const char *statusText, bool showDialog )
 		return false;
 
 #if defined( INCLUDE_SCALEFORM )
-	CLoadingScreenScaleform::SetStatusText( statusText, showDialog );
-#else
-	g_hLoadingDialog->SetStatusText( statusText, showDialog );
+    CLoadingScreenScaleform::SetStatusText( statusText, showDialog );
 #endif
 	Q_strncpy(m_szPreviousStatusText, statusText, sizeof(m_szPreviousStatusText));
 	return true;
@@ -1126,9 +1097,7 @@ bool CGameUI::SetProgressBarStatusText(const char *statusText, bool showDialog )
 void CGameUI::SetSecondaryProgressBar(float progress /* range [0..1] */)
 {
 #if defined( INCLUDE_SCALEFORM )
-	CLoadingScreenScaleform::SetSecondaryProgress( progress );
-#else
-	g_hLoadingDialog->SetSecondaryProgress(progress);
+    CLoadingScreenScaleform::SetSecondaryProgress( progress );
 #endif
 }
 
@@ -1141,8 +1110,6 @@ void CGameUI::SetSecondaryProgressBarText( const wchar_t *desc )
 		return;
 #if defined( INCLUDE_SCALEFORM )
 	CLoadingScreenScaleform::SetSecondaryProgressText( desc );
-#else
-	g_hLoadingDialog->SetSecondaryProgressText( desc );
 #endif
 }
 
@@ -1152,11 +1119,9 @@ void CGameUI::SetSecondaryProgressBarText( const wchar_t *desc )
 bool CGameUI::SetShowProgressText( bool show )
 {
 #if defined( INCLUDE_SCALEFORM )
-	return CLoadingScreenScaleform::SetShowProgressText( show );
-#else
-	return g_hLoadingDialog->SetShowProgressText( show );
+    return CLoadingScreenScaleform::SetShowProgressText( show );
 #endif
-	return false;
+    return false;
 }
 
 
