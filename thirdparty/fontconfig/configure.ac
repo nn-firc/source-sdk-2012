@@ -1,8 +1,8 @@
-dnl 
+dnl
 dnl  fontconfig/configure.in
-dnl 
+dnl
 dnl  Copyright © 2003 Keith Packard
-dnl 
+dnl
 dnl  Permission to use, copy, modify, distribute, and sell this software and its
 dnl  documentation for any purpose is hereby granted without fee, provided that
 dnl  the above copyright notice appear in all copies and that both that
@@ -12,7 +12,7 @@ dnl  advertising or publicity pertaining to distribution of the software without
 dnl  specific, written prior permission.  The authors make no
 dnl  representations about the suitability of this software for any purpose.  It
 dnl  is provided "as is" without express or implied warranty.
-dnl 
+dnl
 dnl  THE AUTHOR(S) DISCLAIMS ALL WARRANTIES WITH REGARD TO THIS SOFTWARE,
 dnl  INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS, IN NO
 dnl  EVENT SHALL THE AUTHOR(S) BE LIABLE FOR ANY SPECIAL, INDIRECT OR
@@ -26,14 +26,14 @@ dnl Process this file with autoconf to create configure.
 AC_PREREQ(2.61)
 
 dnl ==========================================================================
-dnl                               Versioning              
+dnl                               Versioning
 dnl ==========================================================================
 
 dnl This is the package version number, not the shared library
 dnl version.  This same version number must appear in fontconfig/fontconfig.h
 dnl Yes, it is a pain to synchronize version numbers.  Unfortunately, it's
 dnl not possible to extract the version number here from fontconfig.h
-AC_INIT([fontconfig], [2.13.94], [https://gitlab.freedesktop.org/fontconfig/fontconfig/issues/new])
+AC_INIT([fontconfig], [2.14.2], [https://gitlab.freedesktop.org/fontconfig/fontconfig/issues/new])
 AM_INIT_AUTOMAKE([1.11 parallel-tests dist-xz])
 m4_ifdef([AM_SILENT_RULES],[AM_SILENT_RULES([yes])])
 
@@ -456,6 +456,25 @@ AC_SUBST(JSONC_CFLAGS)
 AC_SUBST(JSONC_LIBS)
 
 #
+# Set default sub-pixel rendering
+#
+
+AC_ARG_WITH(default-sub-pixel-rendering,
+    [AC_HELP_STRING([--with-default-sub-pixel-rendering=NAME],
+            [Enable your preferred sub-pixel rendering configuration (none/bgr/rgb/vbgr/vrgb) [default=none]])],
+    preferred_sub_pixel_rendering="$withval", preferred_sub_pixel_rendering=none)
+
+case "$preferred_sub_pixel_rendering" in
+none|bgr|rgb|vbgr|vrgb)
+    PREFERRED_SUB_PIXEL_RENDERING="$preferred_sub_pixel_rendering"
+    AC_SUBST(PREFERRED_SUB_PIXEL_RENDERING)
+    ;;
+*)
+    AC_MSG_ERROR([Invalid sub-pixel rendering. please choose one of none, bgr, rgb, vbgr, or vrgb])
+    ;;
+esac
+
+#
 # Set default hinting
 #
 
@@ -486,7 +505,7 @@ AC_ARG_WITH(default-fonts,
 case "$default_fonts" in
 yes)
 	if test "$os_win32" = "yes"; then
-		default_fonts="WINDOWSFONTDIR"
+		default_fonts="WINDOWSFONTDIR,WINDOWSUSERFONTDIR"
 	elif test "$os_darwin" = "yes"; then
 		default_fonts="/System/Library/Fonts,/Library/Fonts,~/Library/Fonts,/System/Library/Assets/com_apple_MobileAsset_Font3,/System/Library/Assets/com_apple_MobileAsset_Font4"
 	else
@@ -499,8 +518,11 @@ FC_DEFAULT_FONTS=""
 if test x${default_fonts+set} = xset; then
 	fc_IFS=$IFS
 	IFS=","
-	for p in "$default_fonts"; do
-		FC_DEFAULT_FONTS="$FC_DEFAULT_FONTS\t<dir>$p</dir>\n"
+	for p in $default_fonts; do
+		if test x"$FC_DEFAULT_FONTS" != x; then
+			FC_DEFAULT_FONTS="$FC_DEFAULT_FONTS "
+		fi
+		FC_DEFAULT_FONTS="$FC_DEFAULT_FONTS<dir>$p</dir>"
 	done
 	IFS=$fc_IFS
 fi
@@ -559,7 +581,7 @@ case "$FC_ADD_FONTS" in
 "")
 	;;
 *)
-	FC_FONTPATH=`echo $FC_ADD_FONTS | 
+	FC_FONTPATH=`echo $FC_ADD_FONTS |
 			sed -e 's/^/<dir>/' -e 's/$/<\/dir>/' -e 's/,/<\/dir> <dir>/g'`
 	;;
 esac
@@ -663,6 +685,22 @@ dnl ===========================================================================
 # Thread-safety primitives
 #
 
+AC_CACHE_CHECK([stdatomic.h atomic primitives], fc_cv_have_stdatomic_atomic_primitives, [
+	fc_cv_have_stdatomic_atomic_primitives=false
+	AC_TRY_LINK([
+		#include <stdatomic.h>
+
+		void memory_barrier (void) { atomic_thread_fence (memory_order_acq_rel); }
+		int atomic_add (atomic_int *i) { return atomic_fetch_add_explicit (i, 1, memory_order_relaxed); }
+		int mutex_trylock (atomic_flag *m) { return atomic_flag_test_and_set_explicit (m, memory_order_acquire); }
+		void mutex_unlock (atomic_flag *m) { atomic_flag_clear_explicit (m, memory_order_release); }
+		], [], fc_cv_have_stdatomic_atomic_primitives=true
+	)
+])
+if $fc_cv_have_stdatomic_atomic_primitives; then
+	AC_DEFINE(HAVE_STDATOMIC_PRIMITIVES, 1, [Have C99 stdatomic atomic primitives])
+fi
+
 AC_CACHE_CHECK([for Intel atomic primitives], fc_cv_have_intel_atomic_primitives, [
 	fc_cv_have_intel_atomic_primitives=false
 	AC_TRY_LINK([
@@ -717,7 +755,13 @@ dnl ===========================================================================
 # Let people not build/install docs if they don't have docbook
 #
 
-AC_CHECK_PROG(HASDOCBOOK, docbook2html, yes, no)
+AC_ARG_ENABLE(docbook,
+	[AS_HELP_STRING([--disable-docbook],
+		[Disable building docs with docbook2html (default: no)])],,)
+
+if test x$enable_docbook != xno; then
+	AC_CHECK_PROG(HASDOCBOOK, docbook2html, yes, no)
+fi
 
 AM_CONDITIONAL(USEDOCBOOK, test "x$HASDOCBOOK" = xyes)
 
@@ -754,6 +798,19 @@ else
 	DOCMAN3=""
 fi
 AC_SUBST(DOCMAN3)
+
+dnl ===========================================================================
+default_cache_build="yes"
+if test $cross_compiling = "yes"; then
+	default_cache_build="no"
+fi
+AC_ARG_ENABLE(cache-build,
+	[AC_HELP_STRING([--disable-cache-build],
+			[Don't run fc-cache during the build])],
+	,
+	enable_cache_build=$default_cache_build)
+
+AM_CONDITIONAL(ENABLE_CACHE_BUILD, test "x$enable_cache_build" = xyes)
 
 
 dnl Figure out what cache format suffix to use for this architecture

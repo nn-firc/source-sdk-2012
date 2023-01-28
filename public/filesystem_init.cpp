@@ -416,7 +416,11 @@ bool FileSystem_GetExecutableDir( char *exedir, int exeDirLen )
 
 	Q_FixSlashes( exedir );
 
+#ifdef ANDROID
+	const char* libDir = "lib";
+#else
 	const char* libDir = "bin";
+#endif
 
 	// Return the bin directory as the executable dir if it's not in there
 	// because that's really where we're running from...

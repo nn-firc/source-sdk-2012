@@ -6,13 +6,15 @@ conf_files = [
   '10-hinting-medium.conf',
   '10-hinting-none.conf',
   '10-hinting-slight.conf',
-  '10-no-sub-pixel.conf',
+  '10-no-antialias.conf',
   '10-scale-bitmap-fonts.conf',
   '10-sub-pixel-bgr.conf',
+  '10-sub-pixel-none.conf',
   '10-sub-pixel-rgb.conf',
   '10-sub-pixel-vbgr.conf',
   '10-sub-pixel-vrgb.conf',
   '10-unhinted.conf',
+  '10-yes-antialias.conf',
   '11-lcdfilter-default.conf',
   '11-lcdfilter-legacy.conf',
   '11-lcdfilter-light.conf',
@@ -22,6 +24,7 @@ conf_files = [
   '40-nonlatin.conf',
   '45-generic.conf',
   '45-latin.conf',
+  '48-spacing.conf',
   '49-sansserif.conf',
   '50-user.conf',
   '51-local.conf',
@@ -37,16 +40,21 @@ conf_files = [
   '90-synthetic.conf',
 ]
 
-preferred_hinting = 'slight'
+preferred_hinting = get_option('default-hinting')
+preferred_sub_pixel_rendering = get_option('default-sub-pixel-rendering')
 
 conf_links = [
   '10-hinting-@0@.conf'.format(preferred_hinting),
   '10-scale-bitmap-fonts.conf',
+  '10-sub-pixel-@0@.conf'.format(preferred_sub_pixel_rendering),
+  '10-yes-antialias.conf',
+  '11-lcdfilter-default.conf',
   '20-unhint-small-vera.conf',
   '30-metric-aliases.conf',
   '40-nonlatin.conf',
   '45-generic.conf',
   '45-latin.conf',
+  '48-spacing.conf',
   '49-sansserif.conf',
   '50-user.conf',
   '51-local.conf',
@@ -59,11 +67,10 @@ conf_links = [
   '90-synthetic.conf',
 ]
 
-install_data(conf_files, install_dir: join_paths(get_option('datadir'), 'fontconfig/conf.avail'))
+install_data(conf_files, install_dir: fc_templatedir)
 
-meson.add_install_script('link_confs.py',
-  join_paths(get_option('prefix'), get_option('datadir'), 'fontconfig/conf.avail'),
-  join_paths(get_option('sysconfdir'), 'fonts', 'conf.d'),
+meson.add_install_script('link_confs.py', fc_templatedir,
+  fc_configdir,
   conf_links,
 )
 
@@ -79,7 +86,7 @@ endforeach
 custom_target('35-lang-normalize.conf',
   output: '35-lang-normalize.conf',
   command: [find_program('write-35-lang-normalize-conf.py'), ','.join(orths), '@OUTPUT@'],
-  install_dir: join_paths(get_option('datadir'), 'fontconfig/conf.avail'),
+  install_dir: fc_templatedir,
   install: true)
 
 # README
@@ -88,5 +95,5 @@ readme_cdata.set('TEMPLATEDIR', fc_templatedir)
 configure_file(output: 'README',
   input: 'README.in',
   configuration: readme_cdata,
-  install_dir: join_paths(get_option('sysconfdir'), 'fonts', 'conf.d'),
+  install_dir: fc_configdir,
   install: true)

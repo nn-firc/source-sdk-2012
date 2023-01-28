@@ -22,8 +22,8 @@
  * PERFORMANCE OF THIS SOFTWARE.
  */
 
-#include <string.h>
 #include "fcint.h"
+#include <string.h>
 #include <fcntl.h>
 #include <stdarg.h>
 
@@ -59,6 +59,10 @@
 #ifdef _WIN32
 #include <mbstring.h>
 extern FcChar8 fontconfig_instprefix[];
+pfnGetSystemWindowsDirectory pGetSystemWindowsDirectory = NULL;
+pfnSHGetFolderPathA pSHGetFolderPathA = NULL;
+static void
+_ensureWin32GettersReady();
 #endif
 
 static FcChar8  *__fc_userdir = NULL;
@@ -363,7 +367,7 @@ typedef enum _FcElement {
     FcElementDescription,
     FcElementRemapDir,
     FcElementResetDirs,
-	
+
     FcElementRescan,
 
     FcElementPrefer,
@@ -727,7 +731,7 @@ FcTypecheckExpr (FcConfigParse *parse, FcExpr *expr, FcType type)
 	    if (o)
 		FcTypecheckValue (parse, o->type, type);
 	}
-        else
+	else
             FcConfigMessage (parse, FcSevereWarning,
                              "invalid constant used : %s",
                              expr->u.constant);
@@ -790,7 +794,7 @@ FcTestCreate (FcConfigParse *parse,
     if (test)
     {
 	const FcObjectType	*o;
-	
+
 	test->kind = kind;
 	test->qual = qual;
 	test->object = FcObjectFromName ((const char *) field);
@@ -1318,9 +1322,16 @@ _get_real_paths_from_prefix(FcConfigParse *parse, const FcChar8 *path, const FcC
 	}
 	else if (FcStrCmp (prefix, (const FcChar8 *) "relative") == 0)
 	{
-	    parent = FcStrDirname (parse->name);
-	    if (!parent)
+	    FcChar8 *p = FcStrRealPath (parse->name);
+
+	    if (!p)
 		return NULL;
+	    parent = FcStrDirname (p);
+	    if (!parent)
+	    {
+		free (p);
+		return NULL;
+	    }
 	}
     }
 #ifndef _WIN32
@@ -1363,10 +1374,21 @@ _get_real_paths_from_prefix(FcConfigParse *parse, const FcChar8 *path, const FcC
 	if (p) *p = '\0';
 	strcat ((char *) path, "\\..\\share\\fonts");
     }
+    else if (strcmp ((const char *) path, "WINDOWSUSERFONTDIR") == 0)
+    {
+        path = buffer;
+        if (!(pSHGetFolderPathA && SUCCEEDED(pSHGetFolderPathA(NULL, /* CSIDL_LOCAL_APPDATA */ 28, NULL, 0, (char *) buffer))))
+        {
+            FcConfigMessage(parse, FcSevereError, "SHGetFolderPathA failed");
+            return NULL;
+        }
+        strcat((char *) path, "\\Microsoft\\Windows\\Fonts");
+    }
     else if (strcmp ((const char *) path, "WINDOWSFONTDIR") == 0)
     {
 	int rc;
 	path = buffer;
+	_ensureWin32GettersReady();
 	rc = pGetSystemWindowsDirectory ((LPSTR) buffer, sizeof (buffer) - 20);
 	if (rc == 0 || rc > sizeof (buffer) - 20)
 	{
@@ -1511,7 +1533,7 @@ FcStrtod (char *s, char **end)
     {
 	char	buf[128];
 	int	slen = strlen (s);
-	
+
 	if (slen + dlen > (int) sizeof (buf))
 	{
 	    if (end)
@@ -2938,7 +2960,10 @@ FcParseAcceptRejectFont (FcConfigParse *parse, FcElement element)
 						      vstack->u.string,
 						      element == FcElementAcceptfont))
 	    {
-		FcConfigMessage (parse, FcSevereError, "out of memory");
+			if (FcStrUsesHome(vstack->u.string) && FcConfigHome() == NULL)
+				FcConfigMessage (parse, FcSevereWarning, "Home is disabled");
+			else
+				FcConfigMessage (parse, FcSevereError, "out of memory");
 	    }
 	    else
 	    {
@@ -3079,7 +3104,7 @@ FcParsePattern (FcConfigParse *parse)
 	FcConfigMessage (parse, FcSevereError, "out of memory");
 	return;
     }
-	
+
     while ((vstack = FcVStackPeek (parse)))
     {
 	switch ((int) vstack->tag) {
@@ -3154,7 +3179,7 @@ FcEndElement(void *userData, const XML_Char *name FC_UNUSED)
     case FcElementRescan:
 	FcParseRescan (parse);
 	break;
-	
+
     case FcElementPrefer:
 	FcParseFamilies (parse, FcVStackPrefer);
 	break;
@@ -3434,11 +3459,6 @@ bail0:
     return ret || !complain;
 }
 
-#ifdef _WIN32
-pfnGetSystemWindowsDirectory pGetSystemWindowsDirectory = NULL;
-pfnSHGetFolderPathA pSHGetFolderPathA = NULL;
-#endif
-
 static FcBool
 FcConfigParseAndLoadFromMemoryInternal (FcConfig       *config,
 					const FcChar8  *filename,
@@ -3495,7 +3515,7 @@ FcConfigParseAndLoadFromMemoryInternal (FcConfig       *config,
     XML_SetDoctypeDeclHandler (p, FcStartDoctypeDecl, FcEndDoctypeDecl);
     XML_SetElementHandler (p, FcStartElement, FcEndElement);
     XML_SetCharacterDataHandler (p, FcCharacterData);
-	
+
 #endif /* ENABLE_LIBXML2 */
 
 #ifndef ENABLE_LIBXML2
@@ -3584,19 +3604,7 @@ _FcConfigParse (FcConfig	*config,
 
     FcStrBufInit (&reason, NULL, 0);
 #ifdef _WIN32
-    if (!pGetSystemWindowsDirectory)
-    {
-        HMODULE hk32 = GetModuleHandleA("kernel32.dll");
-        if (!(pGetSystemWindowsDirectory = (pfnGetSystemWindowsDirectory) GetProcAddress(hk32, "GetSystemWindowsDirectoryA")))
-            pGetSystemWindowsDirectory = (pfnGetSystemWindowsDirectory) GetWindowsDirectory;
-    }
-    if (!pSHGetFolderPathA)
-    {
-        HMODULE hSh = LoadLibraryA("shfolder.dll");
-        /* the check is done later, because there is no provided fallback */
-        if (hSh)
-            pSHGetFolderPathA = (pfnSHGetFolderPathA) GetProcAddress(hSh, "SHGetFolderPathA");
-    }
+    _ensureWin32GettersReady();
 #endif
 
     filename = FcConfigGetFilename (config, name);
@@ -3718,6 +3726,26 @@ FcConfigParseAndLoadFromMemory (FcConfig       *config,
 {
     return FcConfigParseAndLoadFromMemoryInternal (config, (const FcChar8 *)"memory", buffer, complain, FcTrue);
 }
+
+#ifdef _WIN32
+static void
+_ensureWin32GettersReady()
+{
+    if (!pGetSystemWindowsDirectory)
+    {
+        HMODULE hk32 = GetModuleHandleA("kernel32.dll");
+        if (!(pGetSystemWindowsDirectory = (pfnGetSystemWindowsDirectory)GetProcAddress(hk32, "GetSystemWindowsDirectoryA")))
+            pGetSystemWindowsDirectory = (pfnGetSystemWindowsDirectory)GetWindowsDirectory;
+    }
+    if (!pSHGetFolderPathA)
+    {
+        HMODULE hSh = LoadLibraryA("shfolder.dll");
+        /* the check is done later, because there is no provided fallback */
+        if (hSh)
+            pSHGetFolderPathA = (pfnSHGetFolderPathA)GetProcAddress(hSh, "SHGetFolderPathA");
+    }
+}
+#endif // _WIN32
 
 #define __fcxml__
 #include "fcaliastail.h"

@@ -131,30 +131,6 @@ FcConfigFini (void)
     free_lock ();
 }
 
-static FcChar8 *
-FcConfigRealPath(const FcChar8 *path)
-{
-    char	resolved_name[FC_PATH_MAX+1];
-    char	*resolved_ret;
-
-    if (!path)
-	return NULL;
-
-#ifndef _WIN32
-    resolved_ret = realpath((const char *) path, resolved_name);
-#else
-    if (GetFullPathNameA ((LPCSTR) path, FC_PATH_MAX, resolved_name, NULL) == 0)
-    {
-        fprintf (stderr, "Fontconfig warning: GetFullPathNameA failed.\n");
-        return NULL;
-    }
-    resolved_ret = resolved_name;
-#endif
-    if (resolved_ret)
-	path = (FcChar8 *) resolved_ret;
-    return FcStrCopyFilename(path);
-}
-
 FcConfig *
 FcConfigCreate (void)
 {
@@ -221,7 +197,7 @@ FcConfigCreate (void)
 
     config->expr_pool = NULL;
 
-    config->sysRoot = FcConfigRealPath((const FcChar8 *) getenv("FONTCONFIG_SYSROOT"));
+    config->sysRoot = FcStrRealPath ((const FcChar8 *) getenv("FONTCONFIG_SYSROOT"));
 
     config->rulesetList = FcPtrListCreate (FcDestroyAsRuleSet);
     if (!config->rulesetList)
@@ -386,40 +362,43 @@ FcConfigDestroy (FcConfig *config)
     FcExprPage	*page;
     FcMatchKind	k;
 
-    if (FcRefDec (&config->ref) != 1)
-	return;
-
-    (void) fc_atomic_ptr_cmpexch (&_fcConfig, config, NULL);
-
-    FcStrSetDestroy (config->configDirs);
-    FcStrSetDestroy (config->configMapDirs);
-    FcStrSetDestroy (config->fontDirs);
-    FcStrSetDestroy (config->cacheDirs);
-    FcStrSetDestroy (config->configFiles);
-    FcStrSetDestroy (config->acceptGlobs);
-    FcStrSetDestroy (config->rejectGlobs);
-    FcFontSetDestroy (config->acceptPatterns);
-    FcFontSetDestroy (config->rejectPatterns);
-
-    for (k = FcMatchKindBegin; k < FcMatchKindEnd; k++)
-	FcPtrListDestroy (config->subst[k]);
-    FcPtrListDestroy (config->rulesetList);
-    FcStrSetDestroy (config->availConfigFiles);
-    for (set = FcSetSystem; set <= FcSetApplication; set++)
-	if (config->fonts[set])
-	    FcFontSetDestroy (config->fonts[set]);
-
-    page = config->expr_pool;
-    while (page)
+    if (config)
     {
-      FcExprPage *next = page->next_page;
-      free (page);
-      page = next;
-    }
-    if (config->sysRoot)
+	if (FcRefDec (&config->ref) != 1)
+	    return;
+
+	(void) fc_atomic_ptr_cmpexch (&_fcConfig, config, NULL);
+
+	FcStrSetDestroy (config->configDirs);
+	FcStrSetDestroy (config->configMapDirs);
+	FcStrSetDestroy (config->fontDirs);
+	FcStrSetDestroy (config->cacheDirs);
+	FcStrSetDestroy (config->configFiles);
+	FcStrSetDestroy (config->acceptGlobs);
+	FcStrSetDestroy (config->rejectGlobs);
+	FcFontSetDestroy (config->acceptPatterns);
+	FcFontSetDestroy (config->rejectPatterns);
+
+	for (k = FcMatchKindBegin; k < FcMatchKindEnd; k++)
+	    FcPtrListDestroy (config->subst[k]);
+	FcPtrListDestroy (config->rulesetList);
+	FcStrSetDestroy (config->availConfigFiles);
+	for (set = FcSetSystem; set <= FcSetApplication; set++)
+	    if (config->fonts[set])
+		FcFontSetDestroy (config->fonts[set]);
+
+	page = config->expr_pool;
+	while (page)
+	{
+	    FcExprPage *next = page->next_page;
+	    free (page);
+	    page = next;
+	}
+	if (config->sysRoot)
 	FcStrFree (config->sysRoot);
 
-    free (config);
+	free (config);
+    }
 }
 
 /*
@@ -445,7 +424,7 @@ FcConfigAddCache (FcConfig *config, FcCache *cache,
     if (fs)
     {
 	int	nref = 0;
-	
+
 	for (i = 0; i < fs->nfont; i++)
 	{
 	    FcPattern	*font = FcFontSetFont (fs, i);
@@ -529,7 +508,7 @@ FcConfigAddDirList (FcConfig *config, FcSetName set, FcStrSet *dirSet)
     dirlist = FcStrListCreate (dirSet);
     if (!dirlist)
         return FcFalse;
-	
+
     while ((dir = FcStrListNext (dirlist)))
     {
 	if (FcDebug () & FC_DBG_FONTSET)
@@ -558,7 +537,7 @@ FcConfigBuildFonts (FcConfig *config)
     config = FcConfigReference (config);
     if (!config)
 	return FcFalse;
-	
+
     fonts = FcFontSetCreate ();
     if (!fonts)
     {
@@ -1355,7 +1334,7 @@ FcConfigEvaluate (FcPattern *p, FcPattern *p_pat, FcMatchKind kind, FcExpr *e)
 	v.u.b = FcConfigCompareValue (&vl, e->op, &vr);
 	FcValueDestroy (vl);
 	FcValueDestroy (vr);
-	break;	
+	break;
     case FcOpOr:
     case FcOpAnd:
     case FcOpPlus:
@@ -1371,7 +1350,7 @@ FcConfigEvaluate (FcPattern *p, FcPattern *p_pat, FcMatchKind kind, FcExpr *e)
 	    switch ((int) vle.type) {
 	    case FcTypeDouble:
 		switch ((int) op) {
-		case FcOpPlus:	
+		case FcOpPlus:
 		    v.type = FcTypeDouble;
 		    v.u.d = vle.u.d + vre.u.d;
 		    break;
@@ -1420,7 +1399,7 @@ FcConfigEvaluate (FcPattern *p, FcPattern *p_pat, FcMatchKind kind, FcExpr *e)
 		    str = FcStrPlus (vle.u.s, vre.u.s);
 		    v.u.s = FcStrdup (str);
 		    FcStrFree (str);
-			
+
 		    if (!v.u.s)
 			v.type = FcTypeVoid;
 		    break;
@@ -2853,7 +2832,7 @@ FcConfigAppFontAddFile (FcConfig    *config,
 	}
 	FcConfigSetFonts (config, set, FcSetApplication);
     }
-	
+
     if (!FcFileScanConfig (set, subdirs, file, config))
     {
 	FcStrSetDestroy (subdirs);
@@ -2944,8 +2923,13 @@ FcConfigGlobAdd (FcConfig	*config,
 		 FcBool		accept)
 {
     FcStrSet	*set = accept ? config->acceptGlobs : config->rejectGlobs;
+	FcChar8	*realglob = FcStrCopyFilename(glob);
+	if (!realglob)
+		return FcFalse;
 
-    return FcStrSetAdd (set, glob);
+    FcBool	 ret = FcStrSetAdd (set, realglob);
+    FcStrFree(realglob);
+    return ret;
 }
 
 static FcBool
@@ -3048,7 +3032,7 @@ retry:
 
     if (sysroot)
     {
-	s = FcConfigRealPath(sysroot);
+	s = FcStrRealPath (sysroot);
 	if (!s)
 	    return;
     }

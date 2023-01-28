@@ -753,7 +753,8 @@ def build(bld):
 		'jpeg',
 		'png',
 		'protobuf',
-		'RT'
+		'RT',
+		'ZLIB'
 	]
 
 	install_path = bld.env.PREFIX
