@@ -671,6 +671,7 @@ def build(bld):
 		'cstrike15/VGUI/backgroundpanel.cpp',
 		'cstrike15/VGUI/bordered_panel.cpp',
 		'cstrike15/VGUI/cstrikespectatorgui.cpp',
+		'cstrike15/VGUI/cstriketextwindow.cpp',
 		'cstrike15/vgui_c4panel.cpp',
 		'cstrike15/vgui_viewc4panel.cpp',
 		'hltvreplaysystem.cpp',
