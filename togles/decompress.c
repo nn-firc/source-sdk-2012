@@ -338,4 +338,4 @@ void DecompressBlockDXT3(uint32_t x, uint32_t y, uint32_t width,
 // for more details and other libs
 
 #define STB_DXT_IMPLEMENTATION
-#include "stb_dxt_104.h"
+#include "stb_dxt.h"
