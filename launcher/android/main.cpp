@@ -119,7 +119,7 @@ DLL_EXPORT int LauncherMainAndroid( int argc, char **argv )
 {
 	InitCrashHandler();
 
-	Msg("GetTotalMemory() = %.2f \n", GetTotalMemory());
+	Msg("MemTotal: %.2fG \n", GetTotalMemory());
 
 	android_property_print("ro.build.version.sdk");
 	android_property_print("ro.product.device");
