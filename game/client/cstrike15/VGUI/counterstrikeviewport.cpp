@@ -24,6 +24,10 @@
 #include <vgui/vgui.h>
 
 // client dll/engine defines
+#include "cstriketextwindow.h"
+#include "cstriketeammenu.h"
+#include "cstrikespectatorgui.h"
+#include "cstrikeclientscoreboard.h"
 #include "hud.h"
 #include <voice_status.h>
 
@@ -93,13 +97,12 @@ void PrintBuyTimeOverMessage( void )
 }
 
 
-CON_COMMAND_F( teammenu, "Show team selection window", FCVAR_SERVER_CAN_EXECUTE )
+CON_COMMAND( teammenu, "Show team selection window" )
 {
 	C_CSPlayer *pPlayer = C_CSPlayer::GetLocalCSPlayer();
 	
 	if( pPlayer && pPlayer->CanShowTeamMenu() )
 	{
-		( ( CounterStrikeViewport * )GetViewPortInterface() )->SetChoseTeamAndClass( true );
 		GetViewPortInterface()->ShowPanel( PANEL_TEAM, true );
 	}
 
