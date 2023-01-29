@@ -24,21 +24,13 @@ jobs:
         export NDK_HOME=$PWD/android-ndk-r10e/
         export PATH=$PWD/clang+llvm-11.1.0-x86_64-linux-gnu-ubuntu-20.10/bin:$PATH
         ./waf configure -T release --64bits --togles --android=aarch64,host,21 --prefix=/home/runner/work/csgo-sdk-2017/csgo-sdk-2017/csgo-android
-        ./waf install -j4 --strip
+        ./waf install -j4
         sudo apt install -y make openjdk-8-jdk openjdk-8-jre ant-contrib
         git clone https://github.com/nn-firc/csgo-sdk-android.git --depth 1
         cp -r csgo-android/lib csgo-sdk-android/libs
         cp -r lib/android/aarch64/libSDL2.so csgo-sdk-android/libs/arm64-v8a
         cd csgo-sdk-android && JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64 ANDROID_HOME=android-sdk ant release && cd ..
-        ./waf configure -T debug --64bits --togles --android=aarch64,host,21 --prefix=/home/runner/work/csgo-sdk-2017/csgo-sdk-2017/csgo-android
-        ./waf install -j4
-        cp -r csgo-android/lib csgo-sdk-android/libs
-        cd csgo-sdk-android && JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64 ANDROID_HOME=android-sdk ant debug && cd ..
     - uses: actions/upload-artifact@v3
       with:
             name: Release Android
             path: /home/runner/work/csgo-sdk-2017/csgo-sdk-2017/csgo-sdk-android/bin/csgo-release.apk
-    - uses: actions/upload-artifact@v3
-      with:
-            name: Debug Android
-            path: /home/runner/work/csgo-sdk-2017/csgo-sdk-2017/csgo-sdk-android/bin/csgo-debug.apk
