@@ -53,43 +53,43 @@ COptionsDialog::COptionsDialog(vgui::Panel *parent, OptionsDialogTabStyle iTabSt
 
 	if ( iTabStyle == OPTIONS_DIALOG_ALL_TABS )
 	{
-		SetTitle("#GameUI_Options", true);
+		SetTitle("Options", true);
 
 		if ( ModInfo().IsSinglePlayerOnly() && !ModInfo().NoDifficulty() )
 		{
-			AddPage(new COptionsSubDifficulty(this), "#GameUI_Difficulty");
+			AddPage(new COptionsSubDifficulty(this), "Difficulty");
 		}
 
 		if ( ModInfo().HasPortals() )
 		{
-			AddPage(new COptionsSubPortal(this), "#GameUI_Portal");
+			AddPage(new COptionsSubPortal(this), "Portal");
 		}
 
-		AddPage(new COptionsSubKeyboard(this), "#GameUI_Keyboard");
-		AddPage(new COptionsSubMouse(this), "#GameUI_Mouse");
+		AddPage(new COptionsSubKeyboard(this), "Keyboard");
+		AddPage(new COptionsSubMouse(this), "Mouse");
 
 		m_pOptionsSubAudio = new COptionsSubAudio(this);
-		AddPage(m_pOptionsSubAudio, "#GameUI_Audio");
+		AddPage(m_pOptionsSubAudio, "Audio");
 		m_pOptionsSubVideo = new COptionsSubVideo(this);
-		AddPage(m_pOptionsSubVideo, "#GameUI_Video");
+		AddPage(m_pOptionsSubVideo, "Video");
 
 		if ( !ModInfo().IsSinglePlayerOnly() ) 
 		{
-			AddPage(new COptionsSubVoice(this), "#GameUI_Voice");
+			AddPage(new COptionsSubVoice(this), "Voice");
 		}
 
 		// add the multiplay page last, if we're combo single/multi or just multi
 		if ( (ModInfo().IsMultiplayerOnly() && !ModInfo().IsSinglePlayerOnly()) ||
 			 (!ModInfo().IsMultiplayerOnly() && !ModInfo().IsSinglePlayerOnly()) )
 		{
-			AddPage(new COptionsSubMultiplayer(this), "#GameUI_Multiplayer");
+			AddPage(new COptionsSubMultiplayer(this), "Multiplayer");
 		}
 	}
 	else if ( iTabStyle == OPTIONS_DIALOG_ONLY_BINDING_TABS )
 	{
 		SetTitle("#SFUI_Controller_Edit_Keys_Buttons", true);
 
-		AddPage(new COptionsSubKeyboard(this), "#GameUI_Console_UserSettings");
+		AddPage(new COptionsSubKeyboard(this), "Console UserSettings");
 	}
 
 //	double s5 = system()->GetCurrentTime();
@@ -120,7 +120,7 @@ void COptionsDialog::Activate()
 //-----------------------------------------------------------------------------
 void COptionsDialog::Run()
 {
-	SetTitle("#GameUI_Options", true);
+	SetTitle("Options", true);
 	Activate();
 }
 
