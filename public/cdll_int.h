@@ -1157,7 +1157,7 @@ public:
 
 	virtual bool IsConnectedUserInfoChangeAllowed( IConVar *pCvar ) = 0;
 
-	virtual void IN_TouchEvent( int type, int fingerId, int x, int y ) = 0;
+	virtual void IN_TouchEvent( uint data, uint data2, uint data3, uint data4 ) = 0;
 
 	virtual char const * GetRichPresenceStatusString() = 0;
 

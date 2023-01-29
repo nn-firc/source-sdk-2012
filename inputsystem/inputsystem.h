@@ -525,10 +525,7 @@ public:
 	void JoystickButtonPress( int joystickId, int button ); // button is a SDL_CONTROLLER_BUTTON;
 	void JoystickButtonRelease( int joystickId, int button ); // same as above.
 	void JoystickAxisMotion( int joystickId, int axis, int value );
-	void FingerDown( int fingerId, int x, int y );	
-	void FingerUp( int fingerId, int x, int y );	
-	void FingerMotion( int fingerId, int x, int y );
-
+	void FingerEvent( int eventType, int fingerId, float x, float y, float dx, float dy );	
 #endif
 
 private:

@@ -177,13 +177,8 @@ static FILE *GetDebugFileHandle( void )
 	// it will try for glshaders.cfg first, then fall back to glbaseshaders.cfg if not found
 	// mat_autosave_glshaders instructs the engine to save out the shader table at key points
 	// to the filename glshaders.cfg
-#ifdef ANDROID
-	ConVar mat_autosave_glshaders( "mat_autosave_glshaders", "0" );
-	ConVar mat_autoload_glshaders( "mat_autoload_glshaders", "0" );
-#else
 	ConVar mat_autosave_glshaders( "mat_autosave_glshaders", "1" );
 	ConVar mat_autoload_glshaders( "mat_autoload_glshaders", "1" );
-#endif
 #endif
 
 //-----------------------------------------------------------------------------
@@ -988,7 +983,7 @@ void CShaderManager::Shutdown()
 	}
 #endif
 
-#ifdef DX_TO_GL_ABSTRACTION
+#ifdef DX_TO_GL_ABSTRACTION && !defined ANDROID
 	if (mat_autosave_glshaders.GetInt())
 	{
 #if defined( OSX )
@@ -4685,6 +4680,10 @@ void CShaderManager::AddShaderComboInformation( const ShaderComboSemantics_t *pS
 #if defined( DX_TO_GL_ABSTRACTION )
 void	CShaderManager::DoStartupShaderPreloading()
 {
+#ifdef ANDROID // Too slow
+	return;
+#endif
+
 	if (mat_autoload_glshaders.GetInt())
 	{
 #if defined( OSX )

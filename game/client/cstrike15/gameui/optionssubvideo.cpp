@@ -1001,6 +1001,10 @@ COptionsSubVideo::COptionsSubVideo(vgui::Panel *parent) : PropertyPage(parent, N
 	m_pWindowed->AddItem( "#GameUI_Fullscreen", NULL );
 	m_pWindowed->AddItem( "#GameUI_Windowed", NULL );
 
+#ifdef ANDROID
+	m_pWindowed->SetEnabled( false );
+#endif
+
 	LoadControlSettings("Resource\\OptionsSubVideo.res");
 
 	// Moved down here so we can set the Drop down's 
@@ -1027,8 +1031,10 @@ void COptionsSubVideo::PrepareResolutionList()
 
 	// Clean up before filling the info again.
 	m_pMode->DeleteAllItems();
+#ifndef ANDROID
 	m_pAspectRatio->SetItemEnabled(1, false);
 	m_pAspectRatio->SetItemEnabled(2, false);
+#endif
 
 	// get full video mode list
 	vmode_t *plist = NULL;
@@ -1055,6 +1061,7 @@ void COptionsSubVideo::PrepareResolutionList()
 
 		int itemID = -1;
 		int iAspectMode = GetScreenAspectMode( plist->width, plist->height );
+#ifndef ANDROID
 		if ( iAspectMode > 0 )
 		{
 			m_pAspectRatio->SetItemEnabled( iAspectMode, true );
@@ -1066,6 +1073,13 @@ void COptionsSubVideo::PrepareResolutionList()
 		{
 			itemID = m_pMode->AddItem( sz, NULL);
 		}
+#else
+		float aspect = (float)plist->width / plist->height;
+		float native_aspect = (float)desktopWidth / desktopHeight;
+
+		if( fabs(native_aspect - aspect) < 0.01f )
+			itemID = m_pMode->AddItem( sz, NULL);
+#endif
 
 		// try and find the best match for the resolution to be selected
 		if ( plist->width == currentWidth && plist->height == currentHeight )
@@ -1079,7 +1093,9 @@ void COptionsSubVideo::PrepareResolutionList()
 	}
 
 	// disable ratio selection if we can't display widescreen.
+#ifndef ANDROID
 	m_pAspectRatio->SetEnabled( bFoundWidescreen );
+#endif
 
 	m_nSelectedMode = selectedItemID;
 
@@ -1119,8 +1135,11 @@ void COptionsSubVideo::OnResetData()
     m_pWindowed->ActivateItem(config.Windowed() ? 1 : 0);
 
 	// reset gamma control
-	m_pGammaButton->SetEnabled( !config.Windowed() );
-
+#ifdef ANDROID
+    	m_pGammaButton->SetEnabled( false );
+#else
+    	m_pGammaButton->SetEnabled( !config.Windowed() );
+#endif
 
     SetCurrentResolutionComboItem();
 }
@@ -1230,8 +1249,12 @@ void COptionsSubVideo::PerformLayout()
 
 	if ( m_pGammaButton )
 	{
+#ifdef ANDROID
+		m_pGammaButton->SetEnabled( false );
+#else
 		const MaterialSystem_Config_t &config = materials->GetCurrentConfigForVideoCard();
 		m_pGammaButton->SetEnabled( !config.Windowed() );
+#endif
 	}
 }
 
@@ -1253,10 +1276,12 @@ void COptionsSubVideo::OnTextChanged(Panel *pPanel, const char *pszText)
             OnDataChanged();
         }
     }
-    else if (pPanel == m_pAspectRatio)
-    {
+#ifndef ANDROID
+	else if (pPanel == m_pAspectRatio)
+	{
 		PrepareResolutionList();
-    }
+	}
+#endif
 	else if (pPanel == m_pWindowed)
 	{
 		PrepareResolutionList();

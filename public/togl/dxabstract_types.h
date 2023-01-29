@@ -978,6 +978,7 @@ typedef enum _D3DTEXTUREADDRESS
 
 typedef enum _D3DSHADEMODE 
 {
+    D3DSHADE_NONE 		= 0,
     D3DSHADE_FLAT               = 1,
     D3DSHADE_GOURAUD            = 2,
     D3DSHADE_PHONG              = 3,

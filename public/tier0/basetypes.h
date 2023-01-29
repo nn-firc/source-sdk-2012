@@ -47,6 +47,7 @@
 #endif
 
 #include "tier0/valve_off.h"
+#include <string.h>
 
 // There's a different version of this file in the xbox codeline
 // so the PC version built in the xbox branch includes things like 
@@ -417,7 +418,9 @@ inline unsigned long const& FloatBits( vec_t const& f )
 
 inline vec_t BitsToFloat( unsigned long i )
 {
-	return *reinterpret_cast<vec_t*>(&i);
+	vec_t f;
+	memcpy( &f, &i, sizeof(f));
+	return f;
 }
 
 inline bool IsFinite( const vec_t &f )

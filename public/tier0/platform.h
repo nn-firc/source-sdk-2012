@@ -1601,7 +1601,7 @@ inline T QWordSwapC( T dw )
 // The typically used methods.
 //-------------------------------------
 
-#if defined( _SGI_SOURCE ) || defined( PLATFORM_X360 ) || defined( _PS3 )
+#if defined( _SGI_SOURCE ) || defined( PLATFORM_X360 ) || defined( _PS3 ) && !defined(__arm__) && !defined(__aarch64__) && !defined(ANDROID)
 #define	PLAT_BIG_ENDIAN 1
 #else
 #define PLAT_LITTLE_ENDIAN 1
@@ -1661,20 +1661,22 @@ inline T QWordSwapC( T dw )
 // @Note (toml 05-02-02): this technique expects the compiler to
 // optimize the expression and eliminate the other path. On any new
 // platform/compiler this should be tested.
-inline short BigShort( short val )		{ int test = 1; return ( *(char *)&test == 1 ) ? WordSwap( val )  : val; }
 inline uint16 BigWord( uint16 val )		{ int test = 1; return ( *(char *)&test == 1 ) ? WordSwap( val )  : val; }
-inline long BigLong( long val )			{ int test = 1; return ( *(char *)&test == 1 ) ? DWordSwap( val ) : val; }
+#define BigShort( val ) BigWord( val )
 inline uint32 BigDWord( uint32 val )	{ int test = 1; return ( *(char *)&test == 1 ) ? DWordSwap( val ) : val; }
 inline uint64 BigQWord( uint64 val )	{ int test = 1; return ( *(char *)&test == 1 ) ? QWordSwap( val ) : val; }
-inline short LittleShort( short val )	{ int test = 1; return ( *(char *)&test == 1 ) ? val : WordSwap( val ); }
+#define BigLong( val ) BigDWord( val )
+
 inline uint16 LittleWord( uint16 val )	{ int test = 1; return ( *(char *)&test == 1 ) ? val : WordSwap( val ); }
-inline long LittleLong( long val )		{ int test = 1; return ( *(char *)&test == 1 ) ? val : DWordSwap( val ); }
+#define LittleShort( val ) LittleWord( val )
 inline uint32 LittleDWord( uint32 val )	{ int test = 1; return ( *(char *)&test == 1 ) ? val : DWordSwap( val ); }
+#define LittleLong( val ) LittleDWord( val )
 inline uint64 LittleQWord( uint64 val )	{ int test = 1; return ( *(char *)&test == 1 ) ? val : QWordSwap( val ); }
-inline short SwapShort( short val )					{ return WordSwap( val ); }
+
 inline uint16 SwapWord( uint16 val )				{ return WordSwap( val ); }
-inline long SwapLong( long val )					{ return DWordSwap( val ); }
+#define SwapShort( val ) SwapWord( val )
 inline uint32 SwapDWord( uint32 val )				{ return DWordSwap( val ); }
+#define SwapLong( val ) SwapDWord( val )
 
 // Pass floats by pointer for swapping to avoid truncation in the fpu
 inline void BigFloat( float *pOut, const float *pIn )		{ int test = 1; ( *(char *)&test == 1 ) ? SafeSwapFloat( pOut, pIn ) : ( *pOut = *pIn ); }
