@@ -6,7 +6,7 @@
 - Fix bugs(some from [Kisak-Strike](https://github.com/swagsoftware/Kisak-Strike))
 - Without steam
 - Without Scaleform Flash UI
-- DriectX to OpenGLES3.2(WIP)
+- [DriectX to OpenGLES3.2](https://github.com/nillerusr/source-engine/tree/master/togles/linuxwin)(WIP)
 
 ## How to build:
 1. Download original game files
