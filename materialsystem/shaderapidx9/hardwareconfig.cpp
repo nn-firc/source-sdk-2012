@@ -676,7 +676,11 @@ int CHardwareConfig::MaxTextureDepth() const
 
 int CHardwareConfig::GetDXSupportLevel() const
 {
+#ifdef TOGLES
+	return 92;
+#else
 	return m_Caps.m_nDXSupportLevel;
+#endif
 }
 
 const char *CHardwareConfig::GetShaderDLLName() const
