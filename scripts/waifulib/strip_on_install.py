@@ -20,9 +20,8 @@ def options(opt):
 def configure(conf):
 	if conf.env.DEST_BINFMT in ['elf', 'mac-o']:
 		conf.find_program('strip', var='STRIP')
-		if not conf.env.STRIPFLAGS:
-			conf.env.STRIPFLAGS = os.environ['STRIPFLAGS'] if 'STRIPFLAGS' in os.environ else []
-		
+		conf.env.STRIPFLAGS += ['-x']
+
 		# a1ba: I am lazy to add `export OBJCOPY=` everywhere in my scripts
 		# so just try to deduce which objcopy we have
 		try:
