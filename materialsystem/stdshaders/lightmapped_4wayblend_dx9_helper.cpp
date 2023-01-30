@@ -1157,17 +1157,9 @@ void DrawLightmapped_4WayBlend_DX9_FastPath( int *dynVSIdx, int *dynPSIdx, CBase
 	ShaderApiFast( pShaderAPI )->ExecuteCommandBuffer( DynamicCmdsOut.Base() );
 
 	bool bVertexShaderFastPath = pContextData->m_bVertexShaderFastPath;
-#ifdef TOGLES
-	DECLARE_DYNAMIC_VERTEX_SHADER( lightmapped_4wayblend_vs20 );
-#else
 	DECLARE_DYNAMIC_VERTEX_SHADER( lightmapped_4wayblend_vs30 );
-#endif
 	SET_DYNAMIC_VERTEX_SHADER_COMBO( FASTPATH,  bVertexShaderFastPath );
-#ifdef TOGLES
-	SET_DYNAMIC_VERTEX_SHADER( lightmapped_4wayblend_vs20 );
-#else
 	SET_DYNAMIC_VERTEX_SHADER( lightmapped_4wayblend_vs30 );
-#endif
 
 	float vAmbientColor[4] = { mat_ambient_light_r.GetFloat(), mat_ambient_light_g.GetFloat(), mat_ambient_light_b.GetFloat(), 0.0f };
 	if ( g_pConfig->nFullbright == 1 )
