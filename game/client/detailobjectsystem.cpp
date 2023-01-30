@@ -1595,7 +1595,7 @@ void CDetailObjectSystem::LevelInitPreEntity()
 	}
 
 	int detailPropLightingLump;
-	if( g_pMaterialSystemHardwareConfig->GetHDRType() != HDR_TYPE_NONE )
+	if( g_pMaterialSystemHardwareConfig->GetHDREnabled() )
 	{
 		detailPropLightingLump = GAMELUMP_DETAIL_PROP_LIGHTING_HDR;
 	}

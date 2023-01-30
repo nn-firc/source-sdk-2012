@@ -38,7 +38,7 @@ struct LightState_t
 {
 	int  m_nNumLights;
 	bool m_bAmbientLight;
-	bool m_bStaticLight;
+	bool m_bStaticLightTexel;
 	bool m_bStaticLightIndirectOnly;  // only valid if m_bStaticLight true
 	inline int HasDynamicLight() { return (m_bAmbientLight || (m_nNumLights > 0)) ? 1 : 0; }
 };

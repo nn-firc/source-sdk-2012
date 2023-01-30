@@ -27,6 +27,8 @@ extern ConVar mat_slopescaledepthbias_shadowmap;
 extern ConVar mat_depthbias_shadowmap;
 static ConVar developer( "developer", "0", FCVAR_RELEASE, "Set developer message level" ); 
 
+extern ConVar mat_hdr_level;
+
 //-----------------------------------------------------------------------------
 //
 // Hardware Config!
@@ -802,7 +804,7 @@ HDRType_t CHardwareConfig::GetHDRType() const
 		g_pHardwareConfig->SetHDREnabled( true );
 	}
 
-	bool enabled = m_bHDREnabled;
+	bool enabled = (mat_hdr_level.GetInt() >= 2) && GetHDREnabled();
 	int dxlev = GetDXSupportLevel();
 	int dxsupp = dxlev >= 90;
 	HDRType_t caps_hdr = m_Caps.m_HDRType;

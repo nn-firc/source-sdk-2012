@@ -1243,7 +1243,6 @@ bool Map_CheckForHDR( model_t *pModel, const char *pMapPathName )
 	
 	bool bEnableHDR = ( IsGameConsole() && bHasHDR ) ||
 		bHasHDR && 
-		( mat_hdr_level.GetInt() >= 2 ) && 
 		( g_pMaterialSystemHardwareConfig->GetHardwareHDRType() != HDR_TYPE_NONE );
 	EnableHDR( bEnableHDR );
 
@@ -2185,7 +2184,7 @@ void Mod_LoadFaces( void )
 	int			ti, di;
 
 	int face_lump_to_load = LUMP_FACES;
-	if ( /* g_pMaterialSystemHardwareConfig->GetHDRType() != HDR_TYPE_NONE && */
+	if ( g_pMaterialSystemHardwareConfig->GetHDREnabled() && 
 		CMapLoadHelper::LumpSize( LUMP_FACES_HDR ) > 0 )
 	{
 		face_lump_to_load = LUMP_FACES_HDR;
@@ -2630,7 +2629,7 @@ void Mod_LoadLeafs( void )
 		Mod_LoadLeafs_Version_0( lh );
 		break;
 	case 1:
-		if( /* g_pMaterialSystemHardwareConfig->GetHDRType() != HDR_TYPE_NONE && */
+		if( g_pMaterialSystemHardwareConfig->GetHDREnabled() && 
 	  		  CMapLoadHelper::LumpSize( LUMP_LEAF_AMBIENT_LIGHTING_HDR ) > 0 )
 		{
 			CMapLoadHelper mlh( LUMP_LEAF_AMBIENT_LIGHTING_HDR );
@@ -2743,7 +2742,7 @@ void Mod_LoadCubemapSamples( void )
 		out->pTexture = materials->FindTexture( textureName, TEXTURE_GROUP_CUBE_MAP, true );
 		if ( IsErrorTexture( out->pTexture ) )
 		{
-			if ( g_pMaterialSystemHardwareConfig->GetHDRType() != HDR_TYPE_NONE )
+			if ( g_pMaterialSystemHardwareConfig->GetHDREnabled() )
 			{
 				Warning( "Couldn't get HDR '%s' -- ", textureName );
 				// try non hdr version
@@ -5168,7 +5167,7 @@ void CModelLoader::Map_LoadModelGuts( model_t *mod )
 	{
 		MEM_ALLOC_CREDIT_("Mod_LoadLighting");
 		COM_TimestampedLog( "  Mod_LoadLighting" );
-		bool bLoadHDR = ( g_pMaterialSystemHardwareConfig->GetHDRType() != HDR_TYPE_NONE ) &&
+		bool bLoadHDR = ( g_pMaterialSystemHardwareConfig->GetHDREnabled() ) &&
 						( CMapLoadHelper::LumpSize( LUMP_LIGHTING_HDR ) > 0 );
 		Mod_LoadLighting( bLoadHDR );
 	}
@@ -5299,7 +5298,7 @@ void CModelLoader::Map_LoadModelGuts( model_t *mod )
 	{
 		MEM_ALLOC_CREDIT_("Mod_LoadWorldlights");
 		COM_TimestampedLog( "  Mod_LoadWorldlights" );
-		if ( /* g_pMaterialSystemHardwareConfig->GetHDRType() != HDR_TYPE_NONE && */
+		if ( g_pMaterialSystemHardwareConfig->GetHDREnabled() && 
 			CMapLoadHelper::LumpSize( LUMP_WORLDLIGHTS_HDR ) > 0 )
 		{
 			CMapLoadHelper mlh( LUMP_WORLDLIGHTS_HDR );
