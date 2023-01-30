@@ -1248,7 +1248,7 @@ bool CMaterialSystem::AllowThreading( bool bAllow, int nServiceThread )
 
 	bool bOldAllow = m_bAllowQueuedRendering;
 
-	if ( GetCPUInformation().m_nPhysicalProcessors >= 2 || mat_queue_mode_force_allow.GetBool() )
+	if ( GetCPUInformation().m_nLogicalProcessors >= 2 || mat_queue_mode_force_allow.GetBool() )
 	{
 		m_bAllowQueuedRendering = bAllow;
 		bool bQueued = m_IdealThreadMode != MATERIAL_SINGLE_THREADED;
@@ -2141,11 +2141,7 @@ static ConVar mat_normalmaps(		"mat_normalmaps", "0", FCVAR_CHEAT );
 static ConVar mat_measurefillrate(	"mat_measurefillrate", "0", FCVAR_CHEAT );
 static ConVar mat_fillrate(			"mat_fillrate", "0", FCVAR_CHEAT );
 static ConVar mat_reversedepth(		"mat_reversedepth", "0", FCVAR_CHEAT );
-#if defined( PLATFORM_POSIX ) && !defined( _PS3 )
-static ConVar mat_bufferprimitives( "mat_bufferprimitives", "0" );	// I'm not seeing any benefit speed wise for buffered primitives on GLM/POSIX (checked via TF2 timedemo) - default to zero
-#else
 static ConVar mat_bufferprimitives( "mat_bufferprimitives", "1" );
-#endif
 static ConVar mat_drawflat(			"mat_drawflat","0", FCVAR_CHEAT );
 static ConVar mat_softwarelighting( "mat_softwarelighting", "0" );
 static ConVar mat_proxy(			"mat_proxy", "0", FCVAR_CHEAT, "", MatProxyCallback );
@@ -2157,11 +2153,7 @@ static ConVar mat_drawgray(			"mat_drawgray","0", FCVAR_CHEAT );
 
 // These are not controlled by the material system, but are limited by settings in the material system
 static ConVar r_shadowrendertotexture(		"r_shadowrendertotexture", "0" );
-#if ( defined( CSTRIKE15 ) && defined( _PS3) )
 static ConVar r_flashlightdepthtexture(		"r_flashlightdepthtexture", "1" );
-#else
-static ConVar r_flashlightdepthtexture(		"r_flashlightdepthtexture", "1" );
-#endif
 // On non-gameconsoles mat_motion_blur_enabled now comes from video.txt/videodefaults.txt
 static ConVar mat_motion_blur_enabled( "mat_motion_blur_enabled", IsGameConsole() ? "1" : "0" );
 
