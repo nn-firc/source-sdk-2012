@@ -23,10 +23,10 @@ def configure(conf):
 		if not conf.env.STRIPFLAGS:
 			conf.env.STRIPFLAGS = os.environ['STRIPFLAGS'] if 'STRIPFLAGS' in os.environ else []
 
-		if conf.env.DEST_BINFMT == 'mac-o':
+		if conf.env.DEST_BINFMT == 'mac-o' or conf.env.DEST_OS == 'android':
 			conf.env.STRIPFLAGS += ['-x']
-			return # macOS don't have objcopy
-		
+			return
+
 		# a1ba: I am lazy to add `export OBJCOPY=` everywhere in my scripts
 		# so just try to deduce which objcopy we have
 		try:
