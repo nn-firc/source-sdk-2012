@@ -1,4 +1,4 @@
-//========= Copyright Valve Corporation, All rights reserved. ============//
+//===== Copyright © 1996-2005, Valve Corporation, All rights reserved. ======//
 //
 // Purpose: 
 //
@@ -48,7 +48,7 @@ public:
 	typedef ID3D10Buffer					*LPDIRECT3DVERTEXBUFFER;
 };
 
-#endif // defined( DX10 ) && !defined( DX_TO_GL_ABSTRACTION )
+#endif // defined( DX10 ) && !defined( POSIX )
 
 
 #if !defined( _X360 ) && !defined( DX_TO_GL_ABSTRACTION )
@@ -116,18 +116,22 @@ typedef void *HardwareShader_t;
 // The vertex and pixel shader type
 //-----------------------------------------------------------------------------
 typedef intp VertexShader_t;
-typedef intp PixelShader_t;
+typedef intp PixelShader_t;	
 
 //-----------------------------------------------------------------------------
 // Bitpattern for an invalid shader
 //-----------------------------------------------------------------------------
-#define INVALID_SHADER	(-1) // ( 0xFFFFFFFF )
+#define INVALID_SHADER	( 0xFFFFFFFF )
 #define INVALID_HARDWARE_SHADER ( NULL )
 
 #define D3DSAMP_NOTSUPPORTED					D3DSAMP_FORCE_DWORD
 #define D3DRS_NOTSUPPORTED						D3DRS_FORCE_DWORD
 
+#ifdef TOGLES
+#include "togles/rendermechanism.h"
+#else
 #include "togl/rendermechanism.h"
+#endif
 
 #if defined( _X360 )
 
@@ -186,6 +190,7 @@ typedef enum D3DSHADEMODE
 {
 	D3DSHADE_FLAT = 0,
 	D3DSHADE_GOURAUD = 0,
+	D3DSHADE_NONE    = -1
 };
 
 #endif // _X360

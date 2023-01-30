@@ -35,31 +35,35 @@ def build(bld):
 		'mat_stub.cpp',
 		'materialsystem_global.cpp',
 		'morph.cpp',
+		'SubdMgr.cpp',
 		'occlusionquerymgr.cpp',
 		'shadersystem.cpp',
 		'texturemanager.cpp',
-		'pch_materialsystem.cpp',
+		'composite_texture.cpp',
+		'custom_material.cpp',
+		'base_visuals_data_processor.cpp',
 		'cmaterialdict.cpp',
 		'cmaterialsystem.cpp',
 		'cmatlightmaps.cpp',
+		'cmatpaintmaps.cpp',
 		'cmatrendercontext.cpp',
 		'cmatqueuedrendercontext.cpp',
-		'ctexturecompositor.cpp',
-		'../public/tier0/memoverride.cpp'
+		'pch_materialsystem.cpp',
+		'../../public/tier0/memoverride.cpp'
 	]
 
 	includes = [
 		'.',
-		'../public',
-		'../public/tier0',
-		'../public/tier1',
-		'../common',
+		'../../public',
+		'../../public/tier0',
+		'../../public/tier1',
+		'../../common',
 		'../'
 	] + bld.env.INCLUDES_SDL2
 
 	defines = []
 
-	libs = ['tier0','tier1','tier2','vstdlib','mathlib','bitmap','shaderlib','vtf']
+	libs = ['bitmap','tier0','tier1','tier2','vstdlib','interfaces','mathlib','shaderlib','vtf']
 
 	install_path = bld.env.LIBDIR
 

@@ -1,4 +1,4 @@
-//========= Copyright Valve Corporation, All rights reserved. ============//
+//========= Copyright © 1996-2005, Valve Corporation, All rights reserved. ====//
 //
 // Purpose: 
 //
@@ -10,7 +10,11 @@
 #define COLORFORMATDX8_H
 
 #include <pixelwriter.h>
+#ifdef TOGLES
+#include "togles/rendermechanism.h"
+#else
 #include "togl/rendermechanism.h"
+#endif
 
 // FOURCC formats for ATI shadow depth textures
 #define ATIFMT_D16		((D3DFORMAT)(MAKEFOURCC('D','F','1','6')))
@@ -48,7 +52,7 @@ bool D3DSupportsCompressedTextures();
 //-----------------------------------------------------------------------------
 // Returns closest supported format
 //-----------------------------------------------------------------------------
-ImageFormat FindNearestSupportedFormat( ImageFormat format, bool bIsVertexTexture, bool bIsRenderTarget, bool bFilterableRequired );
+D3DFORMAT FindNearestSupportedFormat( ImageFormat format, bool bIsVertexTexture, bool bIsRenderTarget, bool bFilterableRequired );
 
 //-----------------------------------------------------------------------------
 // Finds the nearest supported depth buffer format

@@ -1,4 +1,4 @@
-//========= Copyright Valve Corporation, All rights reserved. ============//
+//===== Copyright � 1996-2005, Valve Corporation, All rights reserved. ======//
 //
 // Purpose: 
 //
@@ -13,8 +13,11 @@
 #pragma once
 #endif
 
-
+#ifdef TOGLES
+#include "togles/rendermechanism.h"
+#else
 #include "togl/rendermechanism.h"
+#endif
 #include "shaderapi/ishaderapi.h"
 #include "shaderapi_global.h"
 #include "locald3dtypes.h"
@@ -43,7 +46,7 @@ public:
 	virtual void AdvancePIXFrame() = 0;
 
 	// Release, reacquire objects
-	virtual void ReleaseShaderObjects() = 0;
+	virtual void ReleaseShaderObjects( bool bReleaseManagedResources = true ) = 0;
 	virtual void RestoreShaderObjects() = 0;
 
 	// Resets the render state to its well defined initial value

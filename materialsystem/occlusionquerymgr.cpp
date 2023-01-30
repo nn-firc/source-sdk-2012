@@ -1,4 +1,4 @@
-//========= Copyright Valve Corporation, All rights reserved. ============//
+//========== Copyright © 2005, Valve Corporation, All rights reserved. ========
 //
 // Purpose:
 //
@@ -6,7 +6,9 @@
 
 #include "pch_materialsystem.h"
 
+#ifndef _PS3
 #define MATSYS_INTERNAL
+#endif
 
 #include "occlusionquerymgr.h"
 #include "imaterialsysteminternal.h"
@@ -38,9 +40,9 @@ COcclusionQueryMgr::COcclusionQueryMgr()
 OcclusionQueryObjectHandle_t COcclusionQueryMgr::CreateOcclusionQueryObject( )
 {
 	m_Mutex.Lock();
-	intp h = m_OcclusionQueryObjects.AddToTail();
+	OcclusionQueryObjectHandle_t h = (OcclusionQueryObjectHandle_t)m_OcclusionQueryObjects.AddToTail();
 	m_Mutex.Unlock();
-	return (OcclusionQueryObjectHandle_t)h;
+	return h;
 }
 
 void COcclusionQueryMgr::OnCreateOcclusionQueryObject( OcclusionQueryObjectHandle_t h )
@@ -56,7 +58,7 @@ void COcclusionQueryMgr::OnCreateOcclusionQueryObject( OcclusionQueryObjectHandl
 void COcclusionQueryMgr::FlushQuery( OcclusionQueryObjectHandle_t hOcclusionQuery, int nIndex )
 {
 	// Flush out any previous queries
-    intp h = (intp)hOcclusionQuery;
+	intp h = (intp)hOcclusionQuery;
 	if ( m_OcclusionQueryObjects[h].m_bHasBeenIssued[nIndex] )
 	{
 		ShaderAPIOcclusionQuery_t hQuery = m_OcclusionQueryObjects[h].m_QueryHandle[nIndex];
@@ -68,7 +70,7 @@ void COcclusionQueryMgr::FlushQuery( OcclusionQueryObjectHandle_t hOcclusionQuer
 
 void COcclusionQueryMgr::DestroyOcclusionQueryObject( OcclusionQueryObjectHandle_t hOcclusionQuery )
 {
-    intp h = (intp)hOcclusionQuery;
+	intp h = (intp)hOcclusionQuery;
 	Assert( m_OcclusionQueryObjects.IsValidIndex( h ) );
 	if ( m_OcclusionQueryObjects.IsValidIndex( h ) )
 	{
@@ -133,7 +135,7 @@ void COcclusionQueryMgr::FreeOcclusionQueryObjects( void )
 //-----------------------------------------------------------------------------
 void COcclusionQueryMgr::ResetOcclusionQueryObject( OcclusionQueryObjectHandle_t hOcclusionQuery )
 {
-    intp h = (intp)hOcclusionQuery;
+	intp h = (intp)hOcclusionQuery;
 	Assert( m_OcclusionQueryObjects.IsValidIndex( h ) );
 	if ( m_OcclusionQueryObjects.IsValidIndex( h ) )
 	{
@@ -154,7 +156,7 @@ void COcclusionQueryMgr::ResetOcclusionQueryObject( OcclusionQueryObjectHandle_t
 //-----------------------------------------------------------------------------
 void COcclusionQueryMgr::BeginOcclusionQueryDrawing( OcclusionQueryObjectHandle_t hOcclusionQuery )
 {
-    intp h = (intp)hOcclusionQuery;
+	intp h = (intp)hOcclusionQuery;
 	Assert( m_OcclusionQueryObjects.IsValidIndex( h ) );
 	if ( m_OcclusionQueryObjects.IsValidIndex( h ) )
 	{
@@ -194,7 +196,7 @@ void COcclusionQueryMgr::BeginOcclusionQueryDrawing( OcclusionQueryObjectHandle_
 
 void COcclusionQueryMgr::EndOcclusionQueryDrawing( OcclusionQueryObjectHandle_t hOcclusionQuery )
 {
-    intp h = (intp)hOcclusionQuery;
+	intp h = (intp)hOcclusionQuery;
 	Assert( m_OcclusionQueryObjects.IsValidIndex( h ) );
 	if ( m_OcclusionQueryObjects.IsValidIndex( h ) )
 	{
@@ -207,7 +209,7 @@ void COcclusionQueryMgr::EndOcclusionQueryDrawing( OcclusionQueryObjectHandle_t 
 			m_OcclusionQueryObjects[h].m_bHasBeenIssued[nCurrent] = true;
 			m_OcclusionQueryObjects[h].m_nFrameIssued = m_nFrameCount;
 
-			nCurrent = ( nCurrent + 1 ) % COUNT_OCCLUSION_QUERY_STACK;
+			nCurrent = (nCurrent+1) % COUNT_OCCLUSION_QUERY_STACK;
 			m_OcclusionQueryObjects[h].m_nCurrentIssue = nCurrent;
 		}
 	}
@@ -220,7 +222,7 @@ void COcclusionQueryMgr::EndOcclusionQueryDrawing( OcclusionQueryObjectHandle_t 
 //-----------------------------------------------------------------------------
 void COcclusionQueryMgr::OcclusionQuery_IssueNumPixelsRenderedQuery( OcclusionQueryObjectHandle_t hOcclusionQuery )
 {
-    intp h = (intp)hOcclusionQuery;
+	intp h = (intp)hOcclusionQuery;
 	Assert( m_OcclusionQueryObjects.IsValidIndex( h ) );
 	if ( m_OcclusionQueryObjects.IsValidIndex( h ) )
 	{
@@ -241,6 +243,7 @@ void COcclusionQueryMgr::OcclusionQuery_IssueNumPixelsRenderedQuery( OcclusionQu
 					m_OcclusionQueryObjects[h].m_LastResult = nPixels;
 					m_OcclusionQueryObjects[h].m_bHasBeenIssued[nIndex] = false;
 				}
+
 			}
 		}
 	}

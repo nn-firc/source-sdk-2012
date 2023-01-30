@@ -1,10 +1,10 @@
-//========= Copyright Valve Corporation, All rights reserved. ============//
+//========== Copyright (c) Valve Corporation, All rights reserved. ==========//
 //
 // Purpose: 
 //
 // $NoKeywords: $
 //
-//=============================================================================//
+//===========================================================================//
 #ifndef COMMON_HLSL_CONSTS_H_
 #define COMMON_HLSL_CONSTS_H_
 
@@ -12,8 +12,8 @@
   #define PSHADER_VECT_SCALE 20.0
   #define VSHADER_VECT_SCALE (1.0 / (PSHADER_VECT_SCALE) )
 #else
-  #define PSHADER_VECT_SCALE 1.0
-  #define VSHADER_VECT_SCALE 1.0
+  #define PSHADER_VECT_SCALE 1.0f
+  #define VSHADER_VECT_SCALE 1.0f
 #endif
 
 // GR - HDR luminance maps to 0..n range
@@ -23,5 +23,9 @@
 
 #define LINEAR_FOG_COLOR 29
 #define TONE_MAPPING_SCALE_PSH_CONSTANT 30
+
+#define DEPTH_FEATHER_PROJ_TO_VIEW_Z 	13
+#define DEPTH_FEATHER_PROJ_TO_VIEW_W 	14
+#define DEPTH_FEATHER_VIEWPORT_MAD 		15
 
 #endif //#ifndef COMMON_HLSL_CONSTS_H_
