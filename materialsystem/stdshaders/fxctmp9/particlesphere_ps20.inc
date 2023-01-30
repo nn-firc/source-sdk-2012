@@ -1,15 +1,8 @@
-// ALL SKIP STATEMENTS THAT AFFECT THIS SHADER!!!
-// defined $PIXELFOGTYPE && defined $WRITEWATERFOGTODESTALPHA && ( $PIXELFOGTYPE != 1 ) && $WRITEWATERFOGTODESTALPHA
-// defined $LIGHTING_PREVIEW && defined $FASTPATHENVMAPTINT && $LIGHTING_PREVIEW && $FASTPATHENVMAPTINT
-// defined $LIGHTING_PREVIEW && defined $FASTPATHENVMAPCONTRAST && $LIGHTING_PREVIEW && $FASTPATHENVMAPCONTRAST
-// defined $LIGHTING_PREVIEW && defined $FASTPATH && $LIGHTING_PREVIEW && $FASTPATH
-// ($FLASHLIGHT || $FLASHLIGHTSHADOWS) && $LIGHTING_PREVIEW
 #include "shaderlib/cshader.h"
 class particlesphere_ps20_Static_Index
 {
 public:
-	// CONSTRUCTOR
-	particlesphere_ps20_Static_Index( IShaderShadow *pShaderShadow, IMaterialVar **params )
+	particlesphere_ps20_Static_Index( )
 	{
 	}
 	int GetIndex()
@@ -40,20 +33,18 @@ public:
 	}
 	void SetPIXELFOGTYPE( bool i )
 	{
-		Assert( ( i ? 1 : 0 ) >= 0 && ( i ? 1 : 0 ) <= 1 );
 		m_nPIXELFOGTYPE = i ? 1 : 0;
 #ifdef _DEBUG
 		m_bPIXELFOGTYPE = true;
 #endif
 	}
 public:
-	// CONSTRUCTOR
-	particlesphere_ps20_Dynamic_Index( IShaderDynamicAPI *pShaderAPI )
+	particlesphere_ps20_Dynamic_Index()
 	{
 #ifdef _DEBUG
-		m_bPIXELFOGTYPE = true;
+		m_bPIXELFOGTYPE = false;
 #endif // _DEBUG
-		m_nPIXELFOGTYPE = ( pShaderAPI->GetSceneFogMode() == MATERIAL_FOG_LINEAR_BELOW_FOG_Z ) ;
+		m_nPIXELFOGTYPE = 0;
 	}
 	int GetIndex()
 	{
@@ -66,24 +57,4 @@ public:
 		return ( 1 * m_nPIXELFOGTYPE ) + 0;
 	}
 };
-#define shaderDynamicTest_particlesphere_ps20 0
-
-static const ShaderComboInformation_t s_DynamicComboArray_particlesphere_ps20[1] = 
-{
-	{ "PIXELFOGTYPE", 0, 1 },
-};
-static const ShaderComboSemantics_t particlesphere_ps20_combos =
-{
-	"particlesphere_ps20", s_DynamicComboArray_particlesphere_ps20, 1, NULL, 0 
-};
-
-class ConstructMe_particlesphere_ps20
-{
-public:
-	ConstructMe_particlesphere_ps20()
-	{
-		GetShaderDLL()->AddShaderComboInformation( &particlesphere_ps20_combos );
-	}
-};
-
-static ConstructMe_particlesphere_ps20 s_ConstructMe_particlesphere_ps20;
+#define shaderDynamicTest_particlesphere_ps20 psh_forgot_to_set_dynamic_PIXELFOGTYPE + 0

@@ -1,4 +1,4 @@
-//===== Copyright © 1996-2005, Valve Corporation, All rights reserved. ======//
+//========= Copyright Valve Corporation, All rights reserved. ============//
 //
 // Purpose: 
 //
@@ -12,9 +12,9 @@
 #include "tier0/memdbgon.h"
 
 #ifdef _WIN32
-DEFINE_FALLBACK_SHADER( Wireframe, Wireframe_Standard )
-BEGIN_SHADER( Wireframe_Standard, 
-			  "Help for Wireframe_Standard" )
+DEFINE_FALLBACK_SHADER( Wireframe, Wireframe_DX6 )
+BEGIN_SHADER( Wireframe_DX6, 
+			  "Help for Wireframe_DX6" )
 
 	BEGIN_SHADER_PARAMS
 		SHADER_PARAM_OVERRIDE( BASETEXTURE, SHADER_PARAM_TYPE_TEXTURE, "shadertest/basetexture", "unused", SHADER_PARAM_NOT_EDITABLE )
@@ -26,7 +26,6 @@ BEGIN_SHADER( Wireframe_Standard,
 	{
 		SET_FLAGS( MATERIAL_VAR_NO_DEBUG_OVERRIDE );
 		SET_FLAGS( MATERIAL_VAR_NOFOG );
-		SET_FLAGS( MATERIAL_VAR_WIREFRAME );
 	}
 
 	SHADER_INIT
@@ -39,17 +38,19 @@ BEGIN_SHADER( Wireframe_Standard,
 		{
 			pShaderShadow->PolyMode( SHADER_POLYMODEFACE_FRONT_AND_BACK, SHADER_POLYMODE_LINE );
 
+			SetModulationShadowState();
 			SetDefaultBlendingShadowState();
 
-			int flags = VERTEX_POSITION | VERTEX_FORMAT_COMPRESSED;
+			int flags = SHADER_DRAW_POSITION;
 			if ( IS_FLAG_SET(MATERIAL_VAR_VERTEXCOLOR) || IS_FLAG_SET(MATERIAL_VAR_VERTEXALPHA) )
 			{
-				flags |= VERTEX_COLOR;
+				flags |= SHADER_DRAW_COLOR;
 			}
-			pShaderShadow->VertexShaderVertexFormat( flags, 0, NULL, 0 );
+			pShaderShadow->DrawFlags( flags );
 		}
 		DYNAMIC_STATE
 		{
+			SetModulationDynamicState();
 		}
 		Draw();
 	}

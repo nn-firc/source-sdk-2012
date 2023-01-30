@@ -1,4 +1,4 @@
-//========= Copyright (c) 1996-2009, Valve Corporation, All rights reserved. ============//
+//========= Copyright Valve Corporation, All rights reserved. ============//
 //
 // Purpose: 
 //
@@ -9,7 +9,7 @@
 //Note: Not upgraded to vs/ps 2.0 fxc's because this shader is unused and there are no test cases to verify against.
 #include "BaseVSShader.h"
 
-#if !defined( _X360 ) && !defined( _PS3 )
+#if !defined( _X360 )
 #include "shadowmodel_ps20.inc"
 #include "shadowmodel_vs20.inc"
 #endif
@@ -20,7 +20,7 @@
 DEFINE_FALLBACK_SHADER( ShadowModel, ShadowModel_DX9 )
 
 
-#if !defined( _X360 ) && !defined( _PS3 ) //not used for anything at time of 360/PS3 ship, and we want to avoid storing/loading assembly shaders
+#if !defined( _X360 ) //not used for anything at time of 360 ship, and we want to avoid storing/loading assembly shaders
 
 //PC version
 BEGIN_VS_SHADER_FLAGS( ShadowModel_DX9, "Help for ShadowModel", SHADER_NOT_EDITABLE )
@@ -50,6 +50,9 @@ SHADER_INIT_PARAMS()
 
 SHADER_FALLBACK
 {
+	if ( g_pHardwareConfig->GetDXSupportLevel() < 90 )
+		return "ShadowModel_DX8";
+
 	return 0;
 }
 
@@ -82,15 +85,10 @@ SHADER_DRAW
 
 		// We need to fog to *white* regardless of overbrighting...
 		FogToWhite();
-
-		// The constant color is the shadow color...
-		PI_BeginCommandBuffer();
-		PI_SetModulationVertexShaderDynamicState();
-		PI_EndCommandBuffer();
 	}
 	DYNAMIC_STATE
 	{
-		BindTexture( SHADER_SAMPLER0, TEXTURE_BINDFLAGS_NONE, BASETEXTURE, FRAME );
+		BindTexture( SHADER_SAMPLER0, BASETEXTURE, FRAME );
 		SetVertexShaderMatrix3x4( VERTEX_SHADER_SHADER_SPECIFIC_CONST_0, BASETEXTURETRANSFORM );
 
 		SetVertexShaderConstant( VERTEX_SHADER_SHADER_SPECIFIC_CONST_3, BASETEXTUREOFFSET );
@@ -103,6 +101,9 @@ SHADER_DRAW
 			shadow[1] = 1.0f / shadow[1];
 		shadow[2] = params[FALLOFFAMOUNT]->GetFloatValue();
 		pShaderAPI->SetVertexShaderConstant( VERTEX_SHADER_SHADER_SPECIFIC_CONST_5, shadow.Base(), 1 );
+
+		// The constant color is the shadow color...
+		SetModulationVertexShaderDynamicState();
 
 		DECLARE_DYNAMIC_VERTEX_SHADER( shadowmodel_vs20 );
 		SET_DYNAMIC_VERTEX_SHADER_COMBO( DOWATERFOG, pShaderAPI->GetSceneFogMode() == MATERIAL_FOG_LINEAR_BELOW_FOG_Z );
@@ -119,7 +120,7 @@ END_SHADER
 
 #else
 
-//360 and PS3 version
+//360 version
 
 BEGIN_VS_SHADER_FLAGS( ShadowModel_DX9, "Help for ShadowModel", SHADER_NOT_EDITABLE )
 

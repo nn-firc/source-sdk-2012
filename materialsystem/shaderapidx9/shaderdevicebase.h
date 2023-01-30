@@ -1,4 +1,4 @@
-//===== Copyright © 1996-2005, Valve Corporation, All rights reserved. ======//
+//========= Copyright Valve Corporation, All rights reserved. ============//
 //
 // Purpose: 
 //
@@ -13,11 +13,8 @@
 #pragma once
 #endif
 
-#ifdef TOGLES
-#include "togles/rendermechanism.h"
-#else
+
 #include "togl/rendermechanism.h"
-#endif
 #include "shaderapi/IShaderDevice.h"
 #include "IHardwareConfigInternal.h"
 #include "bitmap/imageformat.h"
@@ -43,9 +40,14 @@ class KeyValues;
 //#define USE_REFERENCE_RASTERIZER 1
 
 //-----------------------------------------------------------------------------
+// Uncomment to check for -nulldevice on command line and use D3DDEVTYPE_NULLREF.
+//-----------------------------------------------------------------------------
+#define ENABLE_NULLREF_DEVICE_SUPPORT
+
+//-----------------------------------------------------------------------------
 // The Base implementation of the shader device
 //-----------------------------------------------------------------------------
-class CShaderDeviceMgrBase : public CBaseAppSystem< IShaderDeviceMgr >
+class CShaderDeviceMgrBase : public IShaderDeviceMgr
 {
 public:
 	// constructor, destructor
@@ -61,12 +63,6 @@ public:
 	virtual bool GetRecommendedConfigurationInfo( int nAdapter, int nDXLevel, KeyValues *pCongifuration );
 	virtual void AddModeChangeCallback( ShaderModeChangeCallbackFunc_t func );
 	virtual void RemoveModeChangeCallback( ShaderModeChangeCallbackFunc_t func );
-	virtual bool GetRecommendedVideoConfig( int nAdapter, KeyValues *pConfiguration );
-
-	virtual void AddDeviceDependentObject( IShaderDeviceDependentObject *pObject );
-	virtual void RemoveDeviceDependentObject( IShaderDeviceDependentObject *pObject );
-	virtual void InvokeDeviceLostNotifications( void );
-	virtual void InvokeDeviceResetNotifications( IDirect3DDevice9 *pDevice, D3DPRESENT_PARAMETERS *pPresentParameters, void *pHWnd );
 
 	// Reads in the hardware caps from the dxsupport.cfg file
 	void ReadHardwareCaps( HardwareCaps_t &caps, int nDxLevel );
@@ -78,7 +74,7 @@ public:
 	const HardwareCaps_t& GetHardwareCaps( int nAdapter ) const;
 
 	// Invokes mode change callbacks
-	void InvokeModeChangeCallbacks( int screenWidth, int screenHeight );
+	void InvokeModeChangeCallbacks();
 
 	// Factory to return from SetMode
 	static void* ShaderInterfaceFactory( const char *pInterfaceName, int *pReturnCode );
@@ -103,14 +99,10 @@ private:
 	void LoadHardwareCaps( KeyValues *pGroup, HardwareCaps_t &caps );
 
 	// Gets the recommended configuration associated with a particular dx level
-	bool GetRecommendedVideoConfig( int nAdapter, int nVendorID, int nDeviceID, KeyValues *pConfiguration );
 	bool GetRecommendedConfigurationInfo( int nAdapter, int nDXLevel, int nVendorID, int nDeviceID, KeyValues *pConfiguration );
 
 	// Returns the amount of video memory in bytes for a particular adapter
 	virtual int GetVidMemBytes( int nAdapter ) const = 0;
-
-	// Returns the physical screen desktop resolution
-	virtual void GetDesktopResolution( int *pWidth, int *pHeight, int nAdapter ) const = 0;
 
 	// Looks for override keyvalues in the dxsupport cfg keyvalues
 	KeyValues *FindDXLevelSpecificConfig( KeyValues *pKeyValues, int nDxLevel );
@@ -126,7 +118,6 @@ protected:
 
 	// Installed mode change callbacks
 	CUtlVector< ShaderModeChangeCallbackFunc_t > m_ModeChangeCallbacks;
-	CUtlVector< IShaderDeviceDependentObject* > m_DeviceDependentObjects;
 
 	KeyValues *m_pDXSupport;
 };
@@ -193,7 +184,7 @@ protected:
 
 	int	m_nWindowWidth;
 	int m_nWindowHeight;
-	ThreadId_t m_dwThreadId;
+	uintp m_dwThreadId;
 };
 
 

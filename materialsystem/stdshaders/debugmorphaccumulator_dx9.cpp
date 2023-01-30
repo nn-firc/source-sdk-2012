@@ -1,4 +1,4 @@
-//===== Copyright (c) 1996-2007, Valve Corporation, All rights reserved. ======//
+//========= Copyright Valve Corporation, All rights reserved. ============//
 //
 // Purpose: 
 //
@@ -11,10 +11,6 @@
 #include "debugmorphaccumulator_ps30.inc"
 #include "debugmorphaccumulator_vs30.inc"
 
-// NOTE: This has to be the last file included!
-#include "tier0/memdbgon.h"
-
-
 BEGIN_VS_SHADER_FLAGS( DebugMorphAccumulator, "Help for Debug Morph Accumulator", SHADER_NOT_EDITABLE )
 
 	BEGIN_SHADER_PARAMS
@@ -26,10 +22,6 @@ BEGIN_VS_SHADER_FLAGS( DebugMorphAccumulator, "Help for Debug Morph Accumulator"
 
 	SHADER_FALLBACK
 	{
-		if ( !g_pHardwareConfig->SupportsPixelShaders_3_0() )
-		{
-			return "Wireframe";
-		}
 		return 0;
 	}
 
@@ -45,7 +37,7 @@ BEGIN_VS_SHADER_FLAGS( DebugMorphAccumulator, "Help for Debug Morph Accumulator"
 			pShaderShadow->EnableDepthTest( false );
 			pShaderShadow->EnableDepthWrites( false );
 			pShaderShadow->EnableCulling( false );
-			pShaderShadow->FogMode( SHADER_FOGMODE_DISABLED, false );
+			pShaderShadow->FogMode( SHADER_FOGMODE_DISABLED );
 			pShaderShadow->EnableTexture( SHADER_SAMPLER0, true );
 			pShaderShadow->EnableSRGBWrite( false );
 
@@ -59,7 +51,7 @@ BEGIN_VS_SHADER_FLAGS( DebugMorphAccumulator, "Help for Debug Morph Accumulator"
 		}
 		DYNAMIC_STATE
 		{
-			BindTexture( SHADER_SAMPLER0, TEXTURE_BINDFLAGS_NONE, BASETEXTURE );
+			BindTexture( SHADER_SAMPLER0, BASETEXTURE );
 
 			DECLARE_DYNAMIC_VERTEX_SHADER( debugmorphaccumulator_vs30 );
 			SET_DYNAMIC_VERTEX_SHADER( debugmorphaccumulator_vs30 );

@@ -1,4 +1,4 @@
-//===== Copyright © 1996-2007, Valve Corporation, All rights reserved. ======//
+//========= Copyright Valve Corporation, All rights reserved. ============//
 //
 // Purpose: tracks VB allocations (and compressed/uncompressed vertex memory usage)
 //
@@ -18,6 +18,7 @@
 #endif
 
 // This interface is actually exported by the shader API DLL.
+#define VB_ALLOC_TRACKER_INTERFACE_VERSION "VBAllocTracker001"
 
 // Interface to the VB mem alloc tracker
 abstract_class IVBAllocTracker

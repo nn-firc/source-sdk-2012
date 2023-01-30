@@ -1,60 +1,51 @@
-// ALL SKIP STATEMENTS THAT AFFECT THIS SHADER!!!
-// defined $PIXELFOGTYPE && defined $WRITEWATERFOGTODESTALPHA && ( $PIXELFOGTYPE != 1 ) && $WRITEWATERFOGTODESTALPHA
-// defined $LIGHTING_PREVIEW && defined $FASTPATHENVMAPTINT && $LIGHTING_PREVIEW && $FASTPATHENVMAPTINT
-// defined $LIGHTING_PREVIEW && defined $FASTPATHENVMAPCONTRAST && $LIGHTING_PREVIEW && $FASTPATHENVMAPCONTRAST
-// defined $LIGHTING_PREVIEW && defined $FASTPATH && $LIGHTING_PREVIEW && $FASTPATH
-// ($FLASHLIGHT || $FLASHLIGHTSHADOWS) && $LIGHTING_PREVIEW
 #include "shaderlib/cshader.h"
 class bufferclearobeystencil_ps20b_Static_Index
 {
 private:
-	int m_nRELOADZCULL;
+	int m_nCONVERT_TO_SRGB;
 #ifdef _DEBUG
-	bool m_bRELOADZCULL;
+	bool m_bCONVERT_TO_SRGB;
 #endif
 public:
-	void SetRELOADZCULL( int i )
+	void SetCONVERT_TO_SRGB( int i )
 	{
-		Assert( i >= 0 && i <= 0 );
-		m_nRELOADZCULL = i;
+		Assert( i >= 0 && i <= 1 );
+		m_nCONVERT_TO_SRGB = i;
 #ifdef _DEBUG
-		m_bRELOADZCULL = true;
+		m_bCONVERT_TO_SRGB = true;
 #endif
 	}
-	void SetRELOADZCULL( bool i )
+	void SetCONVERT_TO_SRGB( bool i )
 	{
-		Assert( ( i ? 1 : 0 ) >= 0 && ( i ? 1 : 0 ) <= 0 );
-		m_nRELOADZCULL = i ? 1 : 0;
+		m_nCONVERT_TO_SRGB = i ? 1 : 0;
 #ifdef _DEBUG
-		m_bRELOADZCULL = true;
+		m_bCONVERT_TO_SRGB = true;
 #endif
 	}
 public:
-	// CONSTRUCTOR
-	bufferclearobeystencil_ps20b_Static_Index( IShaderShadow *pShaderShadow, IMaterialVar **params )
+	bufferclearobeystencil_ps20b_Static_Index( )
 	{
 #ifdef _DEBUG
-		m_bRELOADZCULL = false;
+		m_bCONVERT_TO_SRGB = true;
 #endif // _DEBUG
-		m_nRELOADZCULL = 0;
+		m_nCONVERT_TO_SRGB =  g_pHardwareConfig->NeedsShaderSRGBConversion();
 	}
 	int GetIndex()
 	{
 		// Asserts to make sure that we aren't using any skipped combinations.
 		// Asserts to make sure that we are setting all of the combination vars.
 #ifdef _DEBUG
-		bool bAllStaticVarsDefined = m_bRELOADZCULL;
+		bool bAllStaticVarsDefined = m_bCONVERT_TO_SRGB;
 		Assert( bAllStaticVarsDefined );
 #endif // _DEBUG
-		return ( 1 * m_nRELOADZCULL ) + 0;
+		return ( 1 * m_nCONVERT_TO_SRGB ) + 0;
 	}
 };
-#define shaderStaticTest_bufferclearobeystencil_ps20b psh_forgot_to_set_static_RELOADZCULL + 0
+#define shaderStaticTest_bufferclearobeystencil_ps20b 0
 class bufferclearobeystencil_ps20b_Dynamic_Index
 {
 public:
-	// CONSTRUCTOR
-	bufferclearobeystencil_ps20b_Dynamic_Index( IShaderDynamicAPI *pShaderAPI )
+	bufferclearobeystencil_ps20b_Dynamic_Index()
 	{
 	}
 	int GetIndex()
@@ -67,23 +58,3 @@ public:
 	}
 };
 #define shaderDynamicTest_bufferclearobeystencil_ps20b 0
-
-static const ShaderComboInformation_t s_StaticComboArray_bufferclearobeystencil_ps20b[1] = 
-{
-	{ "RELOADZCULL", 0, 0 },
-};
-static const ShaderComboSemantics_t bufferclearobeystencil_ps20b_combos =
-{
-	"bufferclearobeystencil_ps20b", NULL, 0, s_StaticComboArray_bufferclearobeystencil_ps20b, 1 
-};
-
-class ConstructMe_bufferclearobeystencil_ps20b
-{
-public:
-	ConstructMe_bufferclearobeystencil_ps20b()
-	{
-		GetShaderDLL()->AddShaderComboInformation( &bufferclearobeystencil_ps20b_combos );
-	}
-};
-
-static ConstructMe_bufferclearobeystencil_ps20b s_ConstructMe_bufferclearobeystencil_ps20b;

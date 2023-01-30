@@ -1,4 +1,4 @@
-//========= Copyright (c) 1996-2005, Valve Corporation, All rights reserved. ============//
+//========= Copyright Valve Corporation, All rights reserved. ============//
 //
 // Purpose: 
 //
@@ -6,7 +6,7 @@
 // $NoKeywords: $
 //=============================================================================//
 
-#include "shaderlib/CShader.h"
+#include "shaderlib/cshader.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
@@ -58,8 +58,8 @@ BEGIN_SHADER( Cloud,
 			}
 			DYNAMIC_STATE
 			{
-				BindTexture( SHADER_SAMPLER0, false, BASETEXTURE, FRAME );
-				BindTexture( SHADER_SAMPLER1, false, CLOUDALPHATEXTURE );
+				BindTexture( SHADER_SAMPLER0, BASETEXTURE, FRAME );
+				BindTexture( SHADER_SAMPLER1, CLOUDALPHATEXTURE );
 
 				// handle scrolling of base texture
 				SetFixedFunctionTextureScaledTransform( MATERIAL_TEXTURE0,

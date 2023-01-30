@@ -1,4 +1,4 @@
-//===== Copyright © 1996-2005, Valve Corporation, All rights reserved. ======//
+//========= Copyright Valve Corporation, All rights reserved. ============//
 //
 // Purpose: 
 //
@@ -22,6 +22,7 @@
 #define DEBUG_BOARD_STATE 0
 #endif
 
+
 //-----------------------------------------------------------------------------
 // Forward declarations
 //-----------------------------------------------------------------------------
@@ -35,20 +36,11 @@ class IShaderShadow;
 //-----------------------------------------------------------------------------
 // Global interfaces
 //-----------------------------------------------------------------------------
-#ifdef _PS3
-#include "shaderutil_ps3nonvirt.h"
-#define g_pShaderUtil ShaderUtil()
-inline CPs3NonVirt_IShaderUtil * ShaderUtil()
-{
-	return ( CPs3NonVirt_IShaderUtil * ) 1;
-}
-#else
 extern IShaderUtil* g_pShaderUtil;
 inline IShaderUtil* ShaderUtil()
 {
 	return g_pShaderUtil;
 }
-#endif
 
 extern CShaderDeviceBase *g_pShaderDevice;
 extern CShaderDeviceMgrBase *g_pShaderDeviceMgr;
@@ -108,5 +100,6 @@ extern bool g_bShaderAccessDisallowed;
 #define LockShaderMutex() ((void)0)
 #define UnlockShaderMutex() ((void)0)
 #endif
+
 
 #endif // SHADERAPI_GLOBAL_H

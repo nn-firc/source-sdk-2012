@@ -1,4 +1,4 @@
-//========== Copyright © 2005, Valve Corporation, All rights reserved. ========
+//========= Copyright Valve Corporation, All rights reserved. ============//
 //
 // Purpose:
 //
@@ -92,13 +92,13 @@ public:
 	void		BeginUpdateLightmaps();
 	void		EndUpdateLightmaps();
 
-	void		CleanupLightmaps();
-
 private:
 
 	// Gets the maximum lightmap page size...
 	int			GetMaxLightmapPageWidth() const;
 	int			GetMaxLightmapPageHeight() const;
+
+	void		CleanupLightmaps();
 
 	// Allocate lightmap textures in D3D
 	void		AllocateLightmapTexture( int lightmap );

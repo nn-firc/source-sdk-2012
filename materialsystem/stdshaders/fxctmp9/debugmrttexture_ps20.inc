@@ -1,9 +1,3 @@
-// ALL SKIP STATEMENTS THAT AFFECT THIS SHADER!!!
-// defined $PIXELFOGTYPE && defined $WRITEWATERFOGTODESTALPHA && ( $PIXELFOGTYPE != 1 ) && $WRITEWATERFOGTODESTALPHA
-// defined $LIGHTING_PREVIEW && defined $FASTPATHENVMAPTINT && $LIGHTING_PREVIEW && $FASTPATHENVMAPTINT
-// defined $LIGHTING_PREVIEW && defined $FASTPATHENVMAPCONTRAST && $LIGHTING_PREVIEW && $FASTPATHENVMAPCONTRAST
-// defined $LIGHTING_PREVIEW && defined $FASTPATH && $LIGHTING_PREVIEW && $FASTPATH
-// ($FLASHLIGHT || $FLASHLIGHTSHADOWS) && $LIGHTING_PREVIEW
 #include "shaderlib/cshader.h"
 class debugmrttexture_ps20_Static_Index
 {
@@ -23,15 +17,13 @@ public:
 	}
 	void SetMRTINDEX( bool i )
 	{
-		Assert( ( i ? 1 : 0 ) >= 0 && ( i ? 1 : 0 ) <= 1 );
 		m_nMRTINDEX = i ? 1 : 0;
 #ifdef _DEBUG
 		m_bMRTINDEX = true;
 #endif
 	}
 public:
-	// CONSTRUCTOR
-	debugmrttexture_ps20_Static_Index( IShaderShadow *pShaderShadow, IMaterialVar **params )
+	debugmrttexture_ps20_Static_Index( )
 	{
 #ifdef _DEBUG
 		m_bMRTINDEX = false;
@@ -53,8 +45,7 @@ public:
 class debugmrttexture_ps20_Dynamic_Index
 {
 public:
-	// CONSTRUCTOR
-	debugmrttexture_ps20_Dynamic_Index( IShaderDynamicAPI *pShaderAPI )
+	debugmrttexture_ps20_Dynamic_Index()
 	{
 	}
 	int GetIndex()
@@ -67,23 +58,3 @@ public:
 	}
 };
 #define shaderDynamicTest_debugmrttexture_ps20 0
-
-static const ShaderComboInformation_t s_StaticComboArray_debugmrttexture_ps20[1] = 
-{
-	{ "MRTINDEX", 0, 1 },
-};
-static const ShaderComboSemantics_t debugmrttexture_ps20_combos =
-{
-	"debugmrttexture_ps20", NULL, 0, s_StaticComboArray_debugmrttexture_ps20, 1 
-};
-
-class ConstructMe_debugmrttexture_ps20
-{
-public:
-	ConstructMe_debugmrttexture_ps20()
-	{
-		GetShaderDLL()->AddShaderComboInformation( &debugmrttexture_ps20_combos );
-	}
-};
-
-static ConstructMe_debugmrttexture_ps20 s_ConstructMe_debugmrttexture_ps20;

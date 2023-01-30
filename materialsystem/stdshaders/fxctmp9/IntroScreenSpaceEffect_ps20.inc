@@ -1,15 +1,8 @@
-// ALL SKIP STATEMENTS THAT AFFECT THIS SHADER!!!
-// defined $PIXELFOGTYPE && defined $WRITEWATERFOGTODESTALPHA && ( $PIXELFOGTYPE != 1 ) && $WRITEWATERFOGTODESTALPHA
-// defined $LIGHTING_PREVIEW && defined $FASTPATHENVMAPTINT && $LIGHTING_PREVIEW && $FASTPATHENVMAPTINT
-// defined $LIGHTING_PREVIEW && defined $FASTPATHENVMAPCONTRAST && $LIGHTING_PREVIEW && $FASTPATHENVMAPCONTRAST
-// defined $LIGHTING_PREVIEW && defined $FASTPATH && $LIGHTING_PREVIEW && $FASTPATH
-// ($FLASHLIGHT || $FLASHLIGHTSHADOWS) && $LIGHTING_PREVIEW
 #include "shaderlib/cshader.h"
 class introscreenspaceeffect_ps20_Static_Index
 {
 public:
-	// CONSTRUCTOR
-	introscreenspaceeffect_ps20_Static_Index( IShaderShadow *pShaderShadow, IMaterialVar **params )
+	introscreenspaceeffect_ps20_Static_Index( )
 	{
 	}
 	int GetIndex()
@@ -40,15 +33,13 @@ public:
 	}
 	void SetMODE( bool i )
 	{
-		Assert( ( i ? 1 : 0 ) >= 0 && ( i ? 1 : 0 ) <= 9 );
 		m_nMODE = i ? 1 : 0;
 #ifdef _DEBUG
 		m_bMODE = true;
 #endif
 	}
 public:
-	// CONSTRUCTOR
-	introscreenspaceeffect_ps20_Dynamic_Index( IShaderDynamicAPI *pShaderAPI )
+	introscreenspaceeffect_ps20_Dynamic_Index()
 	{
 #ifdef _DEBUG
 		m_bMODE = false;
@@ -67,23 +58,3 @@ public:
 	}
 };
 #define shaderDynamicTest_introscreenspaceeffect_ps20 psh_forgot_to_set_dynamic_MODE + 0
-
-static const ShaderComboInformation_t s_DynamicComboArray_IntroScreenSpaceEffect_ps20[1] = 
-{
-	{ "MODE", 0, 9 },
-};
-static const ShaderComboSemantics_t IntroScreenSpaceEffect_ps20_combos =
-{
-	"IntroScreenSpaceEffect_ps20", s_DynamicComboArray_IntroScreenSpaceEffect_ps20, 1, NULL, 0 
-};
-
-class ConstructMe_IntroScreenSpaceEffect_ps20
-{
-public:
-	ConstructMe_IntroScreenSpaceEffect_ps20()
-	{
-		GetShaderDLL()->AddShaderComboInformation( &IntroScreenSpaceEffect_ps20_combos );
-	}
-};
-
-static ConstructMe_IntroScreenSpaceEffect_ps20 s_ConstructMe_IntroScreenSpaceEffect_ps20;

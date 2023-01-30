@@ -1,8 +1,3 @@
-// ALL SKIP STATEMENTS THAT AFFECT THIS SHADER!!!
-// $BUMPMASK && $SEAMLESS
-// $LIGHTING_PREVIEW && $FLASHLIGHT
-// ( $DOWATERFOG == 0 ) && ( $DOPIXELFOG && $HARDWAREFOGBLEND )
-// defined $LIGHTING_PREVIEW && defined $FASTPATH && $LIGHTING_PREVIEW && $FASTPATH
 #include "shaderlib/cshader.h"
 class lightmappedgeneric_vs20_Static_Index
 {
@@ -22,7 +17,6 @@ public:
 	}
 	void SetENVMAP_MASK( bool i )
 	{
-		Assert( ( i ? 1 : 0 ) >= 0 && ( i ? 1 : 0 ) <= 1 );
 		m_nENVMAP_MASK = i ? 1 : 0;
 #ifdef _DEBUG
 		m_bENVMAP_MASK = true;
@@ -44,7 +38,6 @@ public:
 	}
 	void SetTANGENTSPACE( bool i )
 	{
-		Assert( ( i ? 1 : 0 ) >= 0 && ( i ? 1 : 0 ) <= 1 );
 		m_nTANGENTSPACE = i ? 1 : 0;
 #ifdef _DEBUG
 		m_bTANGENTSPACE = true;
@@ -66,32 +59,30 @@ public:
 	}
 	void SetBUMPMAP( bool i )
 	{
-		Assert( ( i ? 1 : 0 ) >= 0 && ( i ? 1 : 0 ) <= 1 );
 		m_nBUMPMAP = i ? 1 : 0;
 #ifdef _DEBUG
 		m_bBUMPMAP = true;
 #endif
 	}
 private:
-	int m_nDETAILTEXTURE;
+	int m_nDIFFUSEBUMPMAP;
 #ifdef _DEBUG
-	bool m_bDETAILTEXTURE;
+	bool m_bDIFFUSEBUMPMAP;
 #endif
 public:
-	void SetDETAILTEXTURE( int i )
+	void SetDIFFUSEBUMPMAP( int i )
 	{
 		Assert( i >= 0 && i <= 1 );
-		m_nDETAILTEXTURE = i;
+		m_nDIFFUSEBUMPMAP = i;
 #ifdef _DEBUG
-		m_bDETAILTEXTURE = true;
+		m_bDIFFUSEBUMPMAP = true;
 #endif
 	}
-	void SetDETAILTEXTURE( bool i )
+	void SetDIFFUSEBUMPMAP( bool i )
 	{
-		Assert( ( i ? 1 : 0 ) >= 0 && ( i ? 1 : 0 ) <= 1 );
-		m_nDETAILTEXTURE = i ? 1 : 0;
+		m_nDIFFUSEBUMPMAP = i ? 1 : 0;
 #ifdef _DEBUG
-		m_bDETAILTEXTURE = true;
+		m_bDIFFUSEBUMPMAP = true;
 #endif
 	}
 private:
@@ -110,7 +101,6 @@ public:
 	}
 	void SetVERTEXCOLOR( bool i )
 	{
-		Assert( ( i ? 1 : 0 ) >= 0 && ( i ? 1 : 0 ) <= 1 );
 		m_nVERTEXCOLOR = i ? 1 : 0;
 #ifdef _DEBUG
 		m_bVERTEXCOLOR = true;
@@ -132,10 +122,30 @@ public:
 	}
 	void SetVERTEXALPHATEXBLENDFACTOR( bool i )
 	{
-		Assert( ( i ? 1 : 0 ) >= 0 && ( i ? 1 : 0 ) <= 1 );
 		m_nVERTEXALPHATEXBLENDFACTOR = i ? 1 : 0;
 #ifdef _DEBUG
 		m_bVERTEXALPHATEXBLENDFACTOR = true;
+#endif
+	}
+private:
+	int m_nRELIEF_MAPPING;
+#ifdef _DEBUG
+	bool m_bRELIEF_MAPPING;
+#endif
+public:
+	void SetRELIEF_MAPPING( int i )
+	{
+		Assert( i >= 0 && i <= 0 );
+		m_nRELIEF_MAPPING = i;
+#ifdef _DEBUG
+		m_bRELIEF_MAPPING = true;
+#endif
+	}
+	void SetRELIEF_MAPPING( bool i )
+	{
+		m_nRELIEF_MAPPING = i ? 1 : 0;
+#ifdef _DEBUG
+		m_bRELIEF_MAPPING = true;
 #endif
 	}
 private:
@@ -154,7 +164,6 @@ public:
 	}
 	void SetSEAMLESS( bool i )
 	{
-		Assert( ( i ? 1 : 0 ) >= 0 && ( i ? 1 : 0 ) <= 1 );
 		m_nSEAMLESS = i ? 1 : 0;
 #ifdef _DEBUG
 		m_bSEAMLESS = true;
@@ -168,7 +177,7 @@ private:
 public:
 	void SetBUMPMASK( int i )
 	{
-		Assert( i >= 0 && i <= 0 );
+		Assert( i >= 0 && i <= 1 );
 		m_nBUMPMASK = i;
 #ifdef _DEBUG
 		m_bBUMPMASK = true;
@@ -176,7 +185,6 @@ public:
 	}
 	void SetBUMPMASK( bool i )
 	{
-		Assert( ( i ? 1 : 0 ) >= 0 && ( i ? 1 : 0 ) <= 0 );
 		m_nBUMPMASK = i ? 1 : 0;
 #ifdef _DEBUG
 		m_bBUMPMASK = true;
@@ -198,147 +206,13 @@ public:
 	}
 	void SetFLASHLIGHT( bool i )
 	{
-		Assert( ( i ? 1 : 0 ) >= 0 && ( i ? 1 : 0 ) <= 1 );
 		m_nFLASHLIGHT = i ? 1 : 0;
 #ifdef _DEBUG
 		m_bFLASHLIGHT = true;
 #endif
 	}
-private:
-	int m_nFANCY_BLENDING;
-#ifdef _DEBUG
-	bool m_bFANCY_BLENDING;
-#endif
 public:
-	void SetFANCY_BLENDING( int i )
-	{
-		Assert( i >= 0 && i <= 1 );
-		m_nFANCY_BLENDING = i;
-#ifdef _DEBUG
-		m_bFANCY_BLENDING = true;
-#endif
-	}
-	void SetFANCY_BLENDING( bool i )
-	{
-		Assert( ( i ? 1 : 0 ) >= 0 && ( i ? 1 : 0 ) <= 1 );
-		m_nFANCY_BLENDING = i ? 1 : 0;
-#ifdef _DEBUG
-		m_bFANCY_BLENDING = true;
-#endif
-	}
-private:
-	int m_nSELFILLUM;
-#ifdef _DEBUG
-	bool m_bSELFILLUM;
-#endif
-public:
-	void SetSELFILLUM( int i )
-	{
-		Assert( i >= 0 && i <= 1 );
-		m_nSELFILLUM = i;
-#ifdef _DEBUG
-		m_bSELFILLUM = true;
-#endif
-	}
-	void SetSELFILLUM( bool i )
-	{
-		Assert( ( i ? 1 : 0 ) >= 0 && ( i ? 1 : 0 ) <= 1 );
-		m_nSELFILLUM = i ? 1 : 0;
-#ifdef _DEBUG
-		m_bSELFILLUM = true;
-#endif
-	}
-private:
-	int m_nLIGHTING_PREVIEW;
-#ifdef _DEBUG
-	bool m_bLIGHTING_PREVIEW;
-#endif
-public:
-	void SetLIGHTING_PREVIEW( int i )
-	{
-		Assert( i >= 0 && i <= 0 );
-		m_nLIGHTING_PREVIEW = i;
-#ifdef _DEBUG
-		m_bLIGHTING_PREVIEW = true;
-#endif
-	}
-	void SetLIGHTING_PREVIEW( bool i )
-	{
-		Assert( ( i ? 1 : 0 ) >= 0 && ( i ? 1 : 0 ) <= 0 );
-		m_nLIGHTING_PREVIEW = i ? 1 : 0;
-#ifdef _DEBUG
-		m_bLIGHTING_PREVIEW = true;
-#endif
-	}
-private:
-	int m_nPAINT;
-#ifdef _DEBUG
-	bool m_bPAINT;
-#endif
-public:
-	void SetPAINT( int i )
-	{
-		Assert( i >= 0 && i <= 1 );
-		m_nPAINT = i;
-#ifdef _DEBUG
-		m_bPAINT = true;
-#endif
-	}
-	void SetPAINT( bool i )
-	{
-		Assert( ( i ? 1 : 0 ) >= 0 && ( i ? 1 : 0 ) <= 1 );
-		m_nPAINT = i ? 1 : 0;
-#ifdef _DEBUG
-		m_bPAINT = true;
-#endif
-	}
-private:
-	int m_nDOPIXELFOG;
-#ifdef _DEBUG
-	bool m_bDOPIXELFOG;
-#endif
-public:
-	void SetDOPIXELFOG( int i )
-	{
-		Assert( i >= 0 && i <= 1 );
-		m_nDOPIXELFOG = i;
-#ifdef _DEBUG
-		m_bDOPIXELFOG = true;
-#endif
-	}
-	void SetDOPIXELFOG( bool i )
-	{
-		Assert( ( i ? 1 : 0 ) >= 0 && ( i ? 1 : 0 ) <= 1 );
-		m_nDOPIXELFOG = i ? 1 : 0;
-#ifdef _DEBUG
-		m_bDOPIXELFOG = true;
-#endif
-	}
-private:
-	int m_nHARDWAREFOGBLEND;
-#ifdef _DEBUG
-	bool m_bHARDWAREFOGBLEND;
-#endif
-public:
-	void SetHARDWAREFOGBLEND( int i )
-	{
-		Assert( i >= 0 && i <= 0 );
-		m_nHARDWAREFOGBLEND = i;
-#ifdef _DEBUG
-		m_bHARDWAREFOGBLEND = true;
-#endif
-	}
-	void SetHARDWAREFOGBLEND( bool i )
-	{
-		Assert( ( i ? 1 : 0 ) >= 0 && ( i ? 1 : 0 ) <= 0 );
-		m_nHARDWAREFOGBLEND = i ? 1 : 0;
-#ifdef _DEBUG
-		m_bHARDWAREFOGBLEND = true;
-#endif
-	}
-public:
-	// CONSTRUCTOR
-	lightmappedgeneric_vs20_Static_Index( IShaderShadow *pShaderShadow, IMaterialVar **params )
+	lightmappedgeneric_vs20_Static_Index( )
 	{
 #ifdef _DEBUG
 		m_bENVMAP_MASK = false;
@@ -353,9 +227,9 @@ public:
 #endif // _DEBUG
 		m_nBUMPMAP = 0;
 #ifdef _DEBUG
-		m_bDETAILTEXTURE = false;
+		m_bDIFFUSEBUMPMAP = false;
 #endif // _DEBUG
-		m_nDETAILTEXTURE = 0;
+		m_nDIFFUSEBUMPMAP = 0;
 #ifdef _DEBUG
 		m_bVERTEXCOLOR = false;
 #endif // _DEBUG
@@ -364,6 +238,10 @@ public:
 		m_bVERTEXALPHATEXBLENDFACTOR = false;
 #endif // _DEBUG
 		m_nVERTEXALPHATEXBLENDFACTOR = 0;
+#ifdef _DEBUG
+		m_bRELIEF_MAPPING = false;
+#endif // _DEBUG
+		m_nRELIEF_MAPPING = 0;
 #ifdef _DEBUG
 		m_bSEAMLESS = false;
 #endif // _DEBUG
@@ -376,43 +254,19 @@ public:
 		m_bFLASHLIGHT = false;
 #endif // _DEBUG
 		m_nFLASHLIGHT = 0;
-#ifdef _DEBUG
-		m_bFANCY_BLENDING = false;
-#endif // _DEBUG
-		m_nFANCY_BLENDING = 0;
-#ifdef _DEBUG
-		m_bSELFILLUM = false;
-#endif // _DEBUG
-		m_nSELFILLUM = 0;
-#ifdef _DEBUG
-		m_bLIGHTING_PREVIEW = false;
-#endif // _DEBUG
-		m_nLIGHTING_PREVIEW = 0;
-#ifdef _DEBUG
-		m_bPAINT = false;
-#endif // _DEBUG
-		m_nPAINT = 0;
-#ifdef _DEBUG
-		m_bDOPIXELFOG = true;
-#endif // _DEBUG
-		m_nDOPIXELFOG = ( g_pHardwareConfig->SupportsPixelShaders_2_b() && !IS_FLAG_SET( MATERIAL_VAR_VERTEXFOG ) ) ? 1 : 0 ;
-#ifdef _DEBUG
-		m_bHARDWAREFOGBLEND = true;
-#endif // _DEBUG
-		m_nHARDWAREFOGBLEND = 0 ;
 	}
 	int GetIndex()
 	{
 		// Asserts to make sure that we aren't using any skipped combinations.
 		// Asserts to make sure that we are setting all of the combination vars.
 #ifdef _DEBUG
-		bool bAllStaticVarsDefined = m_bENVMAP_MASK && m_bTANGENTSPACE && m_bBUMPMAP && m_bDETAILTEXTURE && m_bVERTEXCOLOR && m_bVERTEXALPHATEXBLENDFACTOR && m_bSEAMLESS && m_bBUMPMASK && m_bFLASHLIGHT && m_bFANCY_BLENDING && m_bSELFILLUM && m_bLIGHTING_PREVIEW && m_bPAINT && m_bDOPIXELFOG && m_bHARDWAREFOGBLEND;
+		bool bAllStaticVarsDefined = m_bENVMAP_MASK && m_bTANGENTSPACE && m_bBUMPMAP && m_bDIFFUSEBUMPMAP && m_bVERTEXCOLOR && m_bVERTEXALPHATEXBLENDFACTOR && m_bRELIEF_MAPPING && m_bSEAMLESS && m_bBUMPMASK && m_bFLASHLIGHT;
 		Assert( bAllStaticVarsDefined );
 #endif // _DEBUG
-		return ( 4 * m_nENVMAP_MASK ) + ( 8 * m_nTANGENTSPACE ) + ( 16 * m_nBUMPMAP ) + ( 32 * m_nDETAILTEXTURE ) + ( 64 * m_nVERTEXCOLOR ) + ( 128 * m_nVERTEXALPHATEXBLENDFACTOR ) + ( 256 * m_nSEAMLESS ) + ( 512 * m_nBUMPMASK ) + ( 512 * m_nFLASHLIGHT ) + ( 1024 * m_nFANCY_BLENDING ) + ( 2048 * m_nSELFILLUM ) + ( 4096 * m_nLIGHTING_PREVIEW ) + ( 4096 * m_nPAINT ) + ( 8192 * m_nDOPIXELFOG ) + ( 16384 * m_nHARDWAREFOGBLEND ) + 0;
+		return ( 4 * m_nENVMAP_MASK ) + ( 8 * m_nTANGENTSPACE ) + ( 16 * m_nBUMPMAP ) + ( 32 * m_nDIFFUSEBUMPMAP ) + ( 64 * m_nVERTEXCOLOR ) + ( 128 * m_nVERTEXALPHATEXBLENDFACTOR ) + ( 256 * m_nRELIEF_MAPPING ) + ( 256 * m_nSEAMLESS ) + ( 512 * m_nBUMPMASK ) + ( 1024 * m_nFLASHLIGHT ) + 0;
 	}
 };
-#define shaderStaticTest_lightmappedgeneric_vs20 vsh_forgot_to_set_static_ENVMAP_MASK + vsh_forgot_to_set_static_TANGENTSPACE + vsh_forgot_to_set_static_BUMPMAP + vsh_forgot_to_set_static_DETAILTEXTURE + vsh_forgot_to_set_static_VERTEXCOLOR + vsh_forgot_to_set_static_VERTEXALPHATEXBLENDFACTOR + vsh_forgot_to_set_static_SEAMLESS + vsh_forgot_to_set_static_BUMPMASK + vsh_forgot_to_set_static_FLASHLIGHT + vsh_forgot_to_set_static_FANCY_BLENDING + vsh_forgot_to_set_static_SELFILLUM + vsh_forgot_to_set_static_LIGHTING_PREVIEW + vsh_forgot_to_set_static_PAINT + 0
+#define shaderStaticTest_lightmappedgeneric_vs20 vsh_forgot_to_set_static_ENVMAP_MASK + vsh_forgot_to_set_static_TANGENTSPACE + vsh_forgot_to_set_static_BUMPMAP + vsh_forgot_to_set_static_DIFFUSEBUMPMAP + vsh_forgot_to_set_static_VERTEXCOLOR + vsh_forgot_to_set_static_VERTEXALPHATEXBLENDFACTOR + vsh_forgot_to_set_static_RELIEF_MAPPING + vsh_forgot_to_set_static_SEAMLESS + vsh_forgot_to_set_static_BUMPMASK + vsh_forgot_to_set_static_FLASHLIGHT + 0
 class lightmappedgeneric_vs20_Dynamic_Index
 {
 private:
@@ -431,7 +285,6 @@ public:
 	}
 	void SetFASTPATH( bool i )
 	{
-		Assert( ( i ? 1 : 0 ) >= 0 && ( i ? 1 : 0 ) <= 1 );
 		m_nFASTPATH = i ? 1 : 0;
 #ifdef _DEBUG
 		m_bFASTPATH = true;
@@ -453,74 +306,57 @@ public:
 	}
 	void SetDOWATERFOG( bool i )
 	{
-		Assert( ( i ? 1 : 0 ) >= 0 && ( i ? 1 : 0 ) <= 1 );
 		m_nDOWATERFOG = i ? 1 : 0;
 #ifdef _DEBUG
 		m_bDOWATERFOG = true;
 #endif
 	}
+private:
+	int m_nLIGHTING_PREVIEW;
+#ifdef _DEBUG
+	bool m_bLIGHTING_PREVIEW;
+#endif
 public:
-	// CONSTRUCTOR
-	lightmappedgeneric_vs20_Dynamic_Index( IShaderDynamicAPI *pShaderAPI )
+	void SetLIGHTING_PREVIEW( int i )
+	{
+		Assert( i >= 0 && i <= 0 );
+		m_nLIGHTING_PREVIEW = i;
+#ifdef _DEBUG
+		m_bLIGHTING_PREVIEW = true;
+#endif
+	}
+	void SetLIGHTING_PREVIEW( bool i )
+	{
+		m_nLIGHTING_PREVIEW = i ? 1 : 0;
+#ifdef _DEBUG
+		m_bLIGHTING_PREVIEW = true;
+#endif
+	}
+public:
+	lightmappedgeneric_vs20_Dynamic_Index()
 	{
 #ifdef _DEBUG
 		m_bFASTPATH = false;
 #endif // _DEBUG
 		m_nFASTPATH = 0;
 #ifdef _DEBUG
-		m_bDOWATERFOG = true;
+		m_bDOWATERFOG = false;
 #endif // _DEBUG
-		m_nDOWATERFOG = ( pShaderAPI->GetSceneFogMode() == MATERIAL_FOG_LINEAR_BELOW_FOG_Z ) ;
+		m_nDOWATERFOG = 0;
+#ifdef _DEBUG
+		m_bLIGHTING_PREVIEW = false;
+#endif // _DEBUG
+		m_nLIGHTING_PREVIEW = 0;
 	}
 	int GetIndex()
 	{
 		// Asserts to make sure that we aren't using any skipped combinations.
 		// Asserts to make sure that we are setting all of the combination vars.
 #ifdef _DEBUG
-		bool bAllDynamicVarsDefined = m_bFASTPATH && m_bDOWATERFOG;
+		bool bAllDynamicVarsDefined = m_bFASTPATH && m_bDOWATERFOG && m_bLIGHTING_PREVIEW;
 		Assert( bAllDynamicVarsDefined );
 #endif // _DEBUG
-		return ( 1 * m_nFASTPATH ) + ( 2 * m_nDOWATERFOG ) + 0;
+		return ( 1 * m_nFASTPATH ) + ( 2 * m_nDOWATERFOG ) + ( 4 * m_nLIGHTING_PREVIEW ) + 0;
 	}
 };
-#define shaderDynamicTest_lightmappedgeneric_vs20 vsh_forgot_to_set_dynamic_FASTPATH + 0
-
-static const ShaderComboInformation_t s_DynamicComboArray_lightmappedgeneric_vs20[2] = 
-{
-	{ "FASTPATH", 0, 1 },
-	{ "DOWATERFOG", 0, 1 },
-};
-
-static const ShaderComboInformation_t s_StaticComboArray_lightmappedgeneric_vs20[15] = 
-{
-	{ "ENVMAP_MASK", 0, 1 },
-	{ "TANGENTSPACE", 0, 1 },
-	{ "BUMPMAP", 0, 1 },
-	{ "DETAILTEXTURE", 0, 1 },
-	{ "VERTEXCOLOR", 0, 1 },
-	{ "VERTEXALPHATEXBLENDFACTOR", 0, 1 },
-	{ "SEAMLESS", 0, 1 },
-	{ "BUMPMASK", 0, 0 },
-	{ "FLASHLIGHT", 0, 1 },
-	{ "FANCY_BLENDING", 0, 1 },
-	{ "SELFILLUM", 0, 1 },
-	{ "LIGHTING_PREVIEW", 0, 0 },
-	{ "PAINT", 0, 1 },
-	{ "DOPIXELFOG", 0, 1 },
-	{ "HARDWAREFOGBLEND", 0, 0 },
-};
-static const ShaderComboSemantics_t lightmappedgeneric_vs20_combos =
-{
-	"lightmappedgeneric_vs20", s_DynamicComboArray_lightmappedgeneric_vs20, 2, s_StaticComboArray_lightmappedgeneric_vs20, 15 
-};
-
-class ConstructMe_lightmappedgeneric_vs20
-{
-public:
-	ConstructMe_lightmappedgeneric_vs20()
-	{
-		GetShaderDLL()->AddShaderComboInformation( &lightmappedgeneric_vs20_combos );
-	}
-};
-
-static ConstructMe_lightmappedgeneric_vs20 s_ConstructMe_lightmappedgeneric_vs20;
+#define shaderDynamicTest_lightmappedgeneric_vs20 vsh_forgot_to_set_dynamic_FASTPATH + vsh_forgot_to_set_dynamic_DOWATERFOG + vsh_forgot_to_set_dynamic_LIGHTING_PREVIEW + 0

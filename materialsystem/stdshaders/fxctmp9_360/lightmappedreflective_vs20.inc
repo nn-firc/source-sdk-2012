@@ -1,5 +1,3 @@
-// ALL SKIP STATEMENTS THAT AFFECT THIS SHADER!!!
-// defined $LIGHTING_PREVIEW && defined $FASTPATH && $LIGHTING_PREVIEW && $FASTPATH
 #include "shaderlib/cshader.h"
 class lightmappedreflective_vs20_Static_Index
 {
@@ -19,15 +17,13 @@ public:
 	}
 	void SetBASETEXTURE( bool i )
 	{
-		Assert( ( i ? 1 : 0 ) >= 0 && ( i ? 1 : 0 ) <= 1 );
 		m_nBASETEXTURE = i ? 1 : 0;
 #ifdef _DEBUG
 		m_bBASETEXTURE = true;
 #endif
 	}
 public:
-	// CONSTRUCTOR
-	lightmappedreflective_vs20_Static_Index( IShaderShadow *pShaderShadow, IMaterialVar **params )
+	lightmappedreflective_vs20_Static_Index( )
 	{
 #ifdef _DEBUG
 		m_bBASETEXTURE = false;
@@ -49,8 +45,7 @@ public:
 class lightmappedreflective_vs20_Dynamic_Index
 {
 public:
-	// CONSTRUCTOR
-	lightmappedreflective_vs20_Dynamic_Index( IShaderDynamicAPI *pShaderAPI )
+	lightmappedreflective_vs20_Dynamic_Index()
 	{
 	}
 	int GetIndex()
@@ -63,23 +58,3 @@ public:
 	}
 };
 #define shaderDynamicTest_lightmappedreflective_vs20 0
-
-static const ShaderComboInformation_t s_StaticComboArray_lightmappedreflective_vs20[1] = 
-{
-	{ "BASETEXTURE", 0, 1 },
-};
-static const ShaderComboSemantics_t lightmappedreflective_vs20_combos =
-{
-	"lightmappedreflective_vs20", NULL, 0, s_StaticComboArray_lightmappedreflective_vs20, 1 
-};
-
-class ConstructMe_lightmappedreflective_vs20
-{
-public:
-	ConstructMe_lightmappedreflective_vs20()
-	{
-		GetShaderDLL()->AddShaderComboInformation( &lightmappedreflective_vs20_combos );
-	}
-};
-
-static ConstructMe_lightmappedreflective_vs20 s_ConstructMe_lightmappedreflective_vs20;

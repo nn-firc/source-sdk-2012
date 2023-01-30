@@ -1,15 +1,8 @@
-// ALL SKIP STATEMENTS THAT AFFECT THIS SHADER!!!
-// defined $PIXELFOGTYPE && defined $WRITEWATERFOGTODESTALPHA && ( $PIXELFOGTYPE != 1 ) && $WRITEWATERFOGTODESTALPHA
-// defined $LIGHTING_PREVIEW && defined $FASTPATHENVMAPTINT && $LIGHTING_PREVIEW && $FASTPATHENVMAPTINT
-// defined $LIGHTING_PREVIEW && defined $FASTPATHENVMAPCONTRAST && $LIGHTING_PREVIEW && $FASTPATHENVMAPCONTRAST
-// defined $LIGHTING_PREVIEW && defined $FASTPATH && $LIGHTING_PREVIEW && $FASTPATH
-// ($FLASHLIGHT || $FLASHLIGHTSHADOWS) && $LIGHTING_PREVIEW
 #include "shaderlib/cshader.h"
 class hsl_filmgrain_pass1_ps20_Static_Index
 {
 public:
-	// CONSTRUCTOR
-	hsl_filmgrain_pass1_ps20_Static_Index( IShaderShadow *pShaderShadow, IMaterialVar **params )
+	hsl_filmgrain_pass1_ps20_Static_Index( )
 	{
 	}
 	int GetIndex()
@@ -25,8 +18,7 @@ public:
 class hsl_filmgrain_pass1_ps20_Dynamic_Index
 {
 public:
-	// CONSTRUCTOR
-	hsl_filmgrain_pass1_ps20_Dynamic_Index( IShaderDynamicAPI *pShaderAPI )
+	hsl_filmgrain_pass1_ps20_Dynamic_Index()
 	{
 	}
 	int GetIndex()
@@ -39,18 +31,3 @@ public:
 	}
 };
 #define shaderDynamicTest_hsl_filmgrain_pass1_ps20 0
-static const ShaderComboSemantics_t hsl_filmgrain_pass1_ps20_combos =
-{
-	"hsl_filmgrain_pass1_ps20", NULL, 0, NULL, 0 
-};
-
-class ConstructMe_hsl_filmgrain_pass1_ps20
-{
-public:
-	ConstructMe_hsl_filmgrain_pass1_ps20()
-	{
-		GetShaderDLL()->AddShaderComboInformation( &hsl_filmgrain_pass1_ps20_combos );
-	}
-};
-
-static ConstructMe_hsl_filmgrain_pass1_ps20 s_ConstructMe_hsl_filmgrain_pass1_ps20;

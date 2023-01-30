@@ -1,15 +1,8 @@
-// ALL SKIP STATEMENTS THAT AFFECT THIS SHADER!!!
-// defined $PIXELFOGTYPE && defined $WRITEWATERFOGTODESTALPHA && ( $PIXELFOGTYPE != 1 ) && $WRITEWATERFOGTODESTALPHA
-// defined $LIGHTING_PREVIEW && defined $FASTPATHENVMAPTINT && $LIGHTING_PREVIEW && $FASTPATHENVMAPTINT
-// defined $LIGHTING_PREVIEW && defined $FASTPATHENVMAPCONTRAST && $LIGHTING_PREVIEW && $FASTPATHENVMAPCONTRAST
-// defined $LIGHTING_PREVIEW && defined $FASTPATH && $LIGHTING_PREVIEW && $FASTPATH
-// ($FLASHLIGHT || $FLASHLIGHTSHADOWS) && $LIGHTING_PREVIEW
 #include "shaderlib/cshader.h"
 class hdrselectrange_ps20_Static_Index
 {
 public:
-	// CONSTRUCTOR
-	hdrselectrange_ps20_Static_Index( IShaderShadow *pShaderShadow, IMaterialVar **params )
+	hdrselectrange_ps20_Static_Index( )
 	{
 	}
 	int GetIndex()
@@ -25,8 +18,7 @@ public:
 class hdrselectrange_ps20_Dynamic_Index
 {
 public:
-	// CONSTRUCTOR
-	hdrselectrange_ps20_Dynamic_Index( IShaderDynamicAPI *pShaderAPI )
+	hdrselectrange_ps20_Dynamic_Index()
 	{
 	}
 	int GetIndex()
@@ -39,18 +31,3 @@ public:
 	}
 };
 #define shaderDynamicTest_hdrselectrange_ps20 0
-static const ShaderComboSemantics_t HDRSelectRange_ps20_combos =
-{
-	"HDRSelectRange_ps20", NULL, 0, NULL, 0 
-};
-
-class ConstructMe_HDRSelectRange_ps20
-{
-public:
-	ConstructMe_HDRSelectRange_ps20()
-	{
-		GetShaderDLL()->AddShaderComboInformation( &HDRSelectRange_ps20_combos );
-	}
-};
-
-static ConstructMe_HDRSelectRange_ps20 s_ConstructMe_HDRSelectRange_ps20;

@@ -1,15 +1,8 @@
-// ALL SKIP STATEMENTS THAT AFFECT THIS SHADER!!!
-// defined $PIXELFOGTYPE && defined $WRITEWATERFOGTODESTALPHA && ( $PIXELFOGTYPE != 1 ) && $WRITEWATERFOGTODESTALPHA
-// defined $LIGHTING_PREVIEW && defined $FASTPATHENVMAPTINT && $LIGHTING_PREVIEW && $FASTPATHENVMAPTINT
-// defined $LIGHTING_PREVIEW && defined $FASTPATHENVMAPCONTRAST && $LIGHTING_PREVIEW && $FASTPATHENVMAPCONTRAST
-// defined $LIGHTING_PREVIEW && defined $FASTPATH && $LIGHTING_PREVIEW && $FASTPATH
-// ($FLASHLIGHT || $FLASHLIGHTSHADOWS) && $LIGHTING_PREVIEW
 #include "shaderlib/cshader.h"
 class bloomadd_ps20b_Static_Index
 {
 public:
-	// CONSTRUCTOR
-	bloomadd_ps20b_Static_Index( IShaderShadow *pShaderShadow, IMaterialVar **params )
+	bloomadd_ps20b_Static_Index( )
 	{
 	}
 	int GetIndex()
@@ -25,8 +18,7 @@ public:
 class bloomadd_ps20b_Dynamic_Index
 {
 public:
-	// CONSTRUCTOR
-	bloomadd_ps20b_Dynamic_Index( IShaderDynamicAPI *pShaderAPI )
+	bloomadd_ps20b_Dynamic_Index()
 	{
 	}
 	int GetIndex()
@@ -39,18 +31,3 @@ public:
 	}
 };
 #define shaderDynamicTest_bloomadd_ps20b 0
-static const ShaderComboSemantics_t bloomadd_ps20b_combos =
-{
-	"bloomadd_ps20b", NULL, 0, NULL, 0 
-};
-
-class ConstructMe_bloomadd_ps20b
-{
-public:
-	ConstructMe_bloomadd_ps20b()
-	{
-		GetShaderDLL()->AddShaderComboInformation( &bloomadd_ps20b_combos );
-	}
-};
-
-static ConstructMe_bloomadd_ps20b s_ConstructMe_bloomadd_ps20b;

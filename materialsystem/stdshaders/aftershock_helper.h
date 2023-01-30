@@ -1,4 +1,4 @@
-//========= Copyright (c) 1996-2006, Valve Corporation, All rights reserved. ============//
+//========= Copyright Valve Corporation, All rights reserved. ============//
 
 #ifndef AFTERSHOCK_HELPER_H
 #define AFTERSHOCK_HELPER_H

@@ -1,24 +1,44 @@
-// ALL SKIP STATEMENTS THAT AFFECT THIS SHADER!!!
-// defined $PIXELFOGTYPE && defined $WRITEWATERFOGTODESTALPHA && ( $PIXELFOGTYPE != 1 ) && $WRITEWATERFOGTODESTALPHA
-// defined $LIGHTING_PREVIEW && defined $FASTPATHENVMAPTINT && $LIGHTING_PREVIEW && $FASTPATHENVMAPTINT
-// defined $LIGHTING_PREVIEW && defined $FASTPATHENVMAPCONTRAST && $LIGHTING_PREVIEW && $FASTPATHENVMAPCONTRAST
-// defined $LIGHTING_PREVIEW && defined $FASTPATH && $LIGHTING_PREVIEW && $FASTPATH
-// ($FLASHLIGHT || $FLASHLIGHTSHADOWS) && $LIGHTING_PREVIEW
 #include "shaderlib/cshader.h"
 class debugdrawenvmapmask_ps20_Static_Index
 {
+private:
+	int m_nCONVERT_TO_SRGB;
+#ifdef _DEBUG
+	bool m_bCONVERT_TO_SRGB;
+#endif
 public:
-	// CONSTRUCTOR
-	debugdrawenvmapmask_ps20_Static_Index( IShaderShadow *pShaderShadow, IMaterialVar **params )
+	void SetCONVERT_TO_SRGB( int i )
 	{
+		Assert( i >= 0 && i <= 0 );
+		m_nCONVERT_TO_SRGB = i;
+#ifdef _DEBUG
+		m_bCONVERT_TO_SRGB = true;
+#endif
+	}
+	void SetCONVERT_TO_SRGB( bool i )
+	{
+		m_nCONVERT_TO_SRGB = i ? 1 : 0;
+#ifdef _DEBUG
+		m_bCONVERT_TO_SRGB = true;
+#endif
+	}
+public:
+	debugdrawenvmapmask_ps20_Static_Index( )
+	{
+#ifdef _DEBUG
+		m_bCONVERT_TO_SRGB = true;
+#endif // _DEBUG
+		m_nCONVERT_TO_SRGB =  0;
 	}
 	int GetIndex()
 	{
 		// Asserts to make sure that we aren't using any skipped combinations.
 		// Asserts to make sure that we are setting all of the combination vars.
 #ifdef _DEBUG
+		bool bAllStaticVarsDefined = m_bCONVERT_TO_SRGB;
+		Assert( bAllStaticVarsDefined );
 #endif // _DEBUG
-		return 0;
+		return ( 2 * m_nCONVERT_TO_SRGB ) + 0;
 	}
 };
 #define shaderStaticTest_debugdrawenvmapmask_ps20 0
@@ -40,15 +60,13 @@ public:
 	}
 	void SetSHOWALPHA( bool i )
 	{
-		Assert( ( i ? 1 : 0 ) >= 0 && ( i ? 1 : 0 ) <= 1 );
 		m_nSHOWALPHA = i ? 1 : 0;
 #ifdef _DEBUG
 		m_bSHOWALPHA = true;
 #endif
 	}
 public:
-	// CONSTRUCTOR
-	debugdrawenvmapmask_ps20_Dynamic_Index( IShaderDynamicAPI *pShaderAPI )
+	debugdrawenvmapmask_ps20_Dynamic_Index()
 	{
 #ifdef _DEBUG
 		m_bSHOWALPHA = false;
@@ -67,23 +85,3 @@ public:
 	}
 };
 #define shaderDynamicTest_debugdrawenvmapmask_ps20 psh_forgot_to_set_dynamic_SHOWALPHA + 0
-
-static const ShaderComboInformation_t s_DynamicComboArray_DebugDrawEnvmapMask_ps20[1] = 
-{
-	{ "SHOWALPHA", 0, 1 },
-};
-static const ShaderComboSemantics_t DebugDrawEnvmapMask_ps20_combos =
-{
-	"DebugDrawEnvmapMask_ps20", s_DynamicComboArray_DebugDrawEnvmapMask_ps20, 1, NULL, 0 
-};
-
-class ConstructMe_DebugDrawEnvmapMask_ps20
-{
-public:
-	ConstructMe_DebugDrawEnvmapMask_ps20()
-	{
-		GetShaderDLL()->AddShaderComboInformation( &DebugDrawEnvmapMask_ps20_combos );
-	}
-};
-
-static ConstructMe_DebugDrawEnvmapMask_ps20 s_ConstructMe_DebugDrawEnvmapMask_ps20;

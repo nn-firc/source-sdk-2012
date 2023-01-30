@@ -1,82 +1,51 @@
-// ALL SKIP STATEMENTS THAT AFFECT THIS SHADER!!!
-// defined $LIGHTING_PREVIEW && defined $FASTPATH && $LIGHTING_PREVIEW && $FASTPATH
 #include "shaderlib/cshader.h"
 class screenspaceeffect_vs20_Static_Index
 {
 private:
-	int m_nVERTEXCOLOR;
+	int m_nX360APPCHOOSER;
 #ifdef _DEBUG
-	bool m_bVERTEXCOLOR;
+	bool m_bX360APPCHOOSER;
 #endif
 public:
-	void SetVERTEXCOLOR( int i )
+	void SetX360APPCHOOSER( int i )
 	{
 		Assert( i >= 0 && i <= 1 );
-		m_nVERTEXCOLOR = i;
+		m_nX360APPCHOOSER = i;
 #ifdef _DEBUG
-		m_bVERTEXCOLOR = true;
+		m_bX360APPCHOOSER = true;
 #endif
 	}
-	void SetVERTEXCOLOR( bool i )
+	void SetX360APPCHOOSER( bool i )
 	{
-		Assert( ( i ? 1 : 0 ) >= 0 && ( i ? 1 : 0 ) <= 1 );
-		m_nVERTEXCOLOR = i ? 1 : 0;
+		m_nX360APPCHOOSER = i ? 1 : 0;
 #ifdef _DEBUG
-		m_bVERTEXCOLOR = true;
-#endif
-	}
-private:
-	int m_nTRANSFORMVERTS;
-#ifdef _DEBUG
-	bool m_bTRANSFORMVERTS;
-#endif
-public:
-	void SetTRANSFORMVERTS( int i )
-	{
-		Assert( i >= 0 && i <= 1 );
-		m_nTRANSFORMVERTS = i;
-#ifdef _DEBUG
-		m_bTRANSFORMVERTS = true;
-#endif
-	}
-	void SetTRANSFORMVERTS( bool i )
-	{
-		Assert( ( i ? 1 : 0 ) >= 0 && ( i ? 1 : 0 ) <= 1 );
-		m_nTRANSFORMVERTS = i ? 1 : 0;
-#ifdef _DEBUG
-		m_bTRANSFORMVERTS = true;
+		m_bX360APPCHOOSER = true;
 #endif
 	}
 public:
-	// CONSTRUCTOR
-	screenspaceeffect_vs20_Static_Index( IShaderShadow *pShaderShadow, IMaterialVar **params )
+	screenspaceeffect_vs20_Static_Index( )
 	{
 #ifdef _DEBUG
-		m_bVERTEXCOLOR = true;
+		m_bX360APPCHOOSER = true;
 #endif // _DEBUG
-		m_nVERTEXCOLOR = 0;
-#ifdef _DEBUG
-		m_bTRANSFORMVERTS = true;
-#endif // _DEBUG
-		m_nTRANSFORMVERTS = 0;
+		m_nX360APPCHOOSER =  0;
 	}
 	int GetIndex()
 	{
 		// Asserts to make sure that we aren't using any skipped combinations.
 		// Asserts to make sure that we are setting all of the combination vars.
 #ifdef _DEBUG
-		bool bAllStaticVarsDefined = m_bVERTEXCOLOR && m_bTRANSFORMVERTS;
+		bool bAllStaticVarsDefined = m_bX360APPCHOOSER;
 		Assert( bAllStaticVarsDefined );
 #endif // _DEBUG
-		return ( 1 * m_nVERTEXCOLOR ) + ( 2 * m_nTRANSFORMVERTS ) + 0;
+		return ( 1 * m_nX360APPCHOOSER ) + 0;
 	}
 };
 #define shaderStaticTest_screenspaceeffect_vs20 0
 class screenspaceeffect_vs20_Dynamic_Index
 {
 public:
-	// CONSTRUCTOR
-	screenspaceeffect_vs20_Dynamic_Index( IShaderDynamicAPI *pShaderAPI )
+	screenspaceeffect_vs20_Dynamic_Index()
 	{
 	}
 	int GetIndex()
@@ -89,24 +58,3 @@ public:
 	}
 };
 #define shaderDynamicTest_screenspaceeffect_vs20 0
-
-static const ShaderComboInformation_t s_StaticComboArray_screenspaceeffect_vs20[2] = 
-{
-	{ "VERTEXCOLOR", 0, 1 },
-	{ "TRANSFORMVERTS", 0, 1 },
-};
-static const ShaderComboSemantics_t screenspaceeffect_vs20_combos =
-{
-	"screenspaceeffect_vs20", NULL, 0, s_StaticComboArray_screenspaceeffect_vs20, 2 
-};
-
-class ConstructMe_screenspaceeffect_vs20
-{
-public:
-	ConstructMe_screenspaceeffect_vs20()
-	{
-		GetShaderDLL()->AddShaderComboInformation( &screenspaceeffect_vs20_combos );
-	}
-};
-
-static ConstructMe_screenspaceeffect_vs20 s_ConstructMe_screenspaceeffect_vs20;

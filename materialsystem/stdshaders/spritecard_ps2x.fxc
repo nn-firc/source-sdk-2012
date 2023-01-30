@@ -1,5 +1,5 @@
-//========== Copyright (c) Valve Corporation, All rights reserved. ==========//
-
+// STATIC: "CONVERT_TO_SRGB"		"0..1"	[ps20b][= g_pHardwareConfig->NeedsShaderSRGBConversion()] [PC]
+// STATIC: "CONVERT_TO_SRGB"		"0..0"	[= 0] [XBOX]
 // STATIC: "DUALSEQUENCE"			"0..1"
 // STATIC: "SEQUENCE_BLEND_MODE"	"0..2"
 // STATIC: "ADDBASETEXTURE2"		"0..1"
@@ -9,29 +9,7 @@
 // STATIC: "COLORRAMP"				"0..1"
 // STATIC: "ANIMBLEND"				"0..1"
 // STATIC: "ADDSELF"				"0..1"
-// STATIC: "MOD2X"					"0..1"
-// STATIC: "DEPTHBLEND"				"0..1"	[CONSOLE]
-// STATIC: "DEPTHBLEND"				"0..1"	[PC]
-// STATIC: "INVERSEDEPTHBLEND"		"0..1"  [CONSOLE]
-// STATIC: "INVERSEDEPTHBLEND"		"0..0"  [PC]
-// STATIC: "SHADER_SRGB_READ"		"0..1"	[XBOX]
-// STATIC: "SHADER_SRGB_READ"		"0..0"	[PC]
-// STATIC: "SHADER_SRGB_READ"		"0..0"	[SONYPS3]
-// STATIC: "COLOR_LERP_PS"			"0..1"
-// STATIC: "PACKED_INTERPOLATOR"	"0..1"
-// STATIC: "DISTANCEALPHA"          "0..1"
-// STATIC: "SOFTEDGES"              "0..1"
-// STATIC: "OUTLINE"                "0..1"
-// STATIC: "MULOUTPUTBYALPHA"       "0..1"
-
-// SKIP: ( $DISTANCEALPHA == 0 ) && ( $SOFTEDGES || $OUTLINE )
-// SKIP: $DISTANCEALPHA  && $DUALSEQUENCE
-// SKIP: $DISTANCEALPHA && ( $MAXLUMFRAMEBLEND2 || $MAXLUMFRAMEBLEND1 )
-// SKIP: ( $DUALSEQUENCE == 0 ) && ( $SEQUENCE_BLEND_MODE != 0 )
-// SKIP: $INVERSEDEPTHBLEND && !$DEPTHBLEND [CONSOLE]
-
-// These are mutually exclusive because PACKED_INTERPOLATOR only fetches a single texture tile
-// SKIP: $PACKED_INTERPOLATOR && ( $ANIMBLEND || $MAXLUMFRAMEBLEND1 || $EXTRACTGREENALPHA || $DUALSEQUENCE )
+// STATIC: "DEPTHBLEND"				"0..1"	[ps20b]
 
 #define COMBINE_MODE_AVERAGE							0
 #define COMBINE_MODE_USE_FIRST_AS_ALPHA_MASK_ON_SECOND	1
@@ -40,329 +18,177 @@
 #define HDRTYPE HDR_TYPE_NONE
 #include "common_ps_fxc.h"
 
-HALF4 g_Parameters						: register( c0 );
+const float4 g_Parameters	: register( c0 );
+const float4 g_DepthFeatheringConstants : register( c2 );
+
 #define fAdditiveBlendWeight		g_Parameters.x
 #define fOverbrightFactor			g_Parameters.y
 #define fAdditiveSelfBlendWeight	g_Parameters.z
-#define fIntensity					g_Parameters.w
 
-float g_flMod2xIdentity					: register( c1 );
-float4 g_DepthFeatheringConstants		: register( c2 );
-float4 g_FogParams						: register( c3 );
-float3 g_EyePos							: register( c4 );
-HALF3 g_vColor0							: register( c5 );
-HALF3 g_vColor1							: register( c6 );
+struct PS_INPUT
+{
+	float2 texCoord0		: TEXCOORD0;
+	float2 texCoord1		: TEXCOORD1;
+	float4 argbcolor		: COLOR;
+	float4 blendfactor0		: TEXCOORD2;
+#if ADDBASETEXTURE2
+	float2 texCoord2		: TEXCOORD3;
+#endif
+#if	EXTRACTGREENALPHA
+	float4 blendfactor1		: TEXCOORD4;
+#endif
 
-// VS_OUTPUT in a common file.
-#define PIXELSHADER
-#include "common_spritecard_fxc.h"
+#if DUALSEQUENCE
+	float2 vSeq2TexCoord0   : TEXCOORD5;
+	float2 vSeq2TexCoord1   : TEXCOORD6; 
+#endif
+	
+#if defined( REVERSE_DEPTH_ON_X360 )
+	float4 vScreenPos_ReverseZ		: TEXCOORD7;
+#else
+	float4 vScreenPos		: TEXCOORD7;
+#endif
+};
 
 sampler BaseTextureSampler	: register( s0 );
 sampler ColorRampSampler	: register( s1 );
 sampler DepthSampler		: register( s2 );
 
-#if DISTANCEALPHA == 0 
-#define EDGESOFTNESS_START 0.5h
-#define EDGESOFTNESS_END 0.425h
-#define OUTLINECOLOR HALF4( 0, 1, 0, 1 )
-#define OUTLINESTART0 0.2h
-#define OUTLINESTART1 0.3h
-#define OUTLINEEND0 0.49h
-#define OUTLINEEND1 0.6h
-#else
-HALF4 g_vecOutlineColor : register( c7 );
-#define OUTLINECOLOR (HALF4)( g_vecOutlineColor * i.vecOutlineTint )
-HALF4 g_vecOutlineControl : register( c8 );
-#define OUTLINESTART0 ( g_vecOutlineControl.x )
-#define OUTLINESTART1 ( g_vecOutlineControl.y )
-#define OUTLINEEND0 ( g_vecOutlineControl.z )
-#define OUTLINEEND1 ( g_vecOutlineControl.w )
-HALF4 g_vecEdgeControl : register( c9 );
-#define EDGESOFTNESS_START ( g_vecEdgeControl.x )
-#define EDGESOFTNESS_END ( g_vecEdgeControl.y )
+float4 main( PS_INPUT i ) : COLOR
+{
+	bool bMaxLumFrameBlend1 = MAXLUMFRAMEBLEND1 ? true : false;
+	bool bMaxLumFrameBlend2 = MAXLUMFRAMEBLEND2 ? true : false;
+	bool bExtractGreenAlpha = EXTRACTGREENALPHA ? true : false;
+	bool bAddBaseTexture2   = ADDBASETEXTURE2   ? true : false;
+	bool bDualSequence      = DUALSEQUENCE      ? true : false;
+	bool bColorRamp         = COLORRAMP         ? true : false;
+#ifdef DEPTHBLEND
+	bool bDepthBlend		= DEPTHBLEND		? true : false;
 #endif
+	int nSequenceBlendMode  = SEQUENCE_BLEND_MODE;
 
+	// Sample frames from texture 0
+	float4 baseTex0 = tex2D( BaseTextureSampler, i.texCoord0 );
 
-
-HALF DepthFeatheringFullDepth( sampler DepthSampler, const float4 vProjPos, float4 vDepthBlendConstants )
-{
-#	if ( !(defined(SHADER_MODEL_PS_1_1) || defined(SHADER_MODEL_PS_1_4) || defined(SHADER_MODEL_PS_2_0)) ) //minimum requirement of ps2b
-	{
-		float2 vProjPosDivW = vProjPos.xy / vProjPos.w;
-		float2 vScreenPos = vProjPosDivW * g_vDepthFeatherViewportMad.xy + g_vDepthFeatherViewportMad.zw;
-		
-		float flFeatheredAlpha;
-		
-		// Sample the scene's depth at the current fragment.
-		float flSceneProjZ = tex2D( DepthSampler, vScreenPos ).r;
-			
-		float4 vSceneProjPos = float4( vProjPosDivW.x, vProjPosDivW.y, flSceneProjZ, 1.0f );
-			
-		float flSceneViewZ = dot( vSceneProjPos, g_vDepthFeatherProjToViewZW[0] );
-		float flSceneViewW = dot( vSceneProjPos, g_vDepthFeatherProjToViewZW[1] );
-		flSceneViewZ /= flSceneViewW;
-			
-		// fragment's viewspace Z from its projection space coord. computed in VS
-		float flSurfViewZ = vProjPos.z;
-		
-		flFeatheredAlpha = flSurfViewZ - flSceneViewZ;
-		flFeatheredAlpha = saturate( saturate( vDepthBlendConstants.z * flFeatheredAlpha ) + vDepthBlendConstants.w );
-
-		return flFeatheredAlpha;
-	}
-#	else
-	{
-		return 1.0;
-	}
-#	endif
-}
-
-
-float4_color_return_type main( PS_INPUT i ) : COLOR
-{
-	// Sample frames from textures
-	HALF4 baseTex0 = h4tex2Dsrgb( BaseTextureSampler, i.texCoord0_1.xy );
-	HALF4 baseTex1;
-
-	HALF4 result = baseTex0;
-
-	HALF4 vVertexColor;
-	#if ( PACKED_INTERPOLATOR )
-	{
-		vVertexColor.rgba = i.texCoord0_1.zzzw;
-	}
-	#else
-	{
-		vVertexColor.rgba = i.argbcolor.rgba;
-		baseTex1 = h4tex2Dsrgb( BaseTextureSampler, i.texCoord0_1.wz );
-	}
-	#endif
-
-	#if ( COLOR_LERP_PS )
-	{
-		vVertexColor.rgb = lerp( g_vColor0.rgb, g_vColor1.rgb, saturate( vVertexColor.r ) );
-	}
-	#endif
+	float4 baseTex1 = tex2D( BaseTextureSampler, i.texCoord1 );
 
 	// Blend by default (may override with bMaxLumFrameBlend1 or bExtractGreenAlpha)
-	#if ( ANIMBLEND )
-		result = lerp( result, baseTex1, (HALF)i.blendfactor0.x );
-	#endif
+#if ANIMBLEND
+	float4 blended_rgb = lerp( baseTex0, baseTex1, i.blendfactor0.x );
+#else
+	float4 blended_rgb = baseTex0;
+#endif
 
-	#if ( MAXLUMFRAMEBLEND1 )
+	if ( bMaxLumFrameBlend1 )
 	{
 		// Blend between animation frames based upon max luminance
-		HALF lum0 = dot( HALF3(.3, .59, .11), baseTex0.rgb * (1.0h-(HALF)i.blendfactor0.x));
-		HALF lum1 = dot( HALF3(.3, .59, .11), baseTex1.rgb *       (HALF)i.blendfactor0.x);
+		float lum0 = dot( float3(.3, .59, .11), baseTex0.rgb * (1-i.blendfactor0.x));
+		float lum1 = dot( float3(.3, .59, .11), baseTex1.rgb *    i.blendfactor0.x);
 
 		if ( lum0 > lum1 )
-			result = baseTex0;
+			blended_rgb = baseTex0;
 		else
-			result = baseTex1;
+			blended_rgb = baseTex1;
 	}
-	#elif( EXTRACTGREENALPHA )
+	else if( bExtractGreenAlpha )
 	{
+#if EXTRACTGREENALPHA
 		// Weight Green/Alphas from the two frames for a scalar result
-		result = dot( baseTex0, (HALF4)i.blendfactor0 ) + dot( baseTex1, (HALF4)i.blendfactor1 );
-		
-	}
-	#endif
-
-	if ( DISTANCEALPHA )
-	{
-		HALF flOrigAlpha = result.a;
-		if ( SOFTEDGES )
-		{
-			result.a = smoothstep( EDGESOFTNESS_END, EDGESOFTNESS_START, result.a );
-		}
-		else
-		{
-			if ( result.a < 0.5h )
-				result = 0;
-		}
-		if ( OUTLINE )
-		{
-			result.rgb *= vVertexColor.rgb;					// multiply by vertex color before glow.
-			if ( ( flOrigAlpha >= OUTLINESTART0 ) && ( flOrigAlpha <= OUTLINEEND1 ) )
-			{
-				float oFactor = 1.0f;
-				if ( flOrigAlpha <= OUTLINESTART1 )
-				{
-					oFactor = smoothstep( OUTLINESTART0, OUTLINESTART1, flOrigAlpha );
-				}
-				else
-				{
-					oFactor = smoothstep( OUTLINEEND1, OUTLINEEND0, flOrigAlpha );
-				}
-				result = lerp( result, OUTLINECOLOR, oFactor );
-			}
-		}
+		blended_rgb = dot( baseTex0, i.blendfactor0 ) + dot( baseTex1, i.blendfactor1 );
+#endif
 	}
 
-    #if ( DUALSEQUENCE )
+#if DUALSEQUENCE
+	if ( bDualSequence )
 	{
-		baseTex0 = h4tex2Dsrgb( BaseTextureSampler, i.vSeq2TexCoord0_1.xy );
-		baseTex1 = h4tex2Dsrgb( BaseTextureSampler, i.vSeq2TexCoord0_1.wz );
+		baseTex0 = tex2D( BaseTextureSampler, i.vSeq2TexCoord0 );
+		baseTex1 = tex2D( BaseTextureSampler, i.vSeq2TexCoord1 );
 
 		// Blend by default (may override with bMaxLumFrameBlend2)
-		HALF4 rgb2 = lerp( baseTex0, baseTex1, (HALF)i.blendfactor0.z );
+		float4 rgb2 = lerp( baseTex0, baseTex1, i.blendfactor0.z );
 
-		#if ( MAXLUMFRAMEBLEND2 )
+		if ( bMaxLumFrameBlend2 )
 		{
 			// blend between animation frames based upon max luminance
-			HALF tlum0 = dot( HALF3(.3, .59, .11), baseTex0.rgb * (1.0h-(HALF)i.blendfactor0.x));
-			HALF tlum1 = dot( HALF3(.3, .59, .11), baseTex1.rgb *       (HALF)i.blendfactor0.x);
+			float tlum0 = dot( float3(.3, .59, .11), baseTex0.rgb * (1-i.blendfactor0.x));
+			float tlum1 = dot( float3(.3, .59, .11), baseTex1.rgb *    i.blendfactor0.x);
 
 			if ( tlum0 > tlum1 )
 				rgb2 = baseTex0;
 			else
 				rgb2 = baseTex1;
 		}
-		#endif
 
-		#if ( SEQUENCE_BLEND_MODE == COMBINE_MODE_AVERAGE )
+		if ( nSequenceBlendMode == COMBINE_MODE_AVERAGE )
 		{
-			result = 0.5h * ( result + rgb2 );
+			blended_rgb = 0.5 * ( blended_rgb + rgb2 );
 		}
-		#elif ( SEQUENCE_BLEND_MODE == COMBINE_MODE_USE_FIRST_AS_ALPHA_MASK_ON_SECOND )
+		else if ( nSequenceBlendMode == COMBINE_MODE_USE_FIRST_AS_ALPHA_MASK_ON_SECOND )
 		{
-			result.rgb = rgb2.rgb;
+			blended_rgb.rgb = rgb2.rgb;
 		}
-		#elif ( SEQUENCE_BLEND_MODE == COMBINE_MODE_USE_FIRST_OVER_SECOND )
+		else if ( nSequenceBlendMode == COMBINE_MODE_USE_FIRST_OVER_SECOND )
 		{
-			result.rgb = lerp( result.rgb, rgb2.rgb, rgb2.a );
+			blended_rgb.rgb = lerp( blended_rgb.rgb, rgb2.rgb, rgb2.a );
 		}
-		#endif
-	}
-	#endif
+	} // bDualSequence
+#endif
 
 	// Optional color ramp
-	#if ( COLORRAMP )
+	if ( bColorRamp )
 	{
-		result.rgb = h3tex2Dsrgb( ColorRampSampler, float2( result.r, result.g ) ).rgb;
+		blended_rgb.rgb = tex2D( ColorRampSampler, float2( blended_rgb.r, blended_rgb.g ) );
 	}
-	#endif
 
 	// Overbright
-	result.rgb *= fOverbrightFactor;
-	//Soft Particles FTW
+	blended_rgb.rgb *= fOverbrightFactor;
 
-	#if (DEPTHBLEND == 1)
-		HALF fDepthBlend = DepthFeatheringFullDepth( DepthSampler, i.vProjPos, g_DepthFeatheringConstants );
-		#if (INVERSEDEPTHBLEND == 1)
-			fDepthBlend = 1.0h - fDepthBlend;
-		#endif
-		vVertexColor.a *= fDepthBlend;
-	#endif
+	//Soft Particles FTW
+#	if (DEPTHBLEND == 1)
+#		if defined( _X360 )
+			float fDepthBlend = DepthFeathering( DepthSampler, i.vScreenPos_ReverseZ.xy / i.vScreenPos_ReverseZ.w, i.vScreenPos_ReverseZ.z, i.vScreenPos_ReverseZ.w, g_DepthFeatheringConstants );
+#		else
+			float fDepthBlend = DepthFeathering( DepthSampler, i.vScreenPos.xy / i.vScreenPos.w, i.vScreenPos.z, i.vScreenPos.w, g_DepthFeatheringConstants );
+#		endif
+		i.argbcolor.a *= fDepthBlend;
+#	endif
 
 	// Premultiply the alpha for a ONE:INVALPHA blend
-	#if ( ADDBASETEXTURE2 )
+#if ADDBASETEXTURE2
+	if ( bAddBaseTexture2 )
 	{
-		result.a *= vVertexColor.a;
+		blended_rgb.a *= i.argbcolor.a;
 
 		// In this case, we don't really want to pre-multiply by alpha
-		#if ( !COLORRAMP )
+		if ( !bColorRamp )
 		{
-			result.rgb *= result.a;
+			blended_rgb.rgb *= blended_rgb.a;
 		}
-		#endif
 
-		#if ( EXTRACTGREENALPHA )
+		if ( bExtractGreenAlpha )
 		{
-			result.rgb += fAdditiveBlendWeight * vVertexColor.a * result.rgb;
+			blended_rgb.rgb += fAdditiveBlendWeight * i.argbcolor.a * blended_rgb.rgb;
 		}
-		#else
+		else
 		{
-			result.rgb += fOverbrightFactor * fAdditiveBlendWeight * vVertexColor.a * h3tex2Dsrgb( BaseTextureSampler, i.texCoord2 ).rgb;
+			blended_rgb.rgb += fOverbrightFactor * fAdditiveBlendWeight * i.argbcolor.a * tex2D( BaseTextureSampler, i.texCoord2 );
 		}
-		#endif
 
-		result.rgb *= vVertexColor.rgb;
+		blended_rgb.rgb *= i.argbcolor.rgb;
 	}
-	#else
+	else
+#endif
 	{
-		#if ADDSELF
-		{
-			result.a *= vVertexColor.a;
-			result.rgb *= result.a;
-			result.rgb += fAdditiveSelfBlendWeight * result.rgb;
-			result.rgb *= vVertexColor.rgb;
-		}
-		#else
-		{
-			#if ( MOD2X )
-			{
-				result.rgb = lerp( (HALF3)g_flMod2xIdentity, result.rgb, vVertexColor.rgb );
-				result.a *= vVertexColor.a;
-			}
-			#else
-			{
- 				if ( ! OUTLINE )
-				{
-					result *= vVertexColor;					// if outlined, we've already done this. don't want to mul glow by particle color.
-				}
-				else
-				{
-					result.a *= vVertexColor.a;
-				}
-
-			}
-			#endif
-		}
-		#endif
+#if ADDSELF
+		blended_rgb.a *= i.argbcolor.a;
+		blended_rgb.rgb *= blended_rgb.a;
+		blended_rgb.rgb += fOverbrightFactor * fAdditiveSelfBlendWeight * i.argbcolor.a * blended_rgb;
+		blended_rgb.rgb *= i.argbcolor.rgb;
+#else
+		blended_rgb *= i.argbcolor;
+#endif
 	}
-	#endif
-			
-	float4_color_return_type vOutput;
-	
-	#if ( MOD2X )
-	{
-		// Blend towards a unity multiply as alpha gets closer to zero
-		result.rgb = lerp( ( HALF3 )g_flMod2xIdentity, result.rgb, result.a );
 
-		// Don't tonemap scale since we are multiplying by what is already in the framebuffer.
-		vOutput = FinalOutputHalf( result, 0, PIXEL_FOG_TYPE_NONE, TONEMAP_SCALE_NONE );
-	}
-	#else
-	{
-		vOutput =  FinalOutputHalf( result, 0, PIXEL_FOG_TYPE_NONE, TONEMAP_SCALE_LINEAR );
-
-	#if defined( _X360 ) && defined( CSTRIKE15 )
-		// TEMPORARY - fix up properly after PAX
-		// undo the linear to gamma that would have been done in FinalOutput as we have other colour ops to perform
-		vOutput.rgb = GammaToLinear( vOutput.rgb );
-	#endif
-
-	}
-	#endif
-
-	vOutput = saturate( vOutput );
-	
-	// Purposely multiplying after saturating.
-	vOutput.rgb *= fIntensity;
-
-	#if ( MULOUTPUTBYALPHA )
-	{
-		// Do the final alpha multiply in the shader to avoid alpha blender unit precision problems. (This should only be enabled when we would normally 
-		// do SRC_RGB*SRC_ALPHA+DST_RGB blending.)
-		vOutput.rgb *= vOutput.a;
-		vOutput.a = 1.0h;
-	}
-	#endif
-	
-	#if ( MOD2X )
-	{
-	}
-	#else
-	{
-	#if defined( _X360 ) && defined( CSTRIKE15 )
-		// [mariod] - srgb write required in this shader - after FinalOutput due to other ops - Final output will skip since TONEMAP_SCALE is NONE
-		vOutput.rgb = LinearToGamma( vOutput.rgb );
-		//vOutput.rgb = SrgbLinearToGamma( vOutput.rgb );
-	#endif
-	}
-	#endif
-
-	return vOutput;
+	return FinalOutput( blended_rgb, 0, PIXEL_FOG_TYPE_NONE, TONEMAP_SCALE_LINEAR );
 }
 

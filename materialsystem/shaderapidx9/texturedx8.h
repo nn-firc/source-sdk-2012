@@ -1,4 +1,4 @@
-//========= Copyright � 1996-2005, Valve Corporation, All rights reserved. ============//
+//========= Copyright Valve Corporation, All rights reserved. ============//
 //
 // Purpose: 
 //
@@ -13,11 +13,7 @@
 #pragma once
 #endif
 
-#ifdef TOGLES
-#include "togles/rendermechanism.h"
-#else
 #include "togl/rendermechanism.h"
-#endif
 #include "bitmap/imageformat.h"
 #include "locald3dtypes.h"
 #include "shaderapi/ishaderapi.h"
@@ -76,14 +72,15 @@ struct TextureLoadInfo_t
 	D3DCUBEMAP_FACES			m_CubeFaceID;
 	int							m_nWidth;
 	int							m_nHeight;
-	int							m_nZOffset;				// What z-slice of the volume texture are we loading?
-	ImageFormat					m_SrcFormat;
-	unsigned char				*m_pSrcData;
-
+	int16						m_nZOffset;				// What z-slice of the volume texture are we loading?
 #if defined( _X360 )
 	bool						m_bSrcIsTiled;			// format may not be, but data could be
 	bool						m_bCanConvertFormat;	// allow format conversion
+#else
+	bool						m_bTextureIsLockable;
 #endif
+	ImageFormat					m_SrcFormat;
+	unsigned char				*m_pSrcData;
 };
 
 
@@ -91,6 +88,9 @@ struct TextureLoadInfo_t
 // Texture image upload
 //-----------------------------------------------------------------------------
 void LoadTexture( TextureLoadInfo_t &info );
+void LoadTextureFromVTF( TextureLoadInfo_t &info, IVTFTexture* pVTF, int iVTFFrame );
+void LoadCubeTextureFromVTF( TextureLoadInfo_t &info, IVTFTexture* pVTF, int iVTFFrame );
+void LoadVolumeTextureFromVTF( TextureLoadInfo_t &info, IVTFTexture* pVTF, int iVTFFrame );
 
 //-----------------------------------------------------------------------------
 // Upload to a sub-piece of a texture

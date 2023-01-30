@@ -1,5 +1,4 @@
-//========== Copyright (c) Valve Corporation, All rights reserved. ==========//
-
+#define HDRTYPE HDR_TYPE_NONE
 #include "common_ps_fxc.h"
 
 struct PS_INPUT

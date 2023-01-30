@@ -1,11 +1,8 @@
-// ALL SKIP STATEMENTS THAT AFFECT THIS SHADER!!!
-// defined $LIGHTING_PREVIEW && defined $FASTPATH && $LIGHTING_PREVIEW && $FASTPATH
 #include "shaderlib/cshader.h"
 class downsample_vs20_Static_Index
 {
 public:
-	// CONSTRUCTOR
-	downsample_vs20_Static_Index( IShaderShadow *pShaderShadow, IMaterialVar **params )
+	downsample_vs20_Static_Index( )
 	{
 	}
 	int GetIndex()
@@ -21,8 +18,7 @@ public:
 class downsample_vs20_Dynamic_Index
 {
 public:
-	// CONSTRUCTOR
-	downsample_vs20_Dynamic_Index( IShaderDynamicAPI *pShaderAPI )
+	downsample_vs20_Dynamic_Index()
 	{
 	}
 	int GetIndex()
@@ -35,18 +31,3 @@ public:
 	}
 };
 #define shaderDynamicTest_downsample_vs20 0
-static const ShaderComboSemantics_t Downsample_vs20_combos =
-{
-	"Downsample_vs20", NULL, 0, NULL, 0 
-};
-
-class ConstructMe_Downsample_vs20
-{
-public:
-	ConstructMe_Downsample_vs20()
-	{
-		GetShaderDLL()->AddShaderComboInformation( &Downsample_vs20_combos );
-	}
-};
-
-static ConstructMe_Downsample_vs20 s_ConstructMe_Downsample_vs20;

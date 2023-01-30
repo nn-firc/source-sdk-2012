@@ -1,32 +1,51 @@
-// ALL SKIP STATEMENTS THAT AFFECT THIS SHADER!!!
-// defined $PIXELFOGTYPE && defined $WRITEWATERFOGTODESTALPHA && ( $PIXELFOGTYPE != 1 ) && $WRITEWATERFOGTODESTALPHA
-// defined $LIGHTING_PREVIEW && defined $FASTPATHENVMAPTINT && $LIGHTING_PREVIEW && $FASTPATHENVMAPTINT
-// defined $LIGHTING_PREVIEW && defined $FASTPATHENVMAPCONTRAST && $LIGHTING_PREVIEW && $FASTPATHENVMAPCONTRAST
-// defined $LIGHTING_PREVIEW && defined $FASTPATH && $LIGHTING_PREVIEW && $FASTPATH
-// ($FLASHLIGHT || $FLASHLIGHTSHADOWS) && $LIGHTING_PREVIEW
 #include "shaderlib/cshader.h"
 class floattoscreen_ps20_Static_Index
 {
+private:
+	int m_nCONVERT_TO_SRGB;
+#ifdef _DEBUG
+	bool m_bCONVERT_TO_SRGB;
+#endif
 public:
-	// CONSTRUCTOR
-	floattoscreen_ps20_Static_Index( IShaderShadow *pShaderShadow, IMaterialVar **params )
+	void SetCONVERT_TO_SRGB( int i )
 	{
+		Assert( i >= 0 && i <= 0 );
+		m_nCONVERT_TO_SRGB = i;
+#ifdef _DEBUG
+		m_bCONVERT_TO_SRGB = true;
+#endif
+	}
+	void SetCONVERT_TO_SRGB( bool i )
+	{
+		m_nCONVERT_TO_SRGB = i ? 1 : 0;
+#ifdef _DEBUG
+		m_bCONVERT_TO_SRGB = true;
+#endif
+	}
+public:
+	floattoscreen_ps20_Static_Index( )
+	{
+#ifdef _DEBUG
+		m_bCONVERT_TO_SRGB = true;
+#endif // _DEBUG
+		m_nCONVERT_TO_SRGB =  0;
 	}
 	int GetIndex()
 	{
 		// Asserts to make sure that we aren't using any skipped combinations.
 		// Asserts to make sure that we are setting all of the combination vars.
 #ifdef _DEBUG
+		bool bAllStaticVarsDefined = m_bCONVERT_TO_SRGB;
+		Assert( bAllStaticVarsDefined );
 #endif // _DEBUG
-		return 0;
+		return ( 1 * m_nCONVERT_TO_SRGB ) + 0;
 	}
 };
 #define shaderStaticTest_floattoscreen_ps20 0
 class floattoscreen_ps20_Dynamic_Index
 {
 public:
-	// CONSTRUCTOR
-	floattoscreen_ps20_Dynamic_Index( IShaderDynamicAPI *pShaderAPI )
+	floattoscreen_ps20_Dynamic_Index()
 	{
 	}
 	int GetIndex()
@@ -39,18 +58,3 @@ public:
 	}
 };
 #define shaderDynamicTest_floattoscreen_ps20 0
-static const ShaderComboSemantics_t floattoscreen_ps20_combos =
-{
-	"floattoscreen_ps20", NULL, 0, NULL, 0 
-};
-
-class ConstructMe_floattoscreen_ps20
-{
-public:
-	ConstructMe_floattoscreen_ps20()
-	{
-		GetShaderDLL()->AddShaderComboInformation( &floattoscreen_ps20_combos );
-	}
-};
-
-static ConstructMe_floattoscreen_ps20 s_ConstructMe_floattoscreen_ps20;

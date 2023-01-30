@@ -1,9 +1,3 @@
-// ALL SKIP STATEMENTS THAT AFFECT THIS SHADER!!!
-// defined $PIXELFOGTYPE && defined $WRITEWATERFOGTODESTALPHA && ( $PIXELFOGTYPE != 1 ) && $WRITEWATERFOGTODESTALPHA
-// defined $LIGHTING_PREVIEW && defined $FASTPATHENVMAPTINT && $LIGHTING_PREVIEW && $FASTPATHENVMAPTINT
-// defined $LIGHTING_PREVIEW && defined $FASTPATHENVMAPCONTRAST && $LIGHTING_PREVIEW && $FASTPATHENVMAPCONTRAST
-// defined $LIGHTING_PREVIEW && defined $FASTPATH && $LIGHTING_PREVIEW && $FASTPATH
-// ($FLASHLIGHT || $FLASHLIGHTSHADOWS) && $LIGHTING_PREVIEW
 #include "shaderlib/cshader.h"
 class worldvertexalpha_ps20_Static_Index
 {
@@ -23,15 +17,13 @@ public:
 	}
 	void SetPASS( bool i )
 	{
-		Assert( ( i ? 1 : 0 ) >= 0 && ( i ? 1 : 0 ) <= 1 );
 		m_nPASS = i ? 1 : 0;
 #ifdef _DEBUG
 		m_bPASS = true;
 #endif
 	}
 public:
-	// CONSTRUCTOR
-	worldvertexalpha_ps20_Static_Index( IShaderShadow *pShaderShadow, IMaterialVar **params )
+	worldvertexalpha_ps20_Static_Index( )
 	{
 #ifdef _DEBUG
 		m_bPASS = false;
@@ -53,8 +45,7 @@ public:
 class worldvertexalpha_ps20_Dynamic_Index
 {
 public:
-	// CONSTRUCTOR
-	worldvertexalpha_ps20_Dynamic_Index( IShaderDynamicAPI *pShaderAPI )
+	worldvertexalpha_ps20_Dynamic_Index()
 	{
 	}
 	int GetIndex()
@@ -67,23 +58,3 @@ public:
 	}
 };
 #define shaderDynamicTest_worldvertexalpha_ps20 0
-
-static const ShaderComboInformation_t s_StaticComboArray_WorldVertexAlpha_ps20[1] = 
-{
-	{ "PASS", 0, 1 },
-};
-static const ShaderComboSemantics_t WorldVertexAlpha_ps20_combos =
-{
-	"WorldVertexAlpha_ps20", NULL, 0, s_StaticComboArray_WorldVertexAlpha_ps20, 1 
-};
-
-class ConstructMe_WorldVertexAlpha_ps20
-{
-public:
-	ConstructMe_WorldVertexAlpha_ps20()
-	{
-		GetShaderDLL()->AddShaderComboInformation( &WorldVertexAlpha_ps20_combos );
-	}
-};
-
-static ConstructMe_WorldVertexAlpha_ps20 s_ConstructMe_WorldVertexAlpha_ps20;

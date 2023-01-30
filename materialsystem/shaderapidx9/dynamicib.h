@@ -1,8 +1,8 @@
-//===== Copyright (c) 1996-2005, Valve Corporation, All rights reserved. ======//
+//========= Copyright Valve Corporation, All rights reserved. ============//
 //
 // Purpose: 
 //
-//=============================================================================//
+//===========================================================================//
 
 #ifndef DYNAMICIB_H
 #define DYNAMICIB_H
@@ -18,6 +18,7 @@
 #include "shaderapi/ishaderutil.h"
 #include "materialsystem/ivballoctracker.h"
 #include "tier1/memstack.h"
+#include "gpubufferallocator.h"
 
 /////////////////////////////
 // D. Sim Dietrich Jr.
@@ -36,26 +37,30 @@
 // Helper function to unbind an index buffer
 void Unbind( IDirect3DIndexBuffer9 *pIndexBuffer );
 
-#define X360_INDEX_BUFFER_SIZE_MULTIPLIER 2.0 //minimum of 1, only affects dynamic buffers
+#define X360_INDEX_BUFFER_SIZE_MULTIPLIER 4.0 //minimum of 1, only affects dynamic buffers
 //#define X360_BLOCK_ON_IB_FLUSH //uncomment to block until all data is consumed when a flush is requested. Otherwise we only block when absolutely necessary
 
-#ifndef _CERT
 #define SPEW_INDEX_BUFFER_STALLS //uncomment to allow buffer stall spewing.
-#endif
-
 
 class CIndexBuffer
 {
 public:
-	CIndexBuffer( D3DDeviceWrapper *pD3D, int count, bool bSoftwareVertexProcessing, bool dynamic = false, MeshBuffersAllocationSettings_t *pSettings = 0 );
+	CIndexBuffer( IDirect3DDevice9 *pD3D, int count, bool bSoftwareVertexProcessing, bool dynamic = false );
 
-#ifdef _GAMECONSOLE
+#ifdef _X360
 	CIndexBuffer();
-	void Init( D3DDeviceWrapper *pD3D, uint16 *pIndexMemory, int count );
+	void Init( IDirect3DDevice9 *pD3D, uint16 *pIndexMemory, int count );
 #endif
-
-	~CIndexBuffer();
 	
+	int AddRef() { return ++m_nReferenceCount; }
+	int Release() 
+	{
+		int retVal = --m_nReferenceCount;
+		if ( retVal == 0 )
+			delete this;
+		return retVal;
+	}
+
 	LPDIRECT3DINDEXBUFFER GetInterface() const 
 	{ 
 		// If this buffer still exists, then Late Creation didn't happen. Best case: we'll render the wrong image. Worst case: Crash.
@@ -80,10 +85,17 @@ public:
 	// Index count
 	int IndexCount() const { return m_IndexCount; }
 
+#if _X360
+	// For some IBs, memory allocation is managed by CGPUBufferAllocator, via ShaderAPI
+	const GPUBufferHandle_t *GetBufferAllocationHandle( void );
+	void  SetBufferAllocationHandle( const GPUBufferHandle_t &bufferAllocationHandle );
+	bool  IsPooled( void ) { return m_GPUBufferHandle.IsValid(); }
+	// Expose the data pointer for read-only CPU access to the data
+	// (double-indirection supports relocation of the data by CGPUBufferAllocator)
+	const byte **GetBufferDataPointerAddress( void );
+#endif // _X360
 	// Do we have enough room without discarding?
 	bool HasEnoughRoom( int numIndices ) const;
-	
-	int GetIndicesLeft() const;
 
 	bool IsDynamic() const { return m_bDynamic; }
 	bool IsExternal() const { return m_bExternalMemory; }
@@ -153,23 +165,15 @@ public:
 	}
 
 private :
-	void Create( D3DDeviceWrapper *pD3D );
+	void Create( IDirect3DDevice9 *pD3D );
 	inline void ReallyUnlock( int unlockBytes )
 	{
 		#if DX_TO_GL_ABSTRACTION
 			// Knowing how much data was actually written is critical for performance under OpenGL.
-			#if SHADERAPI_NO_D3DDeviceWrapper
 			m_pIB->UnlockActualSize( unlockBytes );
-			#else
-			Dx9Device()->UnlockActualSize( m_pIB, unlockBytes );
-			#endif
 		#else
 			unlockBytes; // Unused here
-			#if SHADERAPI_NO_D3DDeviceWrapper
 			m_pIB->Unlock();
-			#else
-			Dx9Device()->Unlock( m_pIB );
-			#endif
 		#endif
 	}
 
@@ -202,6 +206,7 @@ private :
 	IDirect3DIndexBuffer9	m_D3DIndexBuffer; //Only need one shared D3D header for our usage patterns.
 	CUtlLinkedList<DynamicBufferAllocation_t> m_AllocationRing; //tracks what chunks of our memory are potentially still in use by D3D
 
+	GPUBufferHandle_t		m_GPUBufferHandle;	// Handle to a memory allocation within a shared physical memory pool (see CGPUBufferAllocator)
 #endif
 
 	int			m_IndexCount;
@@ -219,6 +224,8 @@ private :
 	int				m_Frame;
 #endif
 
+	CInterlockedInt	m_nReferenceCount;
+
 #ifdef _DEBUG
 	static int		s_BufferCount;
 #endif
@@ -227,9 +234,8 @@ private :
 	unsigned int	m_UID;
 #endif
 
-#if SHADERAPI_NO_D3DDeviceWrapper
-#else
-	LockedBufferContext m_LockData;
+#if !defined( _X360 )
+	//LockedBufferContext m_LockData;
 #endif
 
 protected:
@@ -240,20 +246,24 @@ protected:
 	
 	unsigned int m_LockedStartIndex;
 	unsigned int m_LockedNumIndices;
+
+private:
+	// Must use reference counting functions above
+	~CIndexBuffer();
 };
 
- 
 #if defined( _X360 )
-#include "UtlMap.h"
-MEMALLOC_DEFINE_EXTERNAL_TRACKING( XMem_CIndexBuffer );
+#include "utlmap.h"
+MEMALLOC_DECLARE_EXTERNAL_TRACKING( XMem_CIndexBuffer );
 #endif
+
 
 //-----------------------------------------------------------------------------
 // constructor, destructor
 //-----------------------------------------------------------------------------
 
-inline CIndexBuffer::CIndexBuffer( D3DDeviceWrapper *pD3D, int count, 
-	bool bSoftwareVertexProcessing, bool dynamic, MeshBuffersAllocationSettings_t *pSettings ) :
+inline CIndexBuffer::CIndexBuffer( IDirect3DDevice9 *pD3D, int count, 
+	bool bSoftwareVertexProcessing, bool dynamic ) :
 		m_pIB(0), 
 		m_Position(0), 
 		m_bFlush(true), 
@@ -270,6 +280,7 @@ inline CIndexBuffer::CIndexBuffer( D3DDeviceWrapper *pD3D, int count,
 #ifdef VPROF_ENABLED
 		,m_Frame( -1 )
 #endif
+		, m_nReferenceCount( 0 ) 
 {
 	// For write-combining, ensure we always have locked memory aligned to 4-byte boundaries
 	count = ALIGN_VALUE( count, 2 );
@@ -296,9 +307,8 @@ inline CIndexBuffer::CIndexBuffer( D3DDeviceWrapper *pD3D, int count,
 	m_NumIndices = m_IndexCount;
 #endif
 
-#if !defined(_X360)
 
-    if ( !g_pShaderUtil->IsRenderThreadSafe() )
+	if ( g_pShaderUtil->GetThreadMode() != MATERIAL_SINGLE_THREADED || !ThreadInMainThread() )
 	{
 		m_pSysmemBuffer = ( byte * )malloc( count * IndexSize() );
 		m_nSysmemBufferStartBytes = 0;
@@ -309,8 +319,7 @@ inline CIndexBuffer::CIndexBuffer( D3DDeviceWrapper *pD3D, int count,
 		Create( pD3D );
 	}
 
-#else
-	// _X360
+#else // _X360
 	int nBufferSize = (count * IndexSize());
 	if ( m_bDynamic )
 	{
@@ -318,6 +327,12 @@ inline CIndexBuffer::CIndexBuffer( D3DDeviceWrapper *pD3D, int count,
 		Assert( m_iAllocationCount >= count );
 		m_iAllocationCount = ALIGN_VALUE( m_iAllocationCount, 2 );
 		m_pAllocatedMemory = (unsigned char*)XPhysicalAlloc( m_iAllocationCount * IndexSize(), MAXULONG_PTR, 0, PAGE_READWRITE | MEM_LARGE_PAGES | PAGE_WRITECOMBINE );
+	}
+	else if ( MeshMgr()->AllocatePooledIB( this, nBufferSize, TEXTURE_GROUP_STATIC_INDEX_BUFFER ) )
+	{
+		// Successfully allocated in a shared ShaderAPI memory pool (SetBufferAllocationHandle will have been called to set the pointer and stream offset)
+		m_iAllocationCount = count;
+		Assert( m_pAllocatedMemory );
 	}
 	else
 	{
@@ -327,9 +342,15 @@ inline CIndexBuffer::CIndexBuffer( D3DDeviceWrapper *pD3D, int count,
 		m_pAllocatedMemory = (unsigned char*)XPhysicalAlloc( nBufferSize, MAXULONG_PTR, 0, PAGE_READWRITE );
 	}
 
-	if ( m_pAllocatedMemory )
+	if ( m_pAllocatedMemory && !IsPooled() )
 	{
 		MemAlloc_RegisterExternalAllocation( XMem_CIndexBuffer, m_pAllocatedMemory, XPhysicalSize( m_pAllocatedMemory ) );
+		if ( !m_bDynamic )
+		{
+			// Track non-pooled physallocs, to help tune CGPUBufferAllocator usage
+			g_SizeIndividualIBPhysAllocs += XPhysicalSize( m_pAllocatedMemory );
+			g_NumIndividualIBPhysAllocs++;
+		}
 	}
 
 	m_iNextBlockingPosition = m_iAllocationCount;
@@ -351,7 +372,7 @@ inline CIndexBuffer::CIndexBuffer( D3DDeviceWrapper *pD3D, int count,
 }
 
 
-void CIndexBuffer::Create( D3DDeviceWrapper *pD3D )
+void CIndexBuffer::Create( IDirect3DDevice9 *pD3D )
 {
 	D3DINDEXBUFFER_DESC desc;
 	memset( &desc, 0x00, sizeof( desc ) );
@@ -421,8 +442,7 @@ void CIndexBuffer::Create( D3DDeviceWrapper *pD3D )
 }
 
 
-
-#ifdef _GAMECONSOLE
+#ifdef _X360
 void *AllocateTempBuffer( size_t nSizeInBytes );
 
 inline CIndexBuffer::CIndexBuffer() :
@@ -442,55 +462,31 @@ inline CIndexBuffer::CIndexBuffer() :
 	m_pShadowIndices = NULL;
 #endif
 
-#ifdef _X360
 	m_iAllocationCount = 0;
 	m_pAllocatedMemory = NULL;
 	m_iNextBlockingPosition = 0;
-#endif
 }
 
 #include "tier0/memdbgoff.h"
 
-inline IDirect3DIndexBuffer9 *CreateExternalDynamicIB( uint16 *pIndexMemory, int count )
-{
-	int nBufferSize = count * sizeof(uint16);
-
-	IDirect3DIndexBuffer9 *pIB = new( AllocateTempBuffer( sizeof( IDirect3DIndexBuffer9 ) ) ) IDirect3DIndexBuffer9;
-
-#ifdef _X360
-	XGSetIndexBufferHeader( nBufferSize, 0, D3DFMT_INDEX16, 0, 0, pIB );
-	XGOffsetResourceAddress( pIB, pIndexMemory );
-#elif defined( _PS3 )
-	pIB->m_idxDesc.Format = D3DFMT_INDEX16;	
-	pIB->m_idxDesc.Type = D3DRTYPE_INDEXBUFFER;	
-	pIB->m_idxDesc.Usage = D3DUSAGE_WRITEONLY | D3DUSAGE_DYNAMIC;	
-	pIB->m_idxDesc.Pool = D3DPOOL_DEFAULT;	
-	pIB->m_idxDesc.Size = nBufferSize;	
-	pIB->m_pBuffer = new( AllocateTempBuffer( sizeof( CPs3gcmBuffer ) ) ) CPs3gcmBuffer;
-	pIB->m_pBuffer->m_lmBlock.AttachToExternalMemory( kAllocPs3GcmIndexBufferDynamic, 
-		( uintp )pIndexMemory - ( uintp )g_ps3gcmGlobalState.m_pLocalBaseAddress, nBufferSize ); 
-#endif
-
-	return pIB;
-}
-
-inline void CIndexBuffer::Init( D3DDeviceWrapper *pD3D, uint16 *pIndexMemory, int count )
+inline void CIndexBuffer::Init( IDirect3DDevice9 *pD3D, uint16 *pIndexMemory, int count )
 {
 	m_IndexCount = count; 
 	m_Position = count;
 
-#ifdef _X360
 	m_iAllocationCount = count;
 	m_pAllocatedMemory = (uint8*)pIndexMemory;
 	m_iNextBlockingPosition = m_iAllocationCount;
-#endif
 
-	m_pIB = CreateExternalDynamicIB( pIndexMemory, count );
+	int nBufferSize = count * sizeof(uint16);
+	m_pIB = new( AllocateTempBuffer( sizeof( IDirect3DIndexBuffer9 ) ) ) IDirect3DIndexBuffer9;
+	XGSetIndexBufferHeader( nBufferSize, 0, D3DFMT_INDEX16, 0, 0, m_pIB );
+	XGOffsetResourceAddress( m_pIB, pIndexMemory );
 }
 
 #include "tier0/memdbgon.h"
 
-#endif // _GAMECONSOLE
+#endif // _X360
 
 inline CIndexBuffer::~CIndexBuffer()
 {
@@ -528,16 +524,12 @@ inline CIndexBuffer::~CIndexBuffer()
 #endif
 
 #if !defined( _X360 )
-	if ( m_pIB && !m_bExternalMemory )
+	if ( m_pIB )
 	{
 		RECORD_COMMAND( DX8_DESTROY_INDEX_BUFFER, 1 );
 		RECORD_INT( m_UID );
 
-		#if SHADERAPI_NO_D3DDeviceWrapper
 		m_pIB->Release();
-		#else
-		Dx9Device()->Release( m_pIB );
-		#endif
 	}
 #else
 	if ( m_pIB && m_pIB->IsSet( Dx9Device() ) )
@@ -547,8 +539,21 @@ inline CIndexBuffer::~CIndexBuffer()
 
 	if ( m_pAllocatedMemory && !m_bExternalMemory )
 	{
-		MemAlloc_RegisterExternalDeallocation( XMem_CIndexBuffer, m_pAllocatedMemory, XPhysicalSize( m_pAllocatedMemory ) );
-		XPhysicalFree( m_pAllocatedMemory );
+		if ( IsPooled() )
+		{
+			MeshMgr()->DeallocatePooledIB( this );
+		}
+		else
+		{
+			MemAlloc_RegisterExternalDeallocation( XMem_CIndexBuffer, m_pAllocatedMemory, XPhysicalSize( m_pAllocatedMemory ) );
+			if ( !m_bDynamic )
+			{
+				// Track non-pooled physallocs, to help tune CGPUBufferAllocator usage
+				g_SizeIndividualIBPhysAllocs -= XPhysicalSize( m_pAllocatedMemory );
+				g_NumIndividualIBPhysAllocs--;
+			}
+			XPhysicalFree( m_pAllocatedMemory );
+		}
 	}
 
 	m_pAllocatedMemory = NULL;
@@ -571,8 +576,48 @@ inline CIndexBuffer::~CIndexBuffer()
 	}
 #endif
 }
-	
 
+#ifdef _X360
+//-----------------------------------------------------------------------------
+// Get memory allocation data
+//-----------------------------------------------------------------------------
+inline const GPUBufferHandle_t *CIndexBuffer::GetBufferAllocationHandle( void )
+{
+	Assert( IsPooled() );
+	return ( IsPooled() ? &m_GPUBufferHandle : NULL );
+}
+
+//-----------------------------------------------------------------------------
+// Update memory allocation data
+//-----------------------------------------------------------------------------
+inline void CIndexBuffer::SetBufferAllocationHandle( const GPUBufferHandle_t &bufferAllocationHandle )
+{
+	// This IB's memory has been reallocated or freed, update our cached pointer and the D3D header
+	// NOTE: this should never be called while any rendering is in flight!
+	Assert( ( m_pAllocatedMemory == NULL ) || IsPooled() );
+	if ( ( m_pAllocatedMemory == NULL ) || IsPooled() )
+	{
+		m_GPUBufferHandle  = bufferAllocationHandle;
+		m_pAllocatedMemory = m_GPUBufferHandle.pMemory;
+		if ( m_pIB )
+		{
+			int nBufferSize = m_IndexCount * IndexSize();
+			XGSetIndexBufferHeader( nBufferSize, 0, D3DFMT_INDEX16, 0, 0, m_pIB );
+			XGOffsetResourceAddress( m_pIB, m_pAllocatedMemory );
+		}
+	}
+}
+
+//-----------------------------------------------------------------------------
+// Expose the data pointer for read-only CPU access to the data
+//-----------------------------------------------------------------------------
+inline const byte **CIndexBuffer::GetBufferDataPointerAddress( void )
+{
+	if ( m_bDynamic /* FIXME: || m_bExternalMemory */ )
+		return NULL;
+	return (const byte **)&m_pAllocatedMemory;
+}
+#endif // _X360
 
 //-----------------------------------------------------------------------------
 // Do we have enough room without discarding?
@@ -584,16 +629,6 @@ inline bool CIndexBuffer::HasEnoughRoom( int numIndices ) const
 #else
 	return numIndices <= m_IndexCount; //the ring buffer will free room as needed
 #endif
-}
-
-inline int CIndexBuffer::GetIndicesLeft() const
-{
-#if !defined( _X360 )
-	return m_IndexCount - m_Position ;
-#else
-	return m_IndexCount; //the ring buffer will free room as needed
-#endif
-
 }
 
 //-----------------------------------------------------------------------------
@@ -660,14 +695,14 @@ inline void CIndexBuffer::BlockUntilUnused( int nAllocationSize )
 #endif
 
 		if ( ( Dx9Device()->GetDeviceState() & D3DDEVICESTATE_ZPASS_BRACKET ) &&
-			( iFinalAllocationZPassIdx == ShaderAPI()->GetConsoleZPassCounter() ) )	
+			( iFinalAllocationZPassIdx == ShaderAPI()->Get360ZPassCounter() ) )	
 		{
 			// We're about to overrun our IB ringbuffer in a single Z prepass. To avoid rendering corruption, close out the
 			// Z prepass and continue. This will reduce early-Z rejection efficiency and could cause a momentary framerate drop,
 			// but it's better than rendering corruption.
 			Warning( "Dynamic IB ring buffer overrun in Z Prepass. Tell Thorsten.\n" );
 
-			ShaderAPI()->EndConsoleZPass();
+			ShaderAPI()->End360ZPass();
 		}
 
 		Dx9Device()->BlockOnFence( FinalFence );
@@ -808,21 +843,12 @@ inline unsigned short* CIndexBuffer::Lock( bool bReadOnly, int numIndices, int& 
 		// Ensure that we're never moving backwards in a buffer--this code would need to be rewritten if so. 
 		// We theorize this can happen if you hit the end of a buffer and then wrap before drawing--but
 		// this would probably break in other places as well.
-// 		if ( position * IndexSize() < m_nSysmemBufferStartBytes ) 
-// 		{
-// 			while(1) printf("wrapped\n");
-// 		}
-
+		Assert( position * IndexSize() >= m_nSysmemBufferStartBytes );
 		pLockedData = ( unsigned short * )( m_pSysmemBuffer + ( position * IndexSize() ) );
 	}
 	else 
 	{
-		#if SHADERAPI_NO_D3DDeviceWrapper
-		hr = m_pIB->Lock(
-		#else
-		hr = Dx9Device()->Lock( m_pIB,
-		#endif
-			position * IndexSize(),  numIndices * IndexSize(), 
+		hr = m_pIB->Lock( position * IndexSize(), numIndices * IndexSize(), 
 						   reinterpret_cast< void** >( &pLockedData ), dwFlags );
 	}
 #else
@@ -884,8 +910,8 @@ inline void CIndexBuffer::Unlock( int numIndices )
 		return;
 
 	// For write-combining, ensure we always have locked memory aligned to 4-byte boundaries
-	if( m_bDynamic )
-		numIndices = ALIGN_VALUE( numIndices, 2 );
+//	if( m_bDynamic )
+//		numIndices = ALIGN_VALUE( numIndices, 2 );
 
 	if ( !IsX360() && !m_pIB && !m_pSysmemBuffer )
 		return;
@@ -901,6 +927,9 @@ inline void CIndexBuffer::Unlock( int numIndices )
 	{
 #if DX_TO_GL_ABSTRACTION
 		// Knowing how much data was actually written is critical for performance under OpenGL.
+		// Important notes: numIndices indicates how much we could move the current position. For dynamic buffer, it should indicate the # of actually written indices, for static buffers it's typically 0.
+		// If it's a dynamic buffer (where we actually care about perf), assume the caller isn't lying about numIndices, otherwise just assume they wrote the entire thing.
+		// If you modify this code, be sure to test on both AMD and NVidia drivers!
 		Assert( numIndices <= (int)m_LockedNumIndices );
 		int unlockBytes = ( m_bDynamic ? numIndices : m_LockedNumIndices ) * IndexSize();
 #else
@@ -908,7 +937,6 @@ inline void CIndexBuffer::Unlock( int numIndices )
 #endif
 		ReallyUnlock( unlockBytes );
 	}
-	#endif
 #else
 	if ( m_bDynamic )
 	{
@@ -918,7 +946,7 @@ inline void CIndexBuffer::Unlock( int numIndices )
 		LockData.m_Fence = Dx9Device()->GetCurrentFence(); //This isn't the correct fence, but it's all we have access to for now and it'll provide marginal safety if something goes really wrong.
 		LockData.m_iStartOffset	= m_Position;
 		LockData.m_iEndOffset = LockData.m_iStartOffset + numIndices;
-		LockData.m_iZPassIdx = ( Dx9Device()->GetDeviceState() & D3DDEVICESTATE_ZPASS_BRACKET ) ? ShaderAPI()->GetConsoleZPassCounter() : 0;
+		LockData.m_iZPassIdx = ( Dx9Device()->GetDeviceState() & D3DDEVICESTATE_ZPASS_BRACKET ) ? ShaderAPI()->Get360ZPassCounter() : 0;
 		Assert( (LockData.m_iStartOffset == 0) || (LockData.m_iStartOffset == m_AllocationRing[m_AllocationRing.Tail()].m_iEndOffset) );
 		m_AllocationRing.AddToTail( LockData );
 		
@@ -951,10 +979,8 @@ inline void CIndexBuffer::Unlock( int numIndices )
 	m_Position += numIndices;
 	m_bLocked = false;
 
-#ifdef CHECK_INDICES
 	m_LockedStartIndex = 0;
 	m_LockedNumIndices = 0;
-#endif
 }
 
 
@@ -976,41 +1002,23 @@ inline void CIndexBuffer::HandleLateCreation( )
 	}
 	
 	void* pWritePtr = NULL;
-	int dataToWriteBytes = ( m_Position * IndexSize() ) - m_nSysmemBufferStartBytes;
+	const int dataToWriteBytes = ( m_Position * IndexSize() ) - m_nSysmemBufferStartBytes;
 	DWORD dwFlags = D3DLOCK_NOSYSLOCK;
 	if ( m_bDynamic )
 		dwFlags |= ( m_bLateCreateShouldDiscard ? D3DLOCK_DISCARD : D3DLOCK_NOOVERWRITE );
 	
 	// Always clear this.
 	m_bLateCreateShouldDiscard = false;
-
+	
 	// Don't use the Lock function, it does a bunch of stuff we don't want.
-
-	HRESULT hr = 0;
-
-	// If we've wrapped might as well transfer the whole IB
-
-	if (dataToWriteBytes < 1)
-	{
-		dataToWriteBytes = m_IndexCount * IndexSize();
-		m_nSysmemBufferStartBytes = 0;
-	}
-
-
-	#if SHADERAPI_NO_D3DDeviceWrapper
-	hr = m_pIB->Lock(
-	#else
-	hr = Dx9Device()->Lock( m_pIB,
-	#endif
-			m_nSysmemBufferStartBytes, 
-			dataToWriteBytes,
-			&pWritePtr,
-			dwFlags );
+	HRESULT hr = m_pIB->Lock( m_nSysmemBufferStartBytes, 
+	                         dataToWriteBytes,
+				             &pWritePtr,
+				             dwFlags);
 
 	// If this fails we're about to crash. Consider skipping the update and leaving 
 	// m_pSysmemBuffer around to try again later. (For example in case of device loss)
-	Assert( SUCCEEDED( hr ) ); hr;
-
+	Assert( SUCCEEDED( hr ) ); hr; 
 	memcpy( pWritePtr, m_pSysmemBuffer + m_nSysmemBufferStartBytes, dataToWriteBytes );
 	ReallyUnlock( dataToWriteBytes );
 
@@ -1045,3 +1053,4 @@ inline int CIndexBuffer::AllocationCount() const
 #include "tier0/memdbgoff.h"
 
 #endif  // DYNAMICIB_H
+

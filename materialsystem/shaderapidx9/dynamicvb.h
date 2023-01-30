@@ -1,4 +1,4 @@
-//===== Copyright (c) 1996-2005, Valve Corporation, All rights reserved. ======//
+//========= Copyright Valve Corporation, All rights reserved. ============//
 //
 // Purpose: 
 //
@@ -13,7 +13,16 @@
 #pragma once
 #endif
 
+#include "locald3dtypes.h"
+#include "recording.h"
 #include "shaderapidx8_global.h"
+#include "shaderapidx8.h"
+#include "imeshdx8.h"
+#include "materialsystem/ivballoctracker.h"
+#include "gpubufferallocator.h"
+#include "tier1/utllinkedlist.h"
+#include "tier0/dbg.h"
+#include "tier1/memstack.h"
 
 /////////////////////////////
 // D. Sim Dietrich Jr.
@@ -29,17 +38,16 @@ void Unbind( IDirect3DVertexBuffer9 *pVertexBuffer );
 
 //#define SPEW_VERTEX_BUFFER_STALLS //uncomment to allow buffer stall spewing.
 
-#define MB (1024.0f*1024.0f)
 
 class CVertexBuffer
 {
 public:
-	CVertexBuffer( D3DDeviceWrapper * pD3D, VertexFormat_t fmt, DWORD theFVF, int vertexSize,
+	CVertexBuffer( IDirect3DDevice9 * pD3D, VertexFormat_t fmt, DWORD theFVF, int vertexSize,
 					int theVertexCount, const char *pTextureBudgetName, bool bSoftwareVertexProcessing, bool dynamic = false );
 
-#ifdef _GAMECONSOLE
+#ifdef _X360
 	CVertexBuffer();
-	void Init( D3DDeviceWrapper * pD3D, VertexFormat_t fmt, DWORD theFVF, uint8 *pVertexData, int vertexSize, int theVertexCount );
+	void Init( IDirect3DDevice9 * pD3D, VertexFormat_t fmt, DWORD theFVF, uint8 *pVertexData, int vertexSize, int theVertexCount );
 #endif
 
 	~CVertexBuffer();
@@ -185,23 +193,15 @@ public:
 	}
 
 private:
-	void Create( D3DDeviceWrapper *pD3D );
+	void Create( IDirect3DDevice9 *pD3D );
 	inline void ReallyUnlock( int unlockBytes )
 	{
 		#if DX_TO_GL_ABSTRACTION
 			// Knowing how much data was actually written is critical for performance under OpenGL.
-			#if SHADERAPI_NO_D3DDeviceWrapper
 			m_pVB->UnlockActualSize( unlockBytes );
-			#else
-			Dx9Device()->UnlockActualSize( m_pVB, unlockBytes );
-			#endif
 		#else
 			unlockBytes; // Unused here
-			#if SHADERAPI_NO_D3DDeviceWrapper
 			m_pVB->Unlock();
-			#else
-			Dx9Device()->Unlock( m_pVB );
-			#endif
 		#endif
 	}
 
@@ -233,6 +233,8 @@ private:
 	int						m_iAllocationSize; //Total size of the ring buffer, usually more than what was asked for
 	IDirect3DVertexBuffer9	m_D3DVertexBuffer; //Only need one shared D3D header for our usage patterns.
 	CUtlLinkedList<DynamicBufferAllocation_t> m_AllocationRing; //tracks what chunks of our memory are potentially still in use by D3D
+
+	GPUBufferHandle_t		m_GPUBufferHandle;	// Handle to a memory allocation within a shared physical memory pool (see CGPUBufferAllocator)
 #endif
 
 	VertexFormat_t	m_VertexBufferFormat;		// yes, Vertex, only used for allocation tracking
@@ -267,16 +269,15 @@ private:
 #endif
 };
 
-
 #if defined( _X360 )
-#include "UtlMap.h"
-MEMALLOC_DEFINE_EXTERNAL_TRACKING( XMem_CVertexBuffer );
+#include "utlmap.h"
+MEMALLOC_DECLARE_EXTERNAL_TRACKING( XMem_CVertexBuffer );
 #endif
 
 //-----------------------------------------------------------------------------
 // constructor, destructor
 //-----------------------------------------------------------------------------
-inline CVertexBuffer::CVertexBuffer(D3DDeviceWrapper * pD3D, VertexFormat_t fmt, DWORD theFVF, 
+inline CVertexBuffer::CVertexBuffer(IDirect3DDevice9 * pD3D, VertexFormat_t fmt, DWORD theFVF, 
 	int vertexSize, int vertexCount, const char *pTextureBudgetName,
 	bool bSoftwareVertexProcessing, bool dynamic ) :
 		m_pVB(0), 
@@ -333,7 +334,7 @@ inline CVertexBuffer::CVertexBuffer(D3DDeviceWrapper * pD3D, VertexFormat_t fmt,
 
 	if ( !g_pShaderUtil->IsRenderThreadSafe() )
 	{
-		m_pSysmemBuffer = ( byte * )malloc( m_nBufferSize );
+		m_pSysmemBuffer = ( byte * )MemAlloc_AllocAligned( m_nBufferSize, 16 );
 		m_nSysmemBufferStartBytes = 0;
 	}
 	else
@@ -352,7 +353,7 @@ inline CVertexBuffer::CVertexBuffer(D3DDeviceWrapper * pD3D, VertexFormat_t fmt,
 }
 
 
-void CVertexBuffer::Create( D3DDeviceWrapper *pD3D )
+void CVertexBuffer::Create( IDirect3DDevice9 *pD3D )
 {
 	D3DVERTEXBUFFER_DESC desc;
 	memset( &desc, 0x00, sizeof( desc ) );
@@ -362,8 +363,7 @@ void CVertexBuffer::Create( D3DDeviceWrapper *pD3D )
 	desc.Pool = m_bDynamic ? D3DPOOL_DEFAULT : D3DPOOL_MANAGED;
 	desc.FVF = m_TheFVF;
 
-
-#if defined( IS_WINDOWS_PC ) && defined( SHADERAPIDX9 ) && 0	// this may not be supported on all platforms
+#if defined(IS_WINDOWS_PC) && defined(SHADERAPIDX9)
 	extern bool g_ShaderDeviceUsingD3D9Ex;
 	if ( g_ShaderDeviceUsingD3D9Ex )
 	{
@@ -425,7 +425,6 @@ void CVertexBuffer::Create( D3DDeviceWrapper *pD3D )
 #endif
 
 	Assert( m_pVB );
-
 #else
 	// _X360
 	if ( m_bDynamic )
@@ -433,6 +432,12 @@ void CVertexBuffer::Create( D3DDeviceWrapper *pD3D )
 		m_iAllocationSize = m_nBufferSize * X360_VERTEX_BUFFER_SIZE_MULTIPLIER;
 		Assert( m_iAllocationSize >= m_nBufferSize );
 		m_pAllocatedMemory = (unsigned char*)XPhysicalAlloc( m_iAllocationSize, MAXULONG_PTR, 0, PAGE_READWRITE | MEM_LARGE_PAGES | PAGE_WRITECOMBINE );
+	}
+	else if ( MeshMgr()->AllocatePooledVB( this, m_nBufferSize, pTextureBudgetName ) )
+	{
+		// Successfully allocated in a shared ShaderAPI memory pool (SetBufferAllocationHandle will have been called to set the pointer and stream offset)
+		m_iAllocationSize = m_nBufferSize;
+		Assert( m_pAllocatedMemory );
 	}
 	else
 	{
@@ -442,16 +447,15 @@ void CVertexBuffer::Create( D3DDeviceWrapper *pD3D )
 		m_pAllocatedMemory = (unsigned char*)XPhysicalAlloc( m_iAllocationSize, MAXULONG_PTR, 0, PAGE_READWRITE );
 	}
 
-	if ( m_pAllocatedMemory )
+	if ( m_pAllocatedMemory && !IsPooled() )
 	{
 		MemAlloc_RegisterExternalAllocation( XMem_CVertexBuffer, m_pAllocatedMemory, XPhysicalSize( m_pAllocatedMemory ) );
-	}
-	else
-	{
-		size_t nUsedMemory, nFreeMemory;
-		g_pMemAlloc->GlobalMemoryStatus( &nUsedMemory, &nFreeMemory );
-		Warning( "Failed to XPhysicalAlloc %.2fmb %s vertex buffer, with %.2fmb total memory free - memory is either exhausted or fragmented!\n", m_iAllocationSize/MB, m_bDynamic?"dynamic":"static", nFreeMemory/MB );
-		Assert( m_pAllocatedMemory ); // If this assert fires, we're probably out of memory
+		if ( !m_bDynamic )
+		{
+			// Track non-pooled physallocs, to help tune CGPUBufferAllocator usage
+			g_SizeIndividualVBPhysAllocs += XPhysicalSize( m_pAllocatedMemory );
+			g_NumIndividualVBPhysAllocs++;
+		}
 	}
 
 	m_iNextBlockingPosition = m_iAllocationSize;
@@ -472,7 +476,8 @@ void CVertexBuffer::Create( D3DDeviceWrapper *pD3D )
 #endif
 }
 
-#ifdef _GAMECONSOLE
+
+#ifdef _X360
 void *AllocateTempBuffer( size_t nSizeInBytes );
 
 //-----------------------------------------------------------------------------
@@ -492,44 +497,26 @@ inline CVertexBuffer::CVertexBuffer( ) :
 	,m_Frame( -1 )
 #endif
 {
-#ifdef _X360
 	m_iAllocationSize = 0;
 	m_pAllocatedMemory = 0;
 	m_iNextBlockingPosition = 0;
-#endif
 }
 
 #include "tier0/memdbgoff.h"
 
-inline void CVertexBuffer::Init( D3DDeviceWrapper *pD3D, VertexFormat_t fmt, DWORD theFVF, uint8 *pVertexData, int vertexSize, int vertexCount )
+inline void CVertexBuffer::Init( IDirect3DDevice9 *pD3D, VertexFormat_t fmt, DWORD theFVF, uint8 *pVertexData, int vertexSize, int vertexCount )
 {
 	m_nBufferSize = vertexSize * vertexCount;
-	m_Position = m_nBufferSize;
+	m_Position = m_Position;
 	m_VertexSize = vertexSize;
 	m_VertexCount = vertexCount;
-
-#ifdef _X360
 	m_iAllocationSize = m_nBufferSize;
 	m_pAllocatedMemory = pVertexData;
 	m_iNextBlockingPosition = m_iAllocationSize;
-#endif
 
 	m_pVB = new( AllocateTempBuffer( sizeof( IDirect3DVertexBuffer9 ) ) ) IDirect3DVertexBuffer9;
-#ifdef _X360
 	XGSetVertexBufferHeader( m_nBufferSize, 0, 0, 0, m_pVB );
 	XGOffsetResourceAddress( m_pVB, pVertexData );
-#elif _PS3
-	memset( &m_pVB->m_vtxDesc, 0, sizeof(m_pVB->m_vtxDesc) ); 
-//	m_pVB->m_vtxDesc.Format = ?;	
-	m_pVB->m_vtxDesc.Type = D3DRTYPE_VERTEXBUFFER;	
-	m_pVB->m_vtxDesc.Usage = D3DUSAGE_WRITEONLY | D3DUSAGE_DYNAMIC;	
-	m_pVB->m_vtxDesc.Pool = D3DPOOL_DEFAULT;	
-	m_pVB->m_vtxDesc.Size = m_nBufferSize;	
-//	m_pVB->m_vtxDesc.FVF = theFVF;
-	m_pVB->m_pBuffer = new( AllocateTempBuffer( sizeof( CPs3gcmBuffer ) ) ) CPs3gcmBuffer;
-	m_pVB->m_pBuffer->m_lmBlock.AttachToExternalMemory( kAllocPs3GcmVertexBufferDynamic, 
-		( uintp )pVertexData - ( uintp )g_ps3gcmGlobalState.m_pLocalBaseAddress, m_nBufferSize ); 
-#endif
 }
 
 #include "tier0/memdbgon.h"
@@ -538,7 +525,7 @@ inline void CVertexBuffer::Init( D3DDeviceWrapper *pD3D, VertexFormat_t fmt, DWO
 
 inline CVertexBuffer::~CVertexBuffer()
 {
-	// Track VB allocations
+	// Track VB allocations (even if pooled)
 #if !defined( _X360 )
 	if ( m_pVB != NULL )
 	{
@@ -552,7 +539,7 @@ inline CVertexBuffer::~CVertexBuffer()
 
 	if ( !m_bExternalMemory )
 	{
-		g_VBAllocTracker->UnCountVB( m_pAllocatedMemory );
+		g_VBAllocTracker->UnCountVB( this );
 	}
 #endif
 
@@ -582,33 +569,82 @@ inline CVertexBuffer::~CVertexBuffer()
 
 	if ( m_pSysmemBuffer )
 	{
-		free( m_pSysmemBuffer );
+		MemAlloc_FreeAligned( m_pSysmemBuffer );
 		m_pSysmemBuffer = NULL;
 	}
 
 #if !defined( _X360 )
-	if ( m_pVB && !m_bExternalMemory )
+	if ( m_pVB )
 	{
 		RECORD_COMMAND( DX8_DESTROY_VERTEX_BUFFER, 1 );
 		RECORD_INT( m_UID );
 
-		#if SHADERAPI_NO_D3DDeviceWrapper
 		m_pVB->Release();
-		#else
-		Dx9Device()->Release( m_pVB );
-		#endif
 	}
 #else
 	if ( m_pAllocatedMemory && !m_bExternalMemory )
 	{
-		MemAlloc_RegisterExternalDeallocation( XMem_CVertexBuffer, m_pAllocatedMemory, XPhysicalSize( m_pAllocatedMemory ) );
-		XPhysicalFree( m_pAllocatedMemory );
+		if ( IsPooled() )
+		{
+			MeshMgr()->DeallocatePooledVB( this );
+		}
+		else
+		{
+			MemAlloc_RegisterExternalDeallocation( XMem_CVertexBuffer, m_pAllocatedMemory, XPhysicalSize( m_pAllocatedMemory ) );
+			if ( !m_bDynamic )
+			{
+				// Track non-pooled physallocs, to help tune CGPUBufferAllocator usage
+				g_SizeIndividualVBPhysAllocs -= XPhysicalSize( m_pAllocatedMemory );
+				g_NumIndividualVBPhysAllocs--;
+			}
+			XPhysicalFree( m_pAllocatedMemory );
+		}
 	}
 
 	m_pAllocatedMemory = NULL;
 	m_pVB = NULL;
-#endif
+#endif // _X360
 }
+#ifdef _X360
+//-----------------------------------------------------------------------------
+// Get memory allocation data
+//-----------------------------------------------------------------------------
+inline const GPUBufferHandle_t *CVertexBuffer::GetBufferAllocationHandle( void )
+{
+	Assert( IsPooled() );
+	return ( IsPooled() ? &m_GPUBufferHandle : NULL );
+}
+
+//-----------------------------------------------------------------------------
+// Update memory allocation data
+//-----------------------------------------------------------------------------
+inline void CVertexBuffer::SetBufferAllocationHandle( const GPUBufferHandle_t &bufferAllocationHandle )
+{
+	// This VB's memory has been reallocated or freed, update our cached pointer and the D3D header
+	// NOTE: this should never be called while any rendering is in flight!
+	Assert( ( m_pAllocatedMemory == NULL ) || IsPooled() );
+	if ( ( m_pAllocatedMemory == NULL ) || IsPooled() )
+	{
+		m_GPUBufferHandle  = bufferAllocationHandle;
+		m_pAllocatedMemory = m_GPUBufferHandle.pMemory;
+		if ( m_pVB )
+		{
+			XGSetVertexBufferHeader( m_nBufferSize, 0, D3DPOOL_DEFAULT, 0, m_pVB );
+			XGOffsetResourceAddress( m_pVB, m_pAllocatedMemory );
+		}
+	}
+}
+
+//-----------------------------------------------------------------------------
+// Expose the data pointer for read-only CPU access to the data
+//-----------------------------------------------------------------------------
+inline const byte **CVertexBuffer::GetBufferDataPointerAddress( void )
+{
+	if ( m_bDynamic /* FIXME: || m_bExternalMemory*/ )
+		return NULL;
+	return (const byte **)&m_pAllocatedMemory;
+}
+#endif // _X360
 
 //-----------------------------------------------------------------------------
 // Compute the next offset for the next lock
@@ -632,10 +668,6 @@ inline bool CVertexBuffer::HasEnoughRoom( int numVertices ) const
 {
 #if defined( _X360 )
 	return numVertices <= m_VertexCount; //the ring buffer will free room as needed
-#elif defined( _PS3 )
-	// Dynamic VBs are used with dynamic IBs that use 16-bit indices, so do not ever let this number exceed 65536
-	int nMaxVertexCount = m_bDynamic ? MIN( 65536, m_VertexCount ) : m_VertexCount;
-	return ( NextLockOffset() / m_VertexSize + numVertices ) <= nMaxVertexCount;
 #else
 	return (NextLockOffset() + (numVertices * m_VertexSize)) <= m_nBufferSize;
 #endif
@@ -706,14 +738,14 @@ inline void CVertexBuffer::BlockUntilUnused( int nBufferSize )
 #endif
 
 		if ( ( Dx9Device()->GetDeviceState() & D3DDEVICESTATE_ZPASS_BRACKET ) &&
-			 ( iFinalAllocationZPassIdx == ShaderAPI()->GetConsoleZPassCounter() ) )	
+			 ( iFinalAllocationZPassIdx == ShaderAPI()->Get360ZPassCounter() ) )	
 		{
 			// We're about to overrun our VB ringbuffer in a single Z prepass. To avoid rendering corruption, close out the
 			// Z prepass and continue. This will reduce early-Z rejection efficiency and could cause a momentary framerate drop,
 			// but it's better than rendering corruption.
 			Warning( "Dynamic VB ring buffer overrun in Z Prepass. Tell Thorsten.\n" );
 
-			ShaderAPI()->EndConsoleZPass();
+			ShaderAPI()->End360ZPass();
 		}
 
 		Dx9Device()->BlockOnFence( FinalFence );
@@ -746,7 +778,7 @@ inline unsigned char* CVertexBuffer::Lock( int numVerts, int& baseVertexIndex )
 	baseVertexIndex = 0;
 	int nBufferSize = numVerts * m_VertexSize;
 
-	Assert( IsPC() || ( IsGameConsole() && !m_bLocked ) );
+	Assert( IsPC() || ( IsX360() && !m_bLocked ) );
 
 	// Ensure there is enough space in the VB for this data
 	if ( numVerts > m_VertexCount ) 
@@ -833,7 +865,7 @@ inline unsigned char* CVertexBuffer::Lock( int numVerts, int& baseVertexIndex )
 	// the non-current thread. 
 	if ( !m_pSysmemBuffer && !g_pShaderUtil->IsRenderThreadSafe() )
 	{
-		m_pSysmemBuffer = ( byte * )malloc( m_nBufferSize );
+		m_pSysmemBuffer = ( byte * )MemAlloc_AllocAligned( m_nBufferSize, 16 );
 		m_nSysmemBufferStartBytes = nLockOffset;
 		Assert( ( m_nSysmemBufferStartBytes % m_VertexSize ) == 0 );
 	}
@@ -848,17 +880,10 @@ inline unsigned char* CVertexBuffer::Lock( int numVerts, int& baseVertexIndex )
 	}
 	else 
 	{
-		#if SHADERAPI_NO_D3DDeviceWrapper
 		m_pVB->Lock( nLockOffset, 
-						   nBufferSize, 
-						   reinterpret_cast< void** >( &pLockedData ), 
-						   dwFlags );
-		#else
-		Dx9Device()->Lock( m_pVB, nLockOffset, 
-						   nBufferSize, 
-						   reinterpret_cast< void** >( &pLockedData ), 
-						   dwFlags );
-		#endif
+					nBufferSize, 
+					reinterpret_cast< void** >( &pLockedData ), 
+					dwFlags );
 	}
 #else
 	pLockedData = m_pAllocatedMemory + nLockOffset;
@@ -914,20 +939,11 @@ inline unsigned char* CVertexBuffer::Modify( bool bReadOnly, int firstVertex, in
 
 	// mmw: for forcing all dynamic...        LOCKFLAGS_FLUSH );
 #if !defined( _X360 )
-	#if SHADERAPI_NO_D3DDeviceWrapper
 	m_pVB->Lock( 
 		firstVertex * m_VertexSize, 
 		numVerts * m_VertexSize, 
 		reinterpret_cast< void** >( &pLockedData ), 
 		dwFlags );
-	#else
-	Dx9Device()->Lock( 
-		m_pVB, 
-		firstVertex * m_VertexSize, 
-		numVerts * m_VertexSize, 
-		reinterpret_cast< void** >( &pLockedData ), 
-		dwFlags );
-	#endif
 #else
 	if ( m_pVB->IsSet( Dx9Device() ) )
 	{
@@ -982,7 +998,7 @@ inline void CVertexBuffer::Unlock( int numVerts )
 			LockData.m_Fence = Dx9Device()->GetCurrentFence(); //This isn't the correct fence, but it's all we have access to for now and it'll provide marginal safety if something goes really wrong.
 			LockData.m_iStartOffset	= nLockOffset;
 			LockData.m_iEndOffset = LockData.m_iStartOffset + nBufferSize;
-			LockData.m_iZPassIdx = ( Dx9Device()->GetDeviceState() & D3DDEVICESTATE_ZPASS_BRACKET ) ? ShaderAPI()->GetConsoleZPassCounter() : 0;
+			LockData.m_iZPassIdx = ( Dx9Device()->GetDeviceState() & D3DDEVICESTATE_ZPASS_BRACKET ) ? ShaderAPI()->Get360ZPassCounter() : 0;
 
 			// Round dynamic locks to 4k boundaries for GPU cache reasons
 			LockData.m_iEndOffset = ALIGN_VALUE( LockData.m_iEndOffset, 4096 );
@@ -1040,7 +1056,7 @@ inline void CVertexBuffer::HandleLateCreation( )
 	}
 
 	void* pWritePtr = NULL;
-	int dataToWriteBytes = m_bDynamic ? ( m_Position - m_nSysmemBufferStartBytes ) : ( m_nLockCount * m_VertexSize );
+	const int dataToWriteBytes = m_bDynamic ? ( m_Position - m_nSysmemBufferStartBytes ) : ( m_nLockCount * m_VertexSize );
 	DWORD dwFlags = D3DLOCK_NOSYSLOCK;
 	if ( m_bDynamic )
 	{
@@ -1050,26 +1066,11 @@ inline void CVertexBuffer::HandleLateCreation( )
 	// Always clear this.
 	m_bLateCreateShouldDiscard = false;
 	
-	// If we've wrapped might as well transfer the whole VB
-	
-	if (dataToWriteBytes < 1)
-	{
-		dataToWriteBytes = m_VertexCount * VertexSize();
-		m_nSysmemBufferStartBytes = 0;
-	}
-
 	// Don't use the Lock function, it does a bunch of stuff we don't want.
-	#if SHADERAPI_NO_D3DDeviceWrapper
 	HRESULT hr = m_pVB->Lock( m_nSysmemBufferStartBytes, 
 	                         dataToWriteBytes,
 				             &pWritePtr,
 				             dwFlags);
-#else
-	HRESULT hr = Dx9Device()->Lock( m_pVB, m_nSysmemBufferStartBytes,
-		dataToWriteBytes,
-		&pWritePtr,
-		dwFlags );
-#endif
 
 	// If this fails we're about to crash. Consider skipping the update and leaving 
 	// m_pSysmemBuffer around to try again later. (For example in case of device loss)
@@ -1077,7 +1078,7 @@ inline void CVertexBuffer::HandleLateCreation( )
 	memcpy( pWritePtr, m_pSysmemBuffer + m_nSysmemBufferStartBytes, dataToWriteBytes );
 	ReallyUnlock( dataToWriteBytes );
 
-	free( m_pSysmemBuffer );
+	MemAlloc_FreeAligned( m_pSysmemBuffer );
 	m_pSysmemBuffer = NULL;
 }
 
@@ -1094,3 +1095,4 @@ inline int CVertexBuffer::AllocationSize() const
 
 
 #endif  // DYNAMICVB_H
+

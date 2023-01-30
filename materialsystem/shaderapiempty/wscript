@@ -13,7 +13,8 @@ def options(opt):
 
 def configure(conf):
 	conf.env.append_unique('DEFINES',[
-		'SHADER_DLL_EXPORT'
+		'SHADER_DLL_EXPORT',
+		'PROTECTED_THINGS_ENABLE'
 	])
 
 def build(bld):
@@ -33,7 +34,7 @@ def build(bld):
 
 	defines = []
 
-	libs = ['tier0','tier1','interfaces']
+	libs = ['tier0','tier1']
 
 	install_path = bld.env.LIBDIR
 

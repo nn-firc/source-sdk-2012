@@ -1,4 +1,4 @@
-//====== Copyright © 1996-2005, Valve Corporation, All rights reserved. =======
+//========= Copyright Valve Corporation, All rights reserved. ============//
 //
 // Purpose: 
 //
@@ -6,9 +6,6 @@
 
 #include <windows.h>
 #include "shader_dll_verify.h"
-
-// NOTE: This has to be the last file included!
-#include "tier0/memdbgon.h"
 
 
 static unsigned char *g_pLastInputData = 0;

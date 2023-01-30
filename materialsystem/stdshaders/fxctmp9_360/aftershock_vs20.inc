@@ -1,11 +1,8 @@
-// ALL SKIP STATEMENTS THAT AFFECT THIS SHADER!!!
-// defined $LIGHTING_PREVIEW && defined $FASTPATH && $LIGHTING_PREVIEW && $FASTPATH
 #include "shaderlib/cshader.h"
 class aftershock_vs20_Static_Index
 {
 public:
-	// CONSTRUCTOR
-	aftershock_vs20_Static_Index( IShaderShadow *pShaderShadow, IMaterialVar **params )
+	aftershock_vs20_Static_Index( )
 	{
 	}
 	int GetIndex()
@@ -36,7 +33,6 @@ public:
 	}
 	void SetCOMPRESSED_VERTS( bool i )
 	{
-		Assert( ( i ? 1 : 0 ) >= 0 && ( i ? 1 : 0 ) <= 1 );
 		m_nCOMPRESSED_VERTS = i ? 1 : 0;
 #ifdef _DEBUG
 		m_bCOMPRESSED_VERTS = true;
@@ -58,15 +54,13 @@ public:
 	}
 	void SetSKINNING( bool i )
 	{
-		Assert( ( i ? 1 : 0 ) >= 0 && ( i ? 1 : 0 ) <= 1 );
 		m_nSKINNING = i ? 1 : 0;
 #ifdef _DEBUG
 		m_bSKINNING = true;
 #endif
 	}
 public:
-	// CONSTRUCTOR
-	aftershock_vs20_Dynamic_Index( IShaderDynamicAPI *pShaderAPI )
+	aftershock_vs20_Dynamic_Index()
 	{
 #ifdef _DEBUG
 		m_bCOMPRESSED_VERTS = false;
@@ -89,24 +83,3 @@ public:
 	}
 };
 #define shaderDynamicTest_aftershock_vs20 vsh_forgot_to_set_dynamic_COMPRESSED_VERTS + vsh_forgot_to_set_dynamic_SKINNING + 0
-
-static const ShaderComboInformation_t s_DynamicComboArray_aftershock_vs20[2] = 
-{
-	{ "COMPRESSED_VERTS", 0, 1 },
-	{ "SKINNING", 0, 1 },
-};
-static const ShaderComboSemantics_t aftershock_vs20_combos =
-{
-	"aftershock_vs20", s_DynamicComboArray_aftershock_vs20, 2, NULL, 0 
-};
-
-class ConstructMe_aftershock_vs20
-{
-public:
-	ConstructMe_aftershock_vs20()
-	{
-		GetShaderDLL()->AddShaderComboInformation( &aftershock_vs20_combos );
-	}
-};
-
-static ConstructMe_aftershock_vs20 s_ConstructMe_aftershock_vs20;

@@ -1,15 +1,8 @@
-// ALL SKIP STATEMENTS THAT AFFECT THIS SHADER!!!
-// defined $PIXELFOGTYPE && defined $WRITEWATERFOGTODESTALPHA && ( $PIXELFOGTYPE != 1 ) && $WRITEWATERFOGTODESTALPHA
-// defined $LIGHTING_PREVIEW && defined $FASTPATHENVMAPTINT && $LIGHTING_PREVIEW && $FASTPATHENVMAPTINT
-// defined $LIGHTING_PREVIEW && defined $FASTPATHENVMAPCONTRAST && $LIGHTING_PREVIEW && $FASTPATHENVMAPCONTRAST
-// defined $LIGHTING_PREVIEW && defined $FASTPATH && $LIGHTING_PREVIEW && $FASTPATH
-// ($FLASHLIGHT || $FLASHLIGHTSHADOWS) && $LIGHTING_PREVIEW
 #include "shaderlib/cshader.h"
 class hdrcombineto16bit_ps20_Static_Index
 {
 public:
-	// CONSTRUCTOR
-	hdrcombineto16bit_ps20_Static_Index( IShaderShadow *pShaderShadow, IMaterialVar **params )
+	hdrcombineto16bit_ps20_Static_Index( )
 	{
 	}
 	int GetIndex()
@@ -25,8 +18,7 @@ public:
 class hdrcombineto16bit_ps20_Dynamic_Index
 {
 public:
-	// CONSTRUCTOR
-	hdrcombineto16bit_ps20_Dynamic_Index( IShaderDynamicAPI *pShaderAPI )
+	hdrcombineto16bit_ps20_Dynamic_Index()
 	{
 	}
 	int GetIndex()
@@ -39,18 +31,3 @@ public:
 	}
 };
 #define shaderDynamicTest_hdrcombineto16bit_ps20 0
-static const ShaderComboSemantics_t HDRCombineTo16Bit_ps20_combos =
-{
-	"HDRCombineTo16Bit_ps20", NULL, 0, NULL, 0 
-};
-
-class ConstructMe_HDRCombineTo16Bit_ps20
-{
-public:
-	ConstructMe_HDRCombineTo16Bit_ps20()
-	{
-		GetShaderDLL()->AddShaderComboInformation( &HDRCombineTo16Bit_ps20_combos );
-	}
-};
-
-static ConstructMe_HDRCombineTo16Bit_ps20 s_ConstructMe_HDRCombineTo16Bit_ps20;

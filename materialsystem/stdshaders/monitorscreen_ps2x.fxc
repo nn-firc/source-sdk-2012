@@ -1,11 +1,9 @@
-//========== Copyright (c) Valve Corporation, All rights reserved. ==========//
-//paired with unlittwotexture_vs20
-
+// STATIC: "CONVERT_TO_SRGB"			"0..1"	[ps20b][= g_pHardwareConfig->NeedsShaderSRGBConversion()] [PC]
+// STATIC: "CONVERT_TO_SRGB"			"0..0"	[= 0] [XBOX]
 // STATIC: "TEXTURE2"					"0..1"
-
-#include "common_fog_ps_fxc.h"
+// DYNAMIC: "PIXELFOGTYPE"				"0..1"
 // DYNAMIC: "WRITE_DEPTH_TO_DESTALPHA"	"0..1"	[ps20b] [PC]
-// DYNAMIC: "WRITE_DEPTH_TO_DESTALPHA"	"0..0"	[ps20b] [CONSOLE]
+// DYNAMIC: "WRITE_DEPTH_TO_DESTALPHA"	"0..0"	[ps20b] [XBOX]
 
 #if defined( SHADER_MODEL_PS_2_0 )
 #	define WRITE_DEPTH_TO_DESTALPHA 0
@@ -36,7 +34,7 @@ struct PS_INPUT
 	float4 worldPos_projPosZ		: TEXCOORD7;
 };
 
-float4_color_return_type main( PS_INPUT i ) : COLOR
+float4 main( PS_INPUT i ) : COLOR
 {	
 	float4 resultColor = tex2D( BaseTextureSampler, i.vTexCoord0 ) * i.vColor; // base texture modulated with vertex color
 		
@@ -46,10 +44,10 @@ float4_color_return_type main( PS_INPUT i ) : COLOR
 
 	float3 tempColor = resultColor.rgb * resultColor.rgb;								//base * base
 	resultColor.rgb = lerp( resultColor.rgb, tempColor.rgb, g_Contrast.rgb );			// blend between color and color * color
-	tempColor = dot( resultColor.rgb, g_Grey.rgb );										// color greyscaled
+	tempColor = dot( resultColor.rgb, g_Grey );						// color greyscaled
 	resultColor.rgb = lerp( tempColor.rgb, resultColor.rgb, g_Saturation.rgb );			// blend between color and greyscale
 	resultColor.rgb = resultColor.rgb * g_Tint.rgb;										// tint
 	
-	float fogFactor = CalcPixelFogFactor( PIXELFOGTYPE, g_FogParams, g_EyePos_SpecExponent.xyz, i.worldPos_projPosZ.xyz, i.worldPos_projPosZ.w );
+	float fogFactor = CalcPixelFogFactor( PIXELFOGTYPE, g_FogParams, g_EyePos_SpecExponent.z, i.worldPos_projPosZ.z, i.worldPos_projPosZ.w );
 	return FinalOutput( resultColor, fogFactor, PIXELFOGTYPE, TONEMAP_SCALE_NONE, (WRITE_DEPTH_TO_DESTALPHA != 0), i.worldPos_projPosZ.w );
 }

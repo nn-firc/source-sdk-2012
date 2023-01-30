@@ -1,5 +1,3 @@
-// ALL SKIP STATEMENTS THAT AFFECT THIS SHADER!!!
-// defined $LIGHTING_PREVIEW && defined $FASTPATH && $LIGHTING_PREVIEW && $FASTPATH
 #include "shaderlib/cshader.h"
 class morphaccumulate_vs30_Static_Index
 {
@@ -19,15 +17,13 @@ public:
 	}
 	void SetCONSTANTBASEDMORPH( bool i )
 	{
-		Assert( ( i ? 1 : 0 ) >= 0 && ( i ? 1 : 0 ) <= 1 );
 		m_nCONSTANTBASEDMORPH = i ? 1 : 0;
 #ifdef _DEBUG
 		m_bCONSTANTBASEDMORPH = true;
 #endif
 	}
 public:
-	// CONSTRUCTOR
-	morphaccumulate_vs30_Static_Index( IShaderShadow *pShaderShadow, IMaterialVar **params )
+	morphaccumulate_vs30_Static_Index( )
 	{
 #ifdef _DEBUG
 		m_bCONSTANTBASEDMORPH = false;
@@ -49,8 +45,7 @@ public:
 class morphaccumulate_vs30_Dynamic_Index
 {
 public:
-	// CONSTRUCTOR
-	morphaccumulate_vs30_Dynamic_Index( IShaderDynamicAPI *pShaderAPI )
+	morphaccumulate_vs30_Dynamic_Index()
 	{
 	}
 	int GetIndex()
@@ -63,23 +58,3 @@ public:
 	}
 };
 #define shaderDynamicTest_morphaccumulate_vs30 0
-
-static const ShaderComboInformation_t s_StaticComboArray_morphaccumulate_vs30[1] = 
-{
-	{ "CONSTANTBASEDMORPH", 0, 1 },
-};
-static const ShaderComboSemantics_t morphaccumulate_vs30_combos =
-{
-	"morphaccumulate_vs30", NULL, 0, s_StaticComboArray_morphaccumulate_vs30, 1 
-};
-
-class ConstructMe_morphaccumulate_vs30
-{
-public:
-	ConstructMe_morphaccumulate_vs30()
-	{
-		GetShaderDLL()->AddShaderComboInformation( &morphaccumulate_vs30_combos );
-	}
-};
-
-static ConstructMe_morphaccumulate_vs30 s_ConstructMe_morphaccumulate_vs30;

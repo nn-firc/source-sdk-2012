@@ -1,10 +1,8 @@
-// ALL SKIP STATEMENTS THAT AFFECT THIS SHADER!!!
 #include "shaderlib/cshader.h"
 class depthwrite_ps20b_Static_Index
 {
 public:
-	// CONSTRUCTOR
-	depthwrite_ps20b_Static_Index( IShaderShadow *pShaderShadow, IMaterialVar **params )
+	depthwrite_ps20b_Static_Index( )
 	{
 	}
 	int GetIndex()
@@ -35,15 +33,13 @@ public:
 	}
 	void SetALPHACLIP( bool i )
 	{
-		Assert( ( i ? 1 : 0 ) >= 0 && ( i ? 1 : 0 ) <= 1 );
 		m_nALPHACLIP = i ? 1 : 0;
 #ifdef _DEBUG
 		m_bALPHACLIP = true;
 #endif
 	}
 public:
-	// CONSTRUCTOR
-	depthwrite_ps20b_Dynamic_Index( IShaderDynamicAPI *pShaderAPI )
+	depthwrite_ps20b_Dynamic_Index()
 	{
 #ifdef _DEBUG
 		m_bALPHACLIP = false;
@@ -62,23 +58,3 @@ public:
 	}
 };
 #define shaderDynamicTest_depthwrite_ps20b psh_forgot_to_set_dynamic_ALPHACLIP + 0
-
-static const ShaderComboInformation_t s_DynamicComboArray_depthwrite_ps20b[1] = 
-{
-	{ "ALPHACLIP", 0, 1 },
-};
-static const ShaderComboSemantics_t depthwrite_ps20b_combos =
-{
-	"depthwrite_ps20b", s_DynamicComboArray_depthwrite_ps20b, 1, NULL, 0 
-};
-
-class ConstructMe_depthwrite_ps20b
-{
-public:
-	ConstructMe_depthwrite_ps20b()
-	{
-		GetShaderDLL()->AddShaderComboInformation( &depthwrite_ps20b_combos );
-	}
-};
-
-static ConstructMe_depthwrite_ps20b s_ConstructMe_depthwrite_ps20b;

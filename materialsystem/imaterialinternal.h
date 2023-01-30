@@ -1,4 +1,4 @@
-//========= Copyright © 1996-2005, Valve Corporation, All rights reserved. ============//
+//========= Copyright Valve Corporation, All rights reserved. ============//
 //
 // Purpose: 
 //
@@ -33,17 +33,6 @@ class IIndexBuffer;
 struct Shader_VertexArrayData_t;
 struct ShaderRenderState_t;
 class KeyValues;
-class CBasePerMaterialContextData;
-
-
-struct tokencache_t
-{
-	unsigned short symbol;
-	unsigned char varIndex;
-	unsigned char cached : 1;
-	unsigned char subrect : 1;
-};
-
 
 //-----------------------------------------------------------------------------
 // Interface for materials used only within the material system
@@ -74,7 +63,7 @@ public:
 	virtual void	Uncache( bool bPreserveVars = false ) = 0;
 	virtual void	Precache() = 0;
 	// If supplied, pKeyValues and pPatchKeyValues should come from LoadVMTFile()
-	virtual bool	PrecacheVars( KeyValues *pKeyValues = NULL, KeyValues *pPatchKeyValues = NULL, CUtlVector<FileNameHandle_t> *pIncludes = NULL ) = 0;
+	virtual bool	PrecacheVars( KeyValues *pKeyValues = NULL, KeyValues *pPatchKeyValues = NULL, CUtlVector<FileNameHandle_t> *pIncludes = NULL, int nFindContext = MATERIAL_FINDCONTEXT_NONE ) = 0;
 
 	// reload all textures used by this materals
 	virtual void	ReloadTextures() = 0;
@@ -86,18 +75,13 @@ public:
 	virtual int		GetMaxLightmapPageID( ) const = 0;
 
 	virtual IShader *GetShader() const = 0;
-	virtual IMaterialVar** GetVars()  { return NULL; }
 
 	// Can we use it?
 	virtual bool	IsPrecached( ) const = 0;
 	virtual bool	IsPrecachedVars() const = 0;
 
 	// main draw method
-	virtual CBasePerMaterialContextData **GetContextData( int modulationFlags ) { return NULL; }
-
-	virtual StateSnapshot_t	GetSnapshotId( int modulation, int renderPass ) { return (StateSnapshot_t)-1; } 
-	virtual unsigned char* GetInstanceCommandBuffer( int modulation ) { return NULL; }
-	virtual void	DrawMesh( VertexCompressionType_t vertexCompression, bool bIsAlphaModulating, bool bUsingPreTessPatches ) = 0;
+	virtual void	DrawMesh( VertexCompressionType_t vertexCompression ) = 0;
 
 	// Gets the vertex format
 	virtual VertexFormat_t GetVertexFormat() const = 0;
@@ -144,7 +128,6 @@ public:
 
 	virtual void			ReportVarChanged( IMaterialVar *pVar ) = 0;
 	virtual uint32			GetChangeID() const = 0;
-	virtual uint32			GetChangeTimestamp()  const { return 0; }
 
 	virtual bool			IsTranslucentInternal( float fAlphaModulation ) const = 0;
 
@@ -165,22 +148,14 @@ public:
 	// These are used when a new whitelist is passed in. First materials to be reloaded are flagged, then they are reloaded.
 	virtual void DecideShouldReloadFromWhitelist( IFileList *pFileList ) = 0;
 	virtual void ReloadFromWhitelistIfMarked() = 0;
-
-	virtual void CompactMaterialVars() = 0;
-
-	// Are any of the proxies attached to this material callable from the queued thread?
-	virtual bool HasQueueFriendlyProxies() const = 0;
 };
 
-extern void InsertKeyValues( KeyValues& dst, KeyValues& src, bool bCheckForExistence );
+extern void InsertKeyValues( KeyValues& dst, KeyValues& src, bool bCheckForExistence, bool bRecursive = false );
 extern void WriteKeyValuesToFile( const char *pFileName, KeyValues& keyValues );
 extern void ExpandPatchFile( KeyValues& keyValues, KeyValues &patchKeyValues );
 // patchKeyValues accumulates keys applied by VMT patch files (this is necessary to make $fallbackmaterial
 // work properly - the patch keys need to be reapplied when the fallback VMT is loaded). It may contain
 // previously accumulated patch keys on entry, and may contain more encountered patch keys on exit.
 extern bool LoadVMTFile( KeyValues &vmtKeyValues, KeyValues &patchKeyValues, const char *pMaterialName, bool bUsesUNCFilename, CUtlVector<FileNameHandle_t> *pIncludes  );
-
-extern void CompactMaterialVars( IMaterialVar **ppMaterialVars, int nVars );
-extern void CompactMaterialVarHeap();
 
 #endif // IMATERIALINTERNAL_H

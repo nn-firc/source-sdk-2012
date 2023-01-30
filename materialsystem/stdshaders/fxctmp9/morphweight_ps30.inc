@@ -1,15 +1,8 @@
-// ALL SKIP STATEMENTS THAT AFFECT THIS SHADER!!!
-// defined $PIXELFOGTYPE && defined $WRITEWATERFOGTODESTALPHA && ( $PIXELFOGTYPE != 1 ) && $WRITEWATERFOGTODESTALPHA
-// defined $LIGHTING_PREVIEW && defined $FASTPATHENVMAPTINT && $LIGHTING_PREVIEW && $FASTPATHENVMAPTINT
-// defined $LIGHTING_PREVIEW && defined $FASTPATHENVMAPCONTRAST && $LIGHTING_PREVIEW && $FASTPATHENVMAPCONTRAST
-// defined $LIGHTING_PREVIEW && defined $FASTPATH && $LIGHTING_PREVIEW && $FASTPATH
-// ($FLASHLIGHT || $FLASHLIGHTSHADOWS) && $LIGHTING_PREVIEW
 #include "shaderlib/cshader.h"
 class morphweight_ps30_Static_Index
 {
 public:
-	// CONSTRUCTOR
-	morphweight_ps30_Static_Index( IShaderShadow *pShaderShadow, IMaterialVar **params )
+	morphweight_ps30_Static_Index( )
 	{
 	}
 	int GetIndex()
@@ -25,8 +18,7 @@ public:
 class morphweight_ps30_Dynamic_Index
 {
 public:
-	// CONSTRUCTOR
-	morphweight_ps30_Dynamic_Index( IShaderDynamicAPI *pShaderAPI )
+	morphweight_ps30_Dynamic_Index()
 	{
 	}
 	int GetIndex()
@@ -39,18 +31,3 @@ public:
 	}
 };
 #define shaderDynamicTest_morphweight_ps30 0
-static const ShaderComboSemantics_t morphweight_ps30_combos =
-{
-	"morphweight_ps30", NULL, 0, NULL, 0 
-};
-
-class ConstructMe_morphweight_ps30
-{
-public:
-	ConstructMe_morphweight_ps30()
-	{
-		GetShaderDLL()->AddShaderComboInformation( &morphweight_ps30_combos );
-	}
-};
-
-static ConstructMe_morphweight_ps30 s_ConstructMe_morphweight_ps30;

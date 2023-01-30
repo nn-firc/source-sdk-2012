@@ -1,81 +1,47 @@
-// ALL SKIP STATEMENTS THAT AFFECT THIS SHADER!!!
-// defined $PIXELFOGTYPE && defined $WRITEWATERFOGTODESTALPHA && ( $PIXELFOGTYPE != 1 ) && $WRITEWATERFOGTODESTALPHA
-// defined $LIGHTING_PREVIEW && defined $FASTPATHENVMAPTINT && $LIGHTING_PREVIEW && $FASTPATHENVMAPTINT
-// defined $LIGHTING_PREVIEW && defined $FASTPATHENVMAPCONTRAST && $LIGHTING_PREVIEW && $FASTPATHENVMAPCONTRAST
-// defined $LIGHTING_PREVIEW && defined $FASTPATH && $LIGHTING_PREVIEW && $FASTPATH
-// ($FLASHLIGHT || $FLASHLIGHTSHADOWS) && $LIGHTING_PREVIEW
 #include "shaderlib/cshader.h"
 class shadow_ps20b_Static_Index
 {
 private:
-	int m_nDEFERRED_SHADOWS;
+	int m_nCONVERT_TO_SRGB;
 #ifdef _DEBUG
-	bool m_bDEFERRED_SHADOWS;
+	bool m_bCONVERT_TO_SRGB;
 #endif
 public:
-	void SetDEFERRED_SHADOWS( int i )
+	void SetCONVERT_TO_SRGB( int i )
 	{
-		Assert( i >= 0 && i <= 1 );
-		m_nDEFERRED_SHADOWS = i;
+		Assert( i >= 0 && i <= 0 );
+		m_nCONVERT_TO_SRGB = i;
 #ifdef _DEBUG
-		m_bDEFERRED_SHADOWS = true;
+		m_bCONVERT_TO_SRGB = true;
 #endif
 	}
-	void SetDEFERRED_SHADOWS( bool i )
+	void SetCONVERT_TO_SRGB( bool i )
 	{
-		Assert( ( i ? 1 : 0 ) >= 0 && ( i ? 1 : 0 ) <= 1 );
-		m_nDEFERRED_SHADOWS = i ? 1 : 0;
+		m_nCONVERT_TO_SRGB = i ? 1 : 0;
 #ifdef _DEBUG
-		m_bDEFERRED_SHADOWS = true;
-#endif
-	}
-private:
-	int m_nBLOBBY_SHADOWS;
-#ifdef _DEBUG
-	bool m_bBLOBBY_SHADOWS;
-#endif
-public:
-	void SetBLOBBY_SHADOWS( int i )
-	{
-		Assert( i >= 0 && i <= 1 );
-		m_nBLOBBY_SHADOWS = i;
-#ifdef _DEBUG
-		m_bBLOBBY_SHADOWS = true;
-#endif
-	}
-	void SetBLOBBY_SHADOWS( bool i )
-	{
-		Assert( ( i ? 1 : 0 ) >= 0 && ( i ? 1 : 0 ) <= 1 );
-		m_nBLOBBY_SHADOWS = i ? 1 : 0;
-#ifdef _DEBUG
-		m_bBLOBBY_SHADOWS = true;
+		m_bCONVERT_TO_SRGB = true;
 #endif
 	}
 public:
-	// CONSTRUCTOR
-	shadow_ps20b_Static_Index( IShaderShadow *pShaderShadow, IMaterialVar **params )
+	shadow_ps20b_Static_Index( )
 	{
 #ifdef _DEBUG
-		m_bDEFERRED_SHADOWS = false;
+		m_bCONVERT_TO_SRGB = true;
 #endif // _DEBUG
-		m_nDEFERRED_SHADOWS = 0;
-#ifdef _DEBUG
-		m_bBLOBBY_SHADOWS = false;
-#endif // _DEBUG
-		m_nBLOBBY_SHADOWS = 0;
+		m_nCONVERT_TO_SRGB =  0;
 	}
 	int GetIndex()
 	{
 		// Asserts to make sure that we aren't using any skipped combinations.
 		// Asserts to make sure that we are setting all of the combination vars.
 #ifdef _DEBUG
-		bool bAllStaticVarsDefined = m_bDEFERRED_SHADOWS && m_bBLOBBY_SHADOWS;
+		bool bAllStaticVarsDefined = m_bCONVERT_TO_SRGB;
 		Assert( bAllStaticVarsDefined );
 #endif // _DEBUG
-		return ( 2 * m_nDEFERRED_SHADOWS ) + ( 4 * m_nBLOBBY_SHADOWS ) + 0;
+		return ( 2 * m_nCONVERT_TO_SRGB ) + 0;
 	}
 };
-#define shaderStaticTest_shadow_ps20b psh_forgot_to_set_static_DEFERRED_SHADOWS + psh_forgot_to_set_static_BLOBBY_SHADOWS + 0
+#define shaderStaticTest_shadow_ps20b 0
 class shadow_ps20b_Dynamic_Index
 {
 private:
@@ -94,20 +60,18 @@ public:
 	}
 	void SetPIXELFOGTYPE( bool i )
 	{
-		Assert( ( i ? 1 : 0 ) >= 0 && ( i ? 1 : 0 ) <= 1 );
 		m_nPIXELFOGTYPE = i ? 1 : 0;
 #ifdef _DEBUG
 		m_bPIXELFOGTYPE = true;
 #endif
 	}
 public:
-	// CONSTRUCTOR
-	shadow_ps20b_Dynamic_Index( IShaderDynamicAPI *pShaderAPI )
+	shadow_ps20b_Dynamic_Index()
 	{
 #ifdef _DEBUG
-		m_bPIXELFOGTYPE = true;
+		m_bPIXELFOGTYPE = false;
 #endif // _DEBUG
-		m_nPIXELFOGTYPE = ( pShaderAPI->GetSceneFogMode() == MATERIAL_FOG_LINEAR_BELOW_FOG_Z ) ;
+		m_nPIXELFOGTYPE = 0;
 	}
 	int GetIndex()
 	{
@@ -120,30 +84,4 @@ public:
 		return ( 1 * m_nPIXELFOGTYPE ) + 0;
 	}
 };
-#define shaderDynamicTest_shadow_ps20b 0
-
-static const ShaderComboInformation_t s_DynamicComboArray_shadow_ps20b[1] = 
-{
-	{ "PIXELFOGTYPE", 0, 1 },
-};
-
-static const ShaderComboInformation_t s_StaticComboArray_shadow_ps20b[2] = 
-{
-	{ "DEFERRED_SHADOWS", 0, 1 },
-	{ "BLOBBY_SHADOWS", 0, 1 },
-};
-static const ShaderComboSemantics_t shadow_ps20b_combos =
-{
-	"shadow_ps20b", s_DynamicComboArray_shadow_ps20b, 1, s_StaticComboArray_shadow_ps20b, 2 
-};
-
-class ConstructMe_shadow_ps20b
-{
-public:
-	ConstructMe_shadow_ps20b()
-	{
-		GetShaderDLL()->AddShaderComboInformation( &shadow_ps20b_combos );
-	}
-};
-
-static ConstructMe_shadow_ps20b s_ConstructMe_shadow_ps20b;
+#define shaderDynamicTest_shadow_ps20b psh_forgot_to_set_dynamic_PIXELFOGTYPE + 0

@@ -1,4 +1,3 @@
-// ALL SKIP STATEMENTS THAT AFFECT THIS SHADER!!!
 #include "shaderlib/cshader.h"
 class depthwrite_ps30_Static_Index
 {
@@ -18,15 +17,13 @@ public:
 	}
 	void SetCOLOR_DEPTH( bool i )
 	{
-		Assert( ( i ? 1 : 0 ) >= 0 && ( i ? 1 : 0 ) <= 1 );
 		m_nCOLOR_DEPTH = i ? 1 : 0;
 #ifdef _DEBUG
 		m_bCOLOR_DEPTH = true;
 #endif
 	}
 public:
-	// CONSTRUCTOR
-	depthwrite_ps30_Static_Index( IShaderShadow *pShaderShadow, IMaterialVar **params )
+	depthwrite_ps30_Static_Index( )
 	{
 #ifdef _DEBUG
 		m_bCOLOR_DEPTH = false;
@@ -63,15 +60,13 @@ public:
 	}
 	void SetALPHACLIP( bool i )
 	{
-		Assert( ( i ? 1 : 0 ) >= 0 && ( i ? 1 : 0 ) <= 1 );
 		m_nALPHACLIP = i ? 1 : 0;
 #ifdef _DEBUG
 		m_bALPHACLIP = true;
 #endif
 	}
 public:
-	// CONSTRUCTOR
-	depthwrite_ps30_Dynamic_Index( IShaderDynamicAPI *pShaderAPI )
+	depthwrite_ps30_Dynamic_Index()
 	{
 #ifdef _DEBUG
 		m_bALPHACLIP = false;
@@ -90,28 +85,3 @@ public:
 	}
 };
 #define shaderDynamicTest_depthwrite_ps30 psh_forgot_to_set_dynamic_ALPHACLIP + 0
-
-static const ShaderComboInformation_t s_DynamicComboArray_depthwrite_ps30[1] = 
-{
-	{ "ALPHACLIP", 0, 1 },
-};
-
-static const ShaderComboInformation_t s_StaticComboArray_depthwrite_ps30[1] = 
-{
-	{ "COLOR_DEPTH", 0, 1 },
-};
-static const ShaderComboSemantics_t depthwrite_ps30_combos =
-{
-	"depthwrite_ps30", s_DynamicComboArray_depthwrite_ps30, 1, s_StaticComboArray_depthwrite_ps30, 1 
-};
-
-class ConstructMe_depthwrite_ps30
-{
-public:
-	ConstructMe_depthwrite_ps30()
-	{
-		GetShaderDLL()->AddShaderComboInformation( &depthwrite_ps30_combos );
-	}
-};
-
-static ConstructMe_depthwrite_ps30 s_ConstructMe_depthwrite_ps30;

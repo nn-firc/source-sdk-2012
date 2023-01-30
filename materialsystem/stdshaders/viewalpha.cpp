@@ -1,4 +1,4 @@
-//===== Copyright © 1996-2005, Valve Corporation, All rights reserved. ======//
+//========= Copyright Valve Corporation, All rights reserved. ============//
 //
 // Purpose: 
 //
@@ -6,7 +6,7 @@
 // $NoKeywords: $
 //===========================================================================//
 
-#include "shaderlib/CShader.h"
+#include "shaderlib/cshader.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
@@ -39,7 +39,7 @@ BEGIN_SHADER_FLAGS( ViewAlpha, "Help for ViewAlpha", SHADER_NOT_EDITABLE )
 		}
 		DYNAMIC_STATE
 		{
-			BindTexture( SHADER_SAMPLER0, false, BASETEXTURE, FRAME );
+			BindTexture( SHADER_SAMPLER0, BASETEXTURE, FRAME );
 			SetFixedFunctionTextureTransform( MATERIAL_TEXTURE0, BASETEXTURETRANSFORM );
 		}
 		Draw( );

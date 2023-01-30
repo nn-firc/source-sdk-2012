@@ -1,4 +1,4 @@
-//========= Copyright © 1996-2005, Valve Corporation, All rights reserved. ============//
+//========= Copyright Valve Corporation, All rights reserved. ============//
 //
 // Purpose: 
 //
@@ -17,11 +17,9 @@
 #include "materialsystem/imaterialproxyfactory.h"
 #include "IHardwareConfigInternal.h"
 #include "utlsymbol.h"
-#ifndef _PS3
-#include <malloc.h>
-#endif
+#include <stdlib.h>
 #include "filesystem.h"
-#include <keyvalues.h>
+#include <KeyValues.h>
 #include "mempool.h"
 #include "shaderapi/ishaderutil.h"
 #include "vtf/vtf.h"
@@ -79,7 +77,7 @@ public:
 	void				Precache();
 	void				Uncache( bool bPreserveVars = false );
 	// If provided, pKeyValues and pPatchKeyValues should come from LoadVMTFile()
-	bool				PrecacheVars( KeyValues *pKeyValues = NULL, KeyValues *pPatchKeyValues = NULL, CUtlVector<FileNameHandle_t> *pIncludes = NULL );
+	bool				PrecacheVars( KeyValues *pKeyValues = NULL, KeyValues *pPatchKeyValues = NULL, CUtlVector<FileNameHandle_t> *pIncludes = NULL, int nFindContext = MATERIAL_FINDCONTEXT_NONE );
 	bool				IsPrecached() const;
 	bool				IsPrecachedVars( ) const;
 	bool				IsManuallyCreated() const;
@@ -102,8 +100,14 @@ public:
 	ShaderRenderState_t *GetRenderState()								{ return m_pMaterialPage->GetRenderState(); }
 	int					GetNumAnimationFrames()							{ return m_pMaterialPage->GetNumAnimationFrames(); }
 
-	void				GetLowResColorSample( float s, float t, float *color ) const { m_pMaterialPage->GetLowResColorSample( s, t, color ); }
-	
+	void				GetLowResColorSample( float s, float t, float *color ) const
+	{
+		if ( m_pMaterialPage ) 
+			m_pMaterialPage->GetLowResColorSample( s, t, color );
+		else
+			color[ 0 ] = color[ 1 ] = color[ 2 ] = 0.0f;
+	}
+
 	bool				UsesEnvCubemap( void )							{ return m_pMaterialPage->UsesEnvCubemap(); }
 	bool				NeedsSoftwareSkinning( void )					{ return m_pMaterialPage->NeedsSoftwareSkinning(); }
 	bool				NeedsSoftwareLighting( void )					{ return m_pMaterialPage->NeedsSoftwareLighting(); }
@@ -122,8 +126,6 @@ public:
 
 	bool				IsTranslucent()									{ return m_pMaterialPage->IsTranslucent(); }
 	bool				IsTranslucentInternal( float fAlphaModulation ) const { return m_pMaterialPage->IsTranslucentInternal( fAlphaModulation ); }
-	virtual bool		IsTranslucentUnderModulation( float fAlphaModulation ) const { return m_pMaterialPage->IsTranslucentUnderModulation( fAlphaModulation ); }
-
 	bool				IsAlphaTested()									{ return m_pMaterialPage->IsAlphaTested(); }
 	bool				IsVertexLit()									{ return m_pMaterialPage->IsVertexLit(); }
 
@@ -135,7 +137,7 @@ public:
 	int					GetTextureMemoryBytes( void )					{ return m_pMaterialPage->GetTextureMemoryBytes(); }
 
 	// IMaterialInternal Interface.
-	void				DrawMesh( VertexCompressionType_t vertexCompression, bool bIsAlphaModulating, bool bRenderingPreTessPatchMesh )	{ m_pMaterialPage->DrawMesh( vertexCompression, bIsAlphaModulating, bRenderingPreTessPatchMesh ); }
+	void				DrawMesh( VertexCompressionType_t vertexCompression )	{ m_pMaterialPage->DrawMesh( vertexCompression ); }
 	void				ReloadTextures( void )									{ m_pMaterialPage->ReloadTextures(); }
 	void				SetMinLightmapPageID( int pageID )				
 	{
@@ -158,7 +160,8 @@ public:
 	bool				GetNeedsWhiteLightmap( ) const					{ return m_pMaterialPage->GetNeedsWhiteLightmap(); }
 	
 	IShader *			GetShader() const								{ return m_pMaterialPage->GetShader(); }
-	void				CallBindProxy( void *proxyData, ICallQueue *pCallQueue )	{ m_pMaterialPage->CallBindProxy( proxyData, pCallQueue ); }
+	void				CallBindProxy( void *proxyData )				{ m_pMaterialPage->CallBindProxy( proxyData ); }
+	IMaterial			*CheckProxyReplacement( void *proxyData )		{ return m_pMaterialPage->CheckProxyReplacement( proxyData ); }
 	bool				HasProxy( void ) const							{ return m_pMaterialPage->HasProxy(); }
 
 	// Sets the shader associated with the material
@@ -173,6 +176,9 @@ public:
 
 	// Gets the vertex format
 	VertexFormat_t		GetVertexFormat() const							{ return m_pMaterialPage->GetVertexFormat(); }
+
+	// Gets the morph format
+	virtual MorphFormat_t GetMorphFormat() const						{ return m_pMaterialPage->GetMorphFormat(); }
 
 	// diffuse bump lightmap?
 //	bool				IsUsingDiffuseBumpedLighting() const			{ return m_pChainMaterial->IsUsingDiffuseBumpedLighting(); }
@@ -209,6 +215,7 @@ public:
 
 	bool				IsErrorMaterial() const							{ return false; }
 
+	void				SetUseFixedFunctionBakedLighting( bool bEnable ) { m_pMaterialPage->SetUseFixedFunctionBakedLighting( bEnable ); }
 	bool				NeedsFixedFunctionFlashlight() const			{ return m_pMaterialPage->NeedsFixedFunctionFlashlight(); }
 
 	virtual void		DecideShouldReloadFromWhitelist( IFileList *pFileList )		{ m_pMaterialPage->DecideShouldReloadFromWhitelist( pFileList ); }
@@ -226,12 +233,6 @@ public:
 
 	virtual void PrecacheMappingDimensions( void ) { m_pMaterialPage->PrecacheMappingDimensions(); }
 	virtual void FindRepresentativeTexture( void ) { m_pMaterialPage->FindRepresentativeTexture(); }
-
-	virtual void CompactMaterialVars()									{ ::CompactMaterialVars( m_aMaterialVars.Base(), m_aMaterialVars.Count() ); }
-
-	virtual bool HasQueueFriendlyProxies() const OVERRIDE				{ return m_pMaterialPage->HasQueueFriendlyProxies(); }
-
-	virtual bool SetTempExcluded( bool bSet, int nExcludedDimensionLimit )	{ return false; }
 
 private:
 
@@ -259,7 +260,6 @@ private:
 	DECLARE_FIXEDSIZE_ALLOCATOR( CMaterialSubRect );
 
 	IMaterialInternal			*m_pMaterialPage;
-	IMaterialInternal			*m_pModelMaterialPage;
 
 	int							m_iEnumID;
 
@@ -325,7 +325,7 @@ CMaterialSubRect::CMaterialSubRect( const char *pMaterialName, const char *pText
 
 	// Name with extension stripped off.
 	int len = Q_strlen( pMaterialName );
-	char* pTemp = ( char* ) stackalloc( len + 1 );
+	char* pTemp = ( char* )_alloca( len + 1 );
 	Q_strncpy( pTemp, pMaterialName, len + 1 );
 	Q_strlower( pTemp );
 	pTemp[ len - 4 ] = '\0';
@@ -337,7 +337,6 @@ CMaterialSubRect::CMaterialSubRect( const char *pMaterialName, const char *pText
 #endif
 
 	m_pMaterialPage = NULL;
-	m_pModelMaterialPage = NULL;
 	m_iEnumID = 0;
 	m_symTextureGroupName = pTextureGroupName;
 	m_vecOffset.Init();
@@ -372,10 +371,6 @@ CMaterialSubRect::CMaterialSubRect( const char *pMaterialName, const char *pText
 
 	// Increment the material page usage counter.
 	m_pMaterialPage->IncrementReferenceCount();
-	if ( m_pModelMaterialPage )
-	{
-		m_pModelMaterialPage->IncrementReferenceCount();
-	}
 }
 
 //-----------------------------------------------------------------------------
@@ -384,16 +379,9 @@ CMaterialSubRect::CMaterialSubRect( const char *pMaterialName, const char *pText
 CMaterialSubRect::~CMaterialSubRect()
 {
 	Uncache( );
-
-#if defined( DEVELOPMENT_ONLY ) || defined( ALLOW_TEXT_MODE )
-	static bool s_bTextMode = CommandLine()->HasParm( "-textmode" );
-#else
-	const bool s_bTextMode = false;
-#endif
-
-	if( m_nRefCount != 0 && !s_bTextMode )
+	if( m_nRefCount != 0 )
 	{
-		DevWarning( 1, "Reference Count for Material %s (%d) != 0\n", GetName(), m_nRefCount );
+		DevWarning( 2, "Reference Count for Material %s (%d) != 0\n", GetName(), m_nRefCount );
 	}
 
 	if ( m_pMaterialPage )
@@ -402,17 +390,13 @@ CMaterialSubRect::~CMaterialSubRect()
 		m_pMaterialPage = NULL;
 	}
 
-	if ( m_pModelMaterialPage )
-	{
-		m_pModelMaterialPage->DecrementReferenceCount();
-		m_pModelMaterialPage = NULL;
-	}
-
 	if ( m_pVMTKeyValues )
 	{
 		m_pVMTKeyValues->deleteThis();
 		m_pVMTKeyValues = NULL;
 	}
+
+	// m_aMaterialVars is freed, purged, and lit on fire in Uncache() above.
 
 #ifdef _DEBUG
 	if ( m_pDebugName )
@@ -566,11 +550,11 @@ bool CMaterialSubRect::UsesUNCFileName() const
 void CMaterialSubRect::Precache()
 {
 	// Are we already precached?
-	if ( IsPrecached() )
+	if( IsPrecached() )
 		return;
 
 	// Load data from the .vmt file.
-	if ( !PrecacheVars() )
+	if( !PrecacheVars() )
 		return;
 
 	m_QueueFriendlyVersion.UpdateToRealTime();
@@ -583,7 +567,7 @@ void CMaterialSubRect::Precache()
 //-----------------------------------------------------------------------------
 // Purpose:
 //-----------------------------------------------------------------------------
-bool CMaterialSubRect::PrecacheVars( KeyValues *pVMTKeyValues, KeyValues *pPatchKeyValues, CUtlVector<FileNameHandle_t> *pIncludes )
+bool CMaterialSubRect::PrecacheVars( KeyValues * pVMTKeyValues, KeyValues * pPatchKeyValues, CUtlVector<FileNameHandle_t> *pIncludes, int nFindContext )
 {
 	// FIXME:  Should call through to the parent material for all of this???
 	// We should get both parameters or neither
@@ -661,12 +645,12 @@ void CMaterialSubRect::ParseMaterialVars( KeyValues &keyValues )
 	{
 		DevWarning( 1, "CMaterialSubRect::InitializeShader: Shader not specified in material %s.\n", GetName() );
 		Assert( 0 );
-		pShaderName = IsPC() ? "Wireframe_DX6" : "Wireframe_DX9";
+		pShaderName = IsPC() && !IsEmulatingGL() ? "Wireframe_DX6" : "Wireframe_DX9";
 	}
 
 	// Verify we have the correct "shader."  There is only one type.
 	// Needs to be case insensitive because we can't guarantee case specified in VMTs
-	if ( !Q_stricmp( pShaderName, "subrect" ) )
+	if ( !Q_stricmp( pShaderName, "Subrect" ) )
 	{
 		KeyValues *pVar = pKeyValues->GetFirstSubKey();
 		while ( pVar )
@@ -684,15 +668,7 @@ void CMaterialSubRect::ParseMaterialVars( KeyValues &keyValues )
 				m_pMaterialPage = static_cast<IMaterialInternal*>( MaterialSystem()->FindMaterial( pVar->GetString(), TEXTURE_GROUP_DECAL ) );
 				m_pMaterialPage = m_pMaterialPage->GetRealTimeVersion(); //always work with the realtime material internally
 			}
-			else if ( !Q_stricmp( pVar->GetName(), "$ModelMaterial" ) )
-			{
-				IMaterialInternal *pMaterial = static_cast<IMaterialInternal*>( MaterialSystem()->FindMaterial( pVar->GetString(), TEXTURE_GROUP_DECAL ) );
-				pMaterial = pMaterial->GetRealTimeVersion(); //always work with the realtime material internally
-				if ( !pMaterial->IsErrorMaterial() )
-				{
-					m_pModelMaterialPage = pMaterial;
-				}
-			}
+
 //			else if ( !Q_stricmp( pVar->GetName(), "$decalscale" ) )
 //			{
 //				m_flDecalScale = pVar->GetFloat();
@@ -722,17 +698,9 @@ void CMaterialSubRect::SetupMaterialVars( void )
 		return;
 	}
 
-	// Ask the material page for its size, causes precache to occur
+	// Ask the material page for its size.
 	int nMaterialPageWidth = m_pMaterialPage->GetMappingWidth();
 	int nMaterialPageHeight = m_pMaterialPage->GetMappingHeight();
-
-	if ( m_pModelMaterialPage )
-	{
-		// a subrect optionally supports a redirection for a model material
-		// precache this now, same as the subrect's material page
-		// otherwise, runtime load hitch when model rendering accesses
-		m_pModelMaterialPage->GetMappingWidth();
-	}
 
 	// Normalize the offset and scale.
 	float flOOWidth = 1.0f / static_cast<float>( nMaterialPageWidth );
@@ -787,35 +755,20 @@ IMaterialVar *CMaterialSubRect::FindVar( char const *varName, bool *found, bool 
 	return GetDummyMaterialVar();
 } 
 
-IMaterialVar *CMaterialSubRect::FindVarFast( char const *pVarName, unsigned int *pCacheData )
+IMaterialVar *CMaterialSubRect::FindVarFast( char const *pVarName, unsigned int *pToken )
 {
-	tokencache_t *pToken = reinterpret_cast<tokencache_t *>(pCacheData);
-	PrecacheVars();
-
-	int nVarCount = m_aMaterialVars.Count();
-	if ( pToken->cached && pToken->subrect )
-	{
-		if ( pToken->varIndex < nVarCount && m_aMaterialVars[pToken->varIndex]->GetNameAsSymbol() == pToken->symbol )
-			return m_aMaterialVars[pToken->varIndex];
-	}
-
 	// Look for the var in the material page - it has precedence.
-	IMaterialVar *pVar = m_pMaterialPage->FindVarFast( pVarName, pCacheData );
+	IMaterialVar *pVar = m_pMaterialPage->FindVarFast( pVarName, pToken );
 	if ( pVar )
 		return pVar;
 
-	Assert( pToken->cached );
-
-	if ( pToken->symbol != UTL_INVAL_SYMBOL )
+	if ( *pToken != UTL_INVAL_SYMBOL )
 	{
+		int nVarCount = m_aMaterialVars.Count();
 		for ( int iVar = 0; iVar < nVarCount; ++iVar )
 		{
-			if ( m_aMaterialVars[iVar]->GetNameAsSymbol() == pToken->symbol )
-			{
-				pToken->varIndex = iVar;
-				pToken->subrect = true;
+			if ( m_aMaterialVars[iVar]->GetNameAsSymbol() == *pToken )
 				return m_aMaterialVars[iVar];
-			}
 		}
 	}
 
@@ -859,7 +812,7 @@ void CMaterialSubRect::Uncache( bool bPreserveVars )
 
 	// Don't bother if we're not cached
 	if ( IsPrecached() )
-	{		
+	{
 		m_fLocal &= ~MATERIALSUBRECT_IS_PRECACHED;
 	}
 
@@ -1050,30 +1003,6 @@ static IMaterialVar* CreateMatrixMaterialVarFromKeyValue( IMaterial* pMaterial, 
 	Vector2D scale, center;
 	float angle;
 	Vector2D translation;
-
-	//scan for pre-rotation scale and translation with assumed center syntax
-	count = sscanf( pScan, " scale %f %f translate %f %f rotate %f",
-		&scale.x, &scale.y, &translation.x, &translation.y, &angle );
-	if (count == 5)
-	{
-		VMatrix temp;
-
-		MatrixBuildTranslation( mat, translation.x - 0.5, translation.y - 0.5, 0.0f );
-		MatrixBuildScale( temp, scale.x, scale.y, 1.0f );
-		MatrixMultiply( mat, temp, mat );
-		MatrixBuildRotateZ( temp, angle );
-		MatrixMultiply( mat, temp, mat );
-
-		Vector2D vOffset;
-		vOffset.Init( 0.5f / ( scale.x != 0 ? scale.x : 1.0 ), 0.5f / ( scale.y != 0 ? scale.y : 1.0 ) );
-		Vector2DRotate( vOffset, -angle, vOffset );
-
-		MatrixBuildTranslation( temp, vOffset.x, vOffset.y, 0.0f );
-		MatrixMultiply( mat, temp, mat );
-
-		return IMaterialVar::Create( pMaterial, pKeyValue->GetName(), mat );
-	}
-
 	count = sscanf( pScan, " center %f %f scale %f %f rotate %f translate %f %f",
 		&center.x, &center.y, &scale.x, &scale.y, &angle, &translation.x, &translation.y );
 	if (count != 7)

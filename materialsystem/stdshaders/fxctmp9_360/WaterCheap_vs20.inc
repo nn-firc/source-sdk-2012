@@ -1,5 +1,3 @@
-// ALL SKIP STATEMENTS THAT AFFECT THIS SHADER!!!
-// defined $LIGHTING_PREVIEW && defined $FASTPATH && $LIGHTING_PREVIEW && $FASTPATH
 #include "shaderlib/cshader.h"
 class watercheap_vs20_Static_Index
 {
@@ -19,15 +17,13 @@ public:
 	}
 	void SetBLEND( bool i )
 	{
-		Assert( ( i ? 1 : 0 ) >= 0 && ( i ? 1 : 0 ) <= 1 );
 		m_nBLEND = i ? 1 : 0;
 #ifdef _DEBUG
 		m_bBLEND = true;
 #endif
 	}
 public:
-	// CONSTRUCTOR
-	watercheap_vs20_Static_Index( IShaderShadow *pShaderShadow, IMaterialVar **params )
+	watercheap_vs20_Static_Index( )
 	{
 #ifdef _DEBUG
 		m_bBLEND = false;
@@ -49,8 +45,7 @@ public:
 class watercheap_vs20_Dynamic_Index
 {
 public:
-	// CONSTRUCTOR
-	watercheap_vs20_Dynamic_Index( IShaderDynamicAPI *pShaderAPI )
+	watercheap_vs20_Dynamic_Index()
 	{
 	}
 	int GetIndex()
@@ -63,23 +58,3 @@ public:
 	}
 };
 #define shaderDynamicTest_watercheap_vs20 0
-
-static const ShaderComboInformation_t s_StaticComboArray_WaterCheap_vs20[1] = 
-{
-	{ "BLEND", 0, 1 },
-};
-static const ShaderComboSemantics_t WaterCheap_vs20_combos =
-{
-	"WaterCheap_vs20", NULL, 0, s_StaticComboArray_WaterCheap_vs20, 1 
-};
-
-class ConstructMe_WaterCheap_vs20
-{
-public:
-	ConstructMe_WaterCheap_vs20()
-	{
-		GetShaderDLL()->AddShaderComboInformation( &WaterCheap_vs20_combos );
-	}
-};
-
-static ConstructMe_WaterCheap_vs20 s_ConstructMe_WaterCheap_vs20;
