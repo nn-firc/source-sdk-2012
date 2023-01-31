@@ -279,7 +279,7 @@ def configure(conf):
 	linkflags += flags
 
 	# And here C++ flags starts to be treated separately
-	cxxflags = list(cflags) + ['-std=c++11','-fpermissive','-Wno-c++11-narrowing']
+	cxxflags = list(cflags) + ['-std=c++11','-fpermissive','-Wno-narrowing','-Wno-c++11-narrowing']
 
 	if conf.env.COMPILER_CC == 'gcc':
 		conf.define('COMPILER_GCC', 1)
