@@ -34,6 +34,10 @@
 #include "xbox/xbox_console.h"
 #endif
 
+#ifdef ANDROID
+#include <android/log.h>
+#endif
+
 #ifndef STEAM
 #define PvRealloc realloc
 #define PvAlloc malloc
@@ -316,6 +320,9 @@ PLATFORM_INTERFACE void AssertValidWStringPtr( const wchar_t* ptr, int maxchar/*
 
 void AppendCallStackToLogMessage( tchar *formattedMessage, int iMessageLength, int iAppendCallStackLength )
 {
+#ifdef ANDROID
+	__android_log_print( ANDROID_LOG_INFO, "SRCENG", "%s", formattedMessage );
+#endif
 	g_DbgLogger.Write( formattedMessage );
 #if defined( ENABLE_RUNTIME_STACK_TRANSLATION )
 #	if defined( TCHAR_IS_CHAR ) //I'm horrible with unicode and I don't plan on testing this with wide characters just yet

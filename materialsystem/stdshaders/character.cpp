@@ -696,35 +696,61 @@ BEGIN_VS_SHADER( Character, "Help for Character Shader" )
 			}
 
 			// Vertex Shader
+#ifdef TOGLES
+			DECLARE_STATIC_VERTEX_SHADER( character_vs20 );
+#else
 			DECLARE_STATIC_VERTEX_SHADER( character_vs30 );
+#endif
 			SET_STATIC_VERTEX_SHADER_COMBO( USEBOUNCECOLOR, bHasBounceColor );
+#ifndef TOGLES
 			SET_STATIC_VERTEX_SHADER_COMBO( FLASHLIGHT, bHasFlashlight );
-            SET_STATIC_VERTEX_SHADER_COMBO( FLATTEN_STATIC_CONTROL_FLOW, !bUseStaticControlFlow );
+			SET_STATIC_VERTEX_SHADER_COMBO( FLATTEN_STATIC_CONTROL_FLOW, !bUseStaticControlFlow );
+#endif
+#ifdef TOGLES
+	    		SET_STATIC_VERTEX_SHADER( character_vs20 );
+#else
 			SET_STATIC_VERTEX_SHADER( character_vs30 );
+#endif
 
 			// Pixel Shader
+#ifdef TOGLES
+			DECLARE_STATIC_PIXEL_SHADER( character_ps20b );
+#else
 			DECLARE_STATIC_PIXEL_SHADER( character_ps30 );
+#endif
 			SET_STATIC_PIXEL_SHADER_COMBO( MASKS1, bHasMasks1 );
 			SET_STATIC_PIXEL_SHADER_COMBO( MASKS2, bHasMasks2 );
 			SET_STATIC_PIXEL_SHADER_COMBO( FRESNELRANGESTEXTURE, bHasFresnelRangesTexture );
+#ifndef TOGLES
 			SET_STATIC_PIXEL_SHADER_COMBO( PHONGWARPTEXTURE, bHasPhongWarpTexture );
+#endif
 			SET_STATIC_PIXEL_SHADER_COMBO( ENVMAP, bHasEnvmap );
 			SET_STATIC_PIXEL_SHADER_COMBO( AMBIENTREFLECTION, bHasAmbientReflection );
+#ifndef TOGLES
 			SET_STATIC_PIXEL_SHADER_COMBO( USEBOUNCECOLOR, bHasBounceColor );
 			SET_STATIC_PIXEL_SHADER_COMBO( ANISOTROPY, bHasAnisotropy );
 			SET_STATIC_PIXEL_SHADER_COMBO( BASEALPHAPHONGMASK, bBaseAlphaPhongMask );
+#endif
 			SET_STATIC_PIXEL_SHADER_COMBO( BASEALPHAENVMASK, bBaseAlphaEnvMask );
 			SET_STATIC_PIXEL_SHADER_COMBO( BUMPALPHAENVMASK, bBumpAlphaEnvMask );
+#ifndef TOGLES
 			SET_STATIC_PIXEL_SHADER_COMBO( SHADOWSATURATION, bHasShadowSaturation );
+#endif
 			SET_STATIC_PIXEL_SHADER_COMBO( BASEALPHASELFILLUMMASK, bBaseAlphaSelfIllumMask );
 			SET_STATIC_PIXEL_SHADER_COMBO( FAKERIM, bHasFakeRim && !bHasFlashlight );
 			SET_STATIC_PIXEL_SHADER_COMBO( CASCADED_SHADOW_MAPPING, bSupportsCSM );
+#ifndef TOGLES
 			SET_STATIC_PIXEL_SHADER_COMBO( CSM_MODE, nCSMQualityComboValue);
 			SET_STATIC_PIXEL_SHADER_COMBO( DOPREVIEW, bPreview );
 			SET_STATIC_PIXEL_SHADER_COMBO( USEPATTERN, bPattern + bHasCustomPaint + ( 2 * bHasAlloverPaint ) );
 			SET_STATIC_PIXEL_SHADER_COMBO( FLASHLIGHT, bHasFlashlight );
 			SET_STATIC_PIXEL_SHADER_COMBO( FLASHLIGHTDEPTHFILTERMODE, nShadowFilterMode );
+#endif
+#ifdef TOGLES
+			SET_STATIC_PIXEL_SHADER( character_ps20b );
+#else
 			SET_STATIC_PIXEL_SHADER( character_ps30 );
+#endif
 
 			// Base texture
 			pShaderShadow->EnableTexture( SHADER_SAMPLER0, true );
@@ -977,22 +1003,38 @@ BEGIN_VS_SHADER( Character, "Help for Character Shader" )
 			#endif
 
 			// Vertex Shader
+#ifdef TOGLES
+			DECLARE_DYNAMIC_VERTEX_SHADER( character_vs20 );
+#else
 			DECLARE_DYNAMIC_VERTEX_SHADER( character_vs30 );
+#endif
 			SET_DYNAMIC_VERTEX_SHADER_COMBO( SKINNING, numBones > 0 );
 			SET_DYNAMIC_VERTEX_SHADER_COMBO( COMPRESSED_VERTS, (int)vertexCompression );
 			SET_DYNAMIC_VERTEX_SHADER_COMBO( NUM_LIGHTS, nNumLights );
+#ifdef TOGLES
+			SET_DYNAMIC_VERTEX_SHADER( character_vs20 );
+#else
 			SET_DYNAMIC_VERTEX_SHADER( character_vs30 );
-			
+#endif
+
 			SetVertexShaderConstant( VERTEX_SHADER_SHADER_SPECIFIC_CONST_0, AMBIENTREFLECTIONBOUNCECENTER );
 			SetVertexShaderConstant( VERTEX_SHADER_SHADER_SPECIFIC_CONST_1, ENTITYORIGIN );
 
 			// Pixel Shader
+#ifdef TOGLES
+			DECLARE_DYNAMIC_PIXEL_SHADER( character_ps20b );
+#else
 			DECLARE_DYNAMIC_PIXEL_SHADER( character_ps30 );
+#endif
 			SET_DYNAMIC_PIXEL_SHADER_COMBO( NUM_LIGHTS, nNumLights );
 			SET_DYNAMIC_PIXEL_SHADER_COMBO( DYN_CSM_ENABLED, (bCSMEnabled) );
 			SET_DYNAMIC_PIXEL_SHADER_COMBO( WRITE_DEPTH_TO_DESTALPHA, bWriteDepthToAlpha );
 			SET_DYNAMIC_PIXEL_SHADER_COMBO( WRITEWATERFOGTODESTALPHA, bWriteWaterFogToAlpha );
+#ifdef TOGLES
+			SET_DYNAMIC_PIXEL_SHADER( character_ps20b );
+#else
 			SET_DYNAMIC_PIXEL_SHADER( character_ps30 );
+#endif
 
 			float vEyePos[4] = { 0, 0, 0, 0 };
 			ShaderApiFast( pShaderAPI )->GetWorldSpaceCameraPosition( vEyePos );
