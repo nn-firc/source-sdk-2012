@@ -147,8 +147,6 @@ void CGameConsole::SetParent( int parent )
 		return;
 
 	m_pConsole->SetParent( static_cast<vgui::VPANEL>( parent ));
-	m_pConsole->SetProportional(true);
-	m_pConsole->InvalidateLayout(true, true);
 }
 
 void CGameConsole::Shutdown( void )
