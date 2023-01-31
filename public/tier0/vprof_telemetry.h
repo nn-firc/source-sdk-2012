@@ -187,6 +187,9 @@ PLATFORM_INTERFACE TelemetryData g_Telemetry;
 //	cx [in] handle to a valid Telemetry context
 //	kFlags [in] flags for the zone (same as those passed to tmEnter
 //	kpFormat [in] name of the zone (same as those passed to tmEnter. This may contain printf-style format specifiers.
+#ifdef TM_ZONE
+#undef TM_ZONE
+#endif
 #define TM_ZONE( context, kFlags, kpFormat, ... ) TELEMETRY_REQUIRED( tmZone( context, kFlags, kpFormat, ##__VA_ARGS__ ) )
 
 //Standardized zones
