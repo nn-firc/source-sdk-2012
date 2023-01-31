@@ -720,6 +720,9 @@ typedef void * HINSTANCE;
 	#define  UINT8_MAX			((uint8)~0)
 	#define  UINT16_MAX			((uint16)~0)
 	#define  UINT32_MAX			((uint32)~0)
+#ifdef UINT64_MAX
+#	undef UINT64_MAX
+#endif
 	#define  UINT64_MAX			((uint64)~0)
 #endif
 
