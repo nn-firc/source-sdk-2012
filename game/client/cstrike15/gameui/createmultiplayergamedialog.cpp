@@ -32,8 +32,11 @@ using namespace vgui;
 CCreateMultiplayerGameDialog::CCreateMultiplayerGameDialog(vgui::Panel *parent) : PropertyDialog(parent, "CreateMultiplayerGameDialog")
 {
 	m_bBotsEnabled = false;
+	SetProportional( true );
 	SetDeleteSelfOnClose(true);
-	SetSize(348, 460);
+	SetSize(
+		vgui::scheme()->GetProportionalScaledValueEx( GetScheme(), 348 ),
+		vgui::scheme()->GetProportionalScaledValueEx( GetScheme(), 460 ) );
 	
 	SetTitle("#GameUI_CreateServer", true);
 	SetOKButtonText("#GameUI_Start");
