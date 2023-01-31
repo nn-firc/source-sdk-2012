@@ -28,8 +28,13 @@ using namespace vgui;
 //-----------------------------------------------------------------------------
 CLoadGameDialog::CLoadGameDialog(vgui::Panel *parent) : BaseClass(parent, "LoadGameDialog")
 {
+	SetProportional( true );
 	SetDeleteSelfOnClose(true);
-	SetBounds(0, 0, 512, 384);
+	SetBounds( 
+		0, 
+		0, 
+		vgui::scheme()->GetProportionalScaledValueEx( GetScheme(), 512 ),
+		vgui::scheme()->GetProportionalScaledValueEx( GetScheme(), 384 ) );
 	SetMinimumSize( 256, 300 );
 	SetSizeable( true );
 

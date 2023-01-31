@@ -25,7 +25,12 @@ void CMouseMessageForwardingPanel::PerformLayout()
 	// fill out the whole area
 	int w, t;
 	GetParent()->GetSize(w, t);
-	SetBounds(0, 0, w, t);
+	SetProportional( true );
+	SetBounds( 
+		0, 
+		0, 
+		vgui::scheme()->GetProportionalScaledValueEx( GetScheme(), w ),
+		vgui::scheme()->GetProportionalScaledValueEx( GetScheme(), t ) );
 }
 
 void CMouseMessageForwardingPanel::OnMousePressed( vgui::MouseCode code )

@@ -59,7 +59,12 @@ void VScrollBarReversedButtons::ApplySchemeSettings( IScheme *pScheme )
 //-----------------------------------------------------------------------------
 CPanelListPanel::CPanelListPanel( vgui::Panel *parent, char const *panelName, bool inverseButtons ) : Panel( parent, panelName )
 {
-	SetBounds( 0, 0, 100, 100 );
+	SetProportional( true );
+	SetBounds( 
+		0, 
+		0, 
+		vgui::scheme()->GetProportionalScaledValueEx( GetScheme(), 100 ),
+		vgui::scheme()->GetProportionalScaledValueEx( GetScheme(), 100 ) );
 	_sliderYOffset = 0;
 
 	if (inverseButtons)

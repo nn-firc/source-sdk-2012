@@ -20,7 +20,12 @@ CBitmapImagePanel::CBitmapImagePanel( Panel *parent, char const *panelName,
 	m_bUploaded = false;
 	m_nTextureId = -1;
 
-	SetBounds( 0, 0, 100, 100 );
+	SetProportional( true );
+	SetBounds( 
+		0, 
+		0, 
+		vgui::scheme()->GetProportionalScaledValueEx( GetScheme(), 100 ),
+		vgui::scheme()->GetProportionalScaledValueEx( GetScheme(), 100 ) );
 
 	if ( filename && filename[ 0 ] )
 	{

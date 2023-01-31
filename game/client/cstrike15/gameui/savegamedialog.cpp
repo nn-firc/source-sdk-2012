@@ -35,8 +35,13 @@ using namespace vgui;
 //-----------------------------------------------------------------------------
 CSaveGameDialog::CSaveGameDialog(vgui::Panel *parent) : BaseClass(parent, "SaveGameDialog")
 {
+	SetProportional( true );
 	SetDeleteSelfOnClose(true);
-	SetBounds(0, 0, 512, 384);
+	SetBounds( 
+		0, 
+		0, 
+		vgui::scheme()->GetProportionalScaledValueEx( GetScheme(), 512 ),
+		vgui::scheme()->GetProportionalScaledValueEx( GetScheme(), 384 ) );
 	SetSizeable( true );
 
 	SetTitle("#GameUI_SaveGame", true);

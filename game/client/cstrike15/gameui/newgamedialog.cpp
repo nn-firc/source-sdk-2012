@@ -281,8 +281,13 @@ public:
 //-----------------------------------------------------------------------------
 CNewGameDialog::CNewGameDialog(vgui::Panel *parent, bool bCommentaryMode) : BaseClass(parent, "NewGameDialog")
 {
+	SetProportional( true );
 	SetDeleteSelfOnClose(true);
-	SetBounds(0, 0, 372, 160);
+	SetBounds( 
+		0, 
+		0, 
+		vgui::scheme()->GetProportionalScaledValueEx( GetScheme(), 372 ),
+		vgui::scheme()->GetProportionalScaledValueEx( GetScheme(), 160 ) );
 	SetSizeable( false );
 	m_iSelectedChapter = -1;
 	m_ActiveTitleIdx = 0;
