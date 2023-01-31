@@ -1,0 +1,43 @@
+#! /usr/bin/env python
+# encoding: utf-8
+
+import os
+
+def options(opt):
+	pass
+
+def configure(conf):
+		return
+
+def build(bld):
+	sources = [
+		'adler32.c',
+		'compress.c',
+		'crc32.c',
+		'deflate.c',
+		'gzclose.c',
+		'gzlib.c',
+		'gzread.c',
+		'gzwrite.c',
+		'infback.c',
+		'inffast.c',
+		'inflate.c',
+		'inftrees.c',
+		'minigzip.c',
+		'trees.c',
+		'uncompr.c',
+		'zutil.c'
+	]
+
+	includes = []
+
+	defines = []
+
+	bld.stlib(
+		source = sources,
+		target = 'zlib',
+		features = 'c',
+		includes = includes,
+		defines = defines,
+		subsystem = bld.env.MSVC_SUBSYSTEM,
+	)

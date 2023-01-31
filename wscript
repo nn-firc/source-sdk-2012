@@ -75,6 +75,7 @@ projects={
 		'thirdparty/libpng-1.5.2',
 		'thirdparty/protobuf-2.5.0',
 		'thirdparty/quickhull',
+		'thirdparty/zlib-1.2.5',
 		'tier0',
 		'tier1',
 		'tier2',

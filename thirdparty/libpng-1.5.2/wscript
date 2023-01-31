@@ -39,7 +39,7 @@ def build(bld):
 
 	defines = []
 
-	libs = ['ZLIB']
+	libs = ['zlib']
 
 	bld.stlib(
 		source   = source,

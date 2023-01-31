@@ -72,11 +72,11 @@ CFLAGS = {
 	'debug': {
 		'msvc':    ['/Od'],
 		'owcc':    ['-g', '-O0', '-fno-omit-frame-pointer', '-funwind-tables', '-fno-omit-leaf-frame-pointer'],
-		'default': ['-g', '-Og']
+		'default': ['-g', '-O0']
 	},
 	'sanitize': {
 		'msvc':    ['/Od', '/RTC1'],
-		'gcc':     ['-Og', '-fsanitize=undefined', '-fsanitize=address'],
+		'gcc':     ['-O0', '-fsanitize=undefined', '-fsanitize=address'],
 		'clang':   ['-O0', '-fsanitize=undefined', '-fsanitize=address'],
 		'default': ['-O0']
 	},
