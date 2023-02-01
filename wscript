@@ -262,7 +262,8 @@ def configure(conf):
 			'-I'+os.path.abspath('.')+'/thirdparty/fontconfig',
 			'-I'+os.path.abspath('.')+'/thirdparty/freetype/include',
 			'-I'+os.path.abspath('.')+'/thirdparty/android/jpeglib',
-			'-llog'
+			'-llog',
+			'-lz'
 		]
 
 	if conf.env.DEST_CPU in ['arm','aarch64']:
