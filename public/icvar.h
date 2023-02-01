@@ -159,7 +159,7 @@ protected:
 	public:
 		// This should be a virtual destructor to avoid undefined behavior and many warnings, but doing so
 		// causes plugins to break. It's not worth the trouble at this point.
-        //virtual ~ICVarIteratorInternal() {}
+		virtual ~ICVarIteratorInternal() {}
 		virtual void		SetFirst( void ) RESTRICT = 0;
 		virtual void		Next( void ) RESTRICT = 0;
 		virtual	bool		IsValid( void ) RESTRICT = 0;

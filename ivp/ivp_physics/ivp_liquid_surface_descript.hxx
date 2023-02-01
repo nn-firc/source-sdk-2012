@@ -4,6 +4,7 @@
 
 class IVP_Liquid_Surface_Descriptor {
 public:
+    virtual ~IVP_Liquid_Surface_Descriptor() {}
     virtual void calc_liquid_surface( IVP_Environment *environment,
 				      IVP_Core *core,
 				      IVP_U_Float_Hesse *surface_normal_out,
