@@ -240,6 +240,7 @@ def configure(conf):
 	conf.load('force_32bit')
 
 	compiler_optional_flags = [
+		'-Wno-write-strings',
 		'-fdiagnostics-color=always'
 	]
 
