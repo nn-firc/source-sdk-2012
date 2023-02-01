@@ -36,8 +36,6 @@ projects={
 		'choreoobjects',
 		'dmxloader',
 		'engine',
-		'engine/voice_codecs/opus',
-		'engine/voice_codecs/opus/opus',
 		'filesystem',
 		'game/client',
 		'game/server',
