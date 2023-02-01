@@ -1052,15 +1052,18 @@ static bool ConVarSortFunc( ConCommandBase * const &lhs, ConCommandBase * const 
 void CCvar::Find( const CCommand &args )
 {
 	const char *search;
+	const char *subSearch;
 
-	if ( args.ArgC() != 2 )
+	if ( args.ArgC() != 2 && args.ArgC() != 3 )
 	{
-		ConMsg( "Usage:  find <string>\n" );
+		ConMsg( "Usage:  find <string> [<string>...]\n" );
 		return;
 	}
 
 	// Get substring to find
 	search = args[1];
+	if( args.ArgC() == 3 )
+		subSearch = args[2];
 
 	CUtlRBTree< ConCommandBase *, int > sorted( 0, 0, ConVarSortFunc );
 				 
@@ -1073,8 +1076,10 @@ void CCvar::Find( const CCommand &args )
 		if ( var->IsFlagSet(FCVAR_DEVELOPMENTONLY) || var->IsFlagSet(FCVAR_HIDDEN) )
 			continue;
 
-		if ( !Q_stristr( var->GetName(), search ) &&
-			!Q_stristr( var->GetHelpText(), search ) )
+		if ( !Q_stristr( var->GetName(), search ) && !Q_stristr( var->GetHelpText(), search ) )
+			continue;
+
+		if( subSearch && ( !Q_stristr( var->GetName(), subSearch ) && !Q_stristr( var->GetHelpText(), subSearch ) ) )
 			continue;
 
 		sorted.Insert( var );
