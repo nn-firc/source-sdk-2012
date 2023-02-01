@@ -560,36 +560,6 @@ char *copystring(const char *s)
 	return b;
 }
 
-
-void GetHourMinuteSeconds( int nInputSeconds, int &nHours, int &nMinutes, int &nSeconds )
-{
-}
-
-
-void GetHourMinuteSecondsString( int nInputSeconds, char *pOut, int outLen )
-{
-	int nMinutes = nInputSeconds / 60;
-	int nSeconds = nInputSeconds - nMinutes * 60;
-	int nHours = nMinutes / 60;
-	nMinutes -= nHours * 60;
-
-	char *extra[ 2 ] = { "", "s" };
-	
-	if ( nHours > 0 )
-	{
-		Q_snprintf( pOut, outLen, "%d hour%s, %d minute%s, %d second%s", nHours, extra[ nHours != 1 ], nMinutes, extra[ nMinutes != 1 ], nSeconds, extra[ nSeconds != 1 ] );
-	}
-	else if ( nMinutes > 0 )
-	{
-		Q_snprintf( pOut, outLen, "%d minute%s, %d second%s", nMinutes, extra[ nMinutes != 1 ], nSeconds, extra[ nSeconds != 1 ] );
-	}
-	else
-	{
-		Q_snprintf( pOut, outLen, "%d second%s", nSeconds, extra[ nSeconds != 1 ] );
-	}
-}
-
-
 void Q_mkdir( char *path )
 {
 #if defined( _WIN32 ) || defined( WIN32 )
