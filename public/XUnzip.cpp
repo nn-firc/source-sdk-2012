@@ -4274,7 +4274,7 @@ ZRESULT TUnzip::Unzip(int index,void *dst,unsigned int len,DWORD flags)
 		ts[0].tv_nsec = 0;
 		ts[1].tv_sec = ze.mtime;
 		ts[1].tv_nsec = 0;
-		utimensat((int)h, NULL, ts, 0);
+		utimensat((intptr_t)h, NULL, ts, 0);
 #else
 		struct timeval tv[2];
 		tv[0].tv_sec = ze.atime;
