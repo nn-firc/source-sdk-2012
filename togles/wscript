@@ -18,6 +18,7 @@ def configure(conf):
 
 def build(bld):
 	source = [
+		'asanstubs.cpp',
 		'dx9asmtogl2.cpp',
 		'dxabstract.cpp',
 		'glentrypoints.cpp',	

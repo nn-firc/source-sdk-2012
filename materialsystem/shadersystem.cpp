@@ -29,6 +29,8 @@
 // NOTE: This must be the last file included!
 #include "tier0/memdbgon.h"
 
+#include "mat_stub.h"
+
 #if defined( _PS3 ) || defined( _OSX )
 #define g_pShaderAPI ShaderAPI()
 #define ShaderApiParam( x ) g_pShaderAPIDX8
@@ -1843,10 +1845,9 @@ void CShaderSystem::LoadCubeMap( IMaterialVar **ppParams, IMaterialVar *pTexture
 
 	if ( stricmp( pTextureVar->GetStringValue(), "env_cubemap" ) == 0 )
 	{
-		// garymcthack 
-		// don't have to load anything here. . just set the texture value to something
+		// don't have to load anything here. . just set the texture value to DummyTexture
 		// special that says to use the cubemap entity.
-		pTextureVar->SetTextureValue( ( ITexture * )-1 );
+		pTextureVar->SetTextureValue( &g_DummyTexture );
 		SetFlags2( ppParams, MATERIAL_VAR2_USES_ENV_CUBEMAP );
 	}
 	else

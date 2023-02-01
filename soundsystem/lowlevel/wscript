@@ -16,7 +16,8 @@ def configure(conf):
 
 def build(bld):
 	source = [
-    	'device_sdl.cpp',
+		'asanstubs.cpp',
+		'device_sdl.cpp',
 		'device_null.cpp',
 		'mix.cpp',
 		'simple_filter.cpp'

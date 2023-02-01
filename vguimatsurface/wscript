@@ -20,6 +20,7 @@ def configure(conf):
 
 def build(bld):
 	source = [
+		'asanstubs.cpp',
 		'Clip2D.cpp',
 		'Cursor.cpp',
 		'../public/filesystem_helpers.cpp',

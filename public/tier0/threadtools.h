@@ -1948,6 +1948,7 @@ private:
 	CThreadEvent		m_threadEnd;
 #elif defined(POSIX)
 	pthread_t m_threadId;
+	ThreadInit_t m_threadInit;
 	volatile pthread_t	m_threadZombieId;
 #endif
 	int		m_result;

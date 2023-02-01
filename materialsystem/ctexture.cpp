@@ -4714,7 +4714,7 @@ void CTexture::ReconstructTexture( void *pSourceData, int nSourceDataSize )
 	}
 #endif // _GAMECONSOLE
 
-	delete [] pResolvedFilename;
+	free( pResolvedFilename );
 
 	// the 360 does not persist a large buffer
 	// the pc can afford to persist a large buffer
