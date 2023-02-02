@@ -240,7 +240,7 @@ def configure(conf):
 	conf.load('force_32bit')
 
 	compiler_optional_flags = [
-		'-Wno-write-strings',
+		'-Wno-unused-command-line-argument',
 		'-fdiagnostics-color=always'
 	]
 
@@ -283,7 +283,6 @@ def configure(conf):
 
 	if conf.env.COMPILER_CC == 'gcc':
 		conf.define('COMPILER_GCC', 1)
-
 
 	if conf.env.COMPILER_CC != 'msvc':
 		conf.check_cc(cflags=cflags, linkflags=linkflags, msg='Checking for required C flags')

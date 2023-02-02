@@ -1146,7 +1146,7 @@ typedef void * HINSTANCE;
 	#define DebuggerBreak()		__asm { int 3 }
 #elif COMPILER_MSVCX360
 	#define DebuggerBreak()		DebugBreak()
-#elif defined __arm__ || defined __aarch64__
+#elif defined __arm__ || defined __aarch64__ || defined( COMPILER_CLANG )
 	#include <signal.h>
 	#define DebuggerBreak() raise(SIGINT)
 #elif COMPILER_GCC
@@ -1163,8 +1163,6 @@ typedef void * HINSTANCE;
 	#else
 		#define DebuggerBreak()	raise(SIGTRAP)
 	#endif
-#elif defined( COMPILER_CLANG )
-	#define DebuggerBreak()  do { if ( Plat_IsInDebugSession() ) { __asm ( "int $3" ); } else { raise(SIGTRAP); } } while(0)
 #elif defined( COMPILER_SNC ) && defined( COMPILER_PS3 )
 static bool sPS3_SuppressAssertsInThisFile = false; // you can throw this in the debugger to temporarily disable asserts inside any particular .cpp module. 
 	#define DebuggerBreak() if (!sPS3_SuppressAssertsInThisFile) __builtin_snpause(); // <sergiy> from SNC Migration Guide, tw 31,1,1
@@ -1390,7 +1388,7 @@ typedef int socklen_t;
 #elif defined (__arm__) || defined __aarch64__
 	inline void SetupFPUControlWord() {}
 
-#elif defined ( COMPILER_GCC )
+#elif defined ( COMPILER_GCC ) || defined ( COMPILER_CLANG )
 
 // Works for PS3 
 	inline void SetupFPUControlWord()
@@ -1414,7 +1412,7 @@ typedef int socklen_t;
 // Works for PS3 
 	inline void SetupFPUControlWord()
 	{
-#if defined _PS3 || defined __arm__
+#if defined _PS3
 // TODO: PS3 compiler spits out the following errors:
 // C:/tmp/ccIN0aaa.s: Assembler messages:
 // C:/tmp/ccIN0aaa.s(80): Error: Unrecognized opcode: `fnstcw'
