@@ -679,7 +679,7 @@ InitReturnVal_t CSDLMgr::Init()
 	//  GL entry points, but the game hasn't made a window yet. So it's time
 	//  to make a window! We make a 640x480 one here, and later, when asked
 	//  to really actually make a window, we just resize the one we built here.
-    if ( !CreateHiddenGameWindow( "", true, 640, 480 ) )
+    if ( !CreateHiddenGameWindow( "", true, 1280, 720 ) )
 		Error( "CreateGameWindow failed" );
 
 	if ( !m_bTextMode )
