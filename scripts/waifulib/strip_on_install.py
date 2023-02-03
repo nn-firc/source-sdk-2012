@@ -23,7 +23,7 @@ def configure(conf):
 		if not conf.env.STRIPFLAGS:
 			conf.env.STRIPFLAGS = os.environ['STRIPFLAGS'] if 'STRIPFLAGS' in os.environ else []
 
-		if conf.env.DEST_BINFMT == 'mac-o' or conf.env.DEST_OS == 'android':
+		if conf.env.DEST_BINFMT == 'mac-o':
 			conf.env.STRIPFLAGS += ['-x']
 			return
 
