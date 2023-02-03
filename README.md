@@ -1,4 +1,4 @@
-# Counter-Strike: Global Offensive
+# Source-Engine SDK 2012
 
 ## Features:
 - 100% opensource
