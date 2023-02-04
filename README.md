@@ -1,35 +1,3 @@
-# Source-Engine SDK 2012
-
-## Features:
-- 100% opensource
-- [waf buildsystem](https://waf.io)
-- Fix bugs(some from [Kisak-Strike](https://github.com/swagsoftware/Kisak-Strike))
-- Without steam
-- Without Scaleform Flash UI
-- [DriectX to OpenGLES3.2](https://github.com/nillerusr/source-engine/tree/master/togles/linuxwin)(WIP)
-
-## How to build:
-1. Download original game files
-Use [Depot Downloader](https://github.com/SteamRE/DepotDownloader)
-```
-CSGO SteamAppID: 730
-CSGO Assets: DepotID: 731 ManifestID: 7043469183016184477
-```
-
-2. Install pacages:
-```
-SDL2 rt curl ssl z crypto dl pthread fontconfig freetype GL python
-```
-
-3. Waf build:
-```
-./waf configure -T release --prefix=PATH/TO/CSGO	#use ./waf --help for more info(like -8 means build for 64bit platform)
-./waf install -j<NUM_THREADS>
-```
-4. Have fun!
-
-## License:
-
                SOURCE 1 SDK LICENSE
 
 Source SDK Copyright(c) Valve Corp.  
