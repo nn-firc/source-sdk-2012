@@ -33,4 +33,4 @@ jobs:
     - uses: actions/upload-artifact@v3
       with:
             name: Release Android
-            path: /home/runner/work/csgo-sdk-2017/csgo-sdk-2017/source-sdk-android/bin/csgo-release.apk
+            path: /home/runner/work/source-sdk-2012/source-sdk-2012/source-sdk-android/bin/csgo-release.apk
