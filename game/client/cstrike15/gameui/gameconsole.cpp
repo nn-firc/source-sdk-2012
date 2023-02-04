@@ -67,8 +67,6 @@ void CGameConsole::Initialize()
 
 	m_pConsole->InvalidateLayout( false, true );
 
-	m_pConsole->SetAlpha(128);
-
 	m_bInitialized = true;
 }
 
