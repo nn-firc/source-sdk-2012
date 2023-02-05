@@ -1,0 +1,26 @@
+name: Linux Clang
+
+on:
+  push:
+    branches:
+      - "*"
+  pull_request:
+    branches:
+      - "*"
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Build
+      run: |
+        sudo apt-get update && sudo apt install -y llvm clang git build-essential libsdl2-dev libcurlpp-dev libssl-dev libfontconfig1-dev libcurl4-openssl-dev net-tools
+        ./waf configure -T release --64bits --disable-warns --prefix=/home/runner/work/source-sdk-2012/source-sdk-2012/csgo-release CC=clang CXX=clang++
+        ./waf install -j4
+
+    - uses: actions/upload-artifact@v3
+      with:
+            name: Release x64
+            path: /home/runner/work/source-sdk-2012/source-sdk-2012/csgo-release
