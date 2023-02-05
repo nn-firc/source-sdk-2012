@@ -98,9 +98,14 @@
 #	define __USE_W32_SOCKETS
 #endif
 
-typedef unsigned char byte;		// put in global namespace to avoid ambiguity with other byte typedefs
+//Clang asm workaround
+#if defined (__clang__)
+#	define CRYPTOPP_DISABLE_X86ASM
+#endif
 
 NAMESPACE_BEGIN(CryptoPP)
+
+typedef unsigned char byte;
 
 typedef unsigned short word16;
 typedef unsigned int word32;
