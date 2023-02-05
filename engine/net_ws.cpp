@@ -4513,6 +4513,7 @@ void NET_TerminateConnection( int sock, const ns_address &peer )
 #define bswap_64 swap64
 #else
 #define bswap_16 __bswap_16
+#define bswap_32 __bswap_32
 #define bswap_64 __bswap_64
 #endif
 
