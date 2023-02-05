@@ -799,7 +799,7 @@ int CHardwareConfig::GetMaxVertexTextureDimension() const
 HDRType_t CHardwareConfig::GetHDRType() const
 {
 #ifndef TOGLES
-	return false;
+	return (HDRType_t)NULL;
 #else
 	// On MacOS, this value comes down from the engine, which read it from the registry...which doesn't exist on Mac, so we're slamming to true here
 	if ( IsOpenGL() )
