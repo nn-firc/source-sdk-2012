@@ -744,6 +744,7 @@ def build(bld):
 		'tier0',
 		'particles',
 		'dmxloader',
+		'SDL2',	
 		'vgui_controls',
 		'matsys_controls',
 		'bonesetup',
