@@ -678,9 +678,7 @@ int main( int argc, char *argv[] )
 		execve(argv[0], argv, environ);
 	}
 
-	const char *pLauncherPath = "bin/liblauncher" DLL_EXT_STRING;
-
-	void *launcher = dlopen( pLauncherPath, RTLD_NOW );
+	void *launcher = dlopen( "bin/liblauncher" DLL_EXT_STRING, RTLD_NOW );
 	
 	if ( !launcher )
 	{
@@ -699,9 +697,6 @@ int main( int argc, char *argv[] )
 
 	return main( argc, argv );
 }
-
-#else
-#error
 #endif // WIN32 || POSIX
 
 
