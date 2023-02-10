@@ -1,27 +1,22 @@
-//===== Copyright  Valve Corporation, All rights reserved. ======//
+//========= Copyright Valve Corporation, All rights reserved. ============//
 //
 // Purpose: 
 //
 // Defines the entry point for the application.
 //
-//==================================================================//
+//===========================================================================//
 
-#if defined( _WIN32 )
-#if !defined( _X360 )
+#if defined( _WIN32 ) && !defined( _X360 )
 #include <windows.h>
 #include "shlwapi.h" // registry stuff
 #include <direct.h>
-#endif
-#elif defined ( OSX ) 
-#include <Carbon/Carbon.h>
-#elif defined ( LINUX )
-#define O_EXLOCK 0
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
-#include <locale.h>
-#elif defined ( _PS3 )
-// nothing here for now...
+#elif defined(POSIX)
+	#define O_EXLOCK 0
+	#include <sys/types.h>
+	#include <sys/stat.h>
+	#include <fcntl.h>
+	#include <locale.h>
+#elif defined ( _X360 )
 #else
 #error
 #endif
@@ -29,17 +24,17 @@
 #include <stdio.h>
 #include "tier0/icommandline.h"
 #include "engine_launcher_api.h"
+#include "tier0/vcrmode.h"
 #include "ifilesystem.h"
 #include "tier1/interface.h"
 #include "tier0/dbg.h"
 #include "iregistry.h"
-#include "appframework/iappsystem.h"
+#include "appframework/IAppSystem.h"
 #include "appframework/AppFramework.h"
-#include <vgui/vgui.h>
+#include <vgui/VGUI.h>
 #include <vgui/ISurface.h>
 #include "tier0/platform.h"
 #include "tier0/memalloc.h"
-#include "datacache/iresourceaccesscontrol.h"
 #include "filesystem.h"
 #include "tier1/utlrbtree.h"
 #include "materialsystem/imaterialsystem.h"
@@ -51,51 +46,40 @@
 #include "vphysics_interface.h"
 #include "filesystem_init.h"
 #include "vstdlib/iprocessutils.h"
-#include "avi/iavi.h"
-#include "avi/ibik.h"
-#include "avi/iquicktime.h"
+#include "video/ivideoservices.h"
 #include "tier1/tier1.h"
 #include "tier2/tier2.h"
 #include "tier3/tier3.h"
 #include "p4lib/ip4.h"
 #include "inputsystem/iinputsystem.h"
 #include "filesystem/IQueuedLoader.h"
-#include "filesystem/IXboxInstaller.h"
 #include "reslistgenerator.h"
 #include "tier1/fmtstr.h"
-#include "steam/steam_api.h"
-#include "vscript/ivscript.h"
-#include "tier0/miniprofiler.h"
-#include "networksystem/inetworksystem.h"
-#include "tier1/fmtstr.h"
-#include "vjobs_interface.h"
-#include "vstdlib/jobthread.h"
+#include "sourcevr/isourcevirtualreality.h"
 
-#if defined( _PS3 )
-#include "sys/ppu_thread.h"
-#include "ps3/ps3_win32stubs.h"
-#include "ps3/ps3_core.h"
-#include "ps3/ps3_helpers.h"
-#include "ps3/ps3_console.h"
-#include "../public/ps3_pathinfo.h"
-#include "../public/tls_ps3.h"
-#elif defined( _X360 )
+#define VERSION_SAFE_STEAM_API_INTERFACES
+#include "steam/steam_api.h"
+
+#if defined( _X360 )
 #include "xbox/xbox_win32stubs.h"
 #include "xbox/xbox_console.h"
 #include "xbox/xbox_launch.h"
 #endif
 
-#ifdef LINUX
+#if defined( USE_SDL )
 #include <SDL.h>
 #include <SDL_version.h>
 
+#if !defined( _WIN32 )
 #define MB_OK 			0x00000001
 #define MB_SYSTEMMODAL	0x00000002
 #define MB_ICONERROR	0x00000004
 int MessageBox( HWND hWnd, const char *message, const char *header, unsigned uType );
-#endif
+#endif // _WIN32
 
-#ifdef OSX
+#endif // USE_SDL
+
+#if defined( POSIX )
 #define RELAUNCH_FILE "/tmp/hl2_relaunch"
 #endif
 
@@ -104,35 +88,13 @@ int MessageBox( HWND hWnd, const char *message, const char *header, unsigned uTy
 #include "jni.h"
 #endif
 
-#if defined( DEVELOPMENT_ONLY ) || defined( ALLOW_TEXT_MODE )
-#define ALLOW_MULTI_CLIENTS_PER_MACHINE 1
-#endif
-
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
-#if defined ( CSTRIKE15 )
-
-#define DEFAULT_HL2_GAMEDIR	"csgo"
-
-#else
-
 #define DEFAULT_HL2_GAMEDIR	"hl2"
 
-#endif // CSTRIKE15
-
-// A logging channel used during engine initialization
-DEFINE_LOGGING_CHANNEL_NO_TAGS( LOG_EngineInitialization, "EngineInitialization" );
 #if defined( USE_SDL )
 extern void* CreateSDLMgr();
-#elif defined( OSX )
-extern void* CreateCCocoaMgr();
-#endif
-
-
-#define SIXENSE
-#ifdef SIXENSE
-extern bool DoesFileExistIn( const char *pDirectoryName, const char *pFilename );
 #endif
 
 //-----------------------------------------------------------------------------
@@ -143,11 +105,8 @@ static IHammer *g_pHammer;
 
 bool g_bTextMode = false;
 
-#ifndef _PS3
 static char g_szBasedir[MAX_PATH];
 static char g_szGamedir[MAX_PATH];
-#else
-#endif
 
 // copied from sys.h
 struct FileAssociationInfo
@@ -180,63 +139,85 @@ public:
 	{
 		if ( m_bCheckLeaks )
 		{
-			g_pMemAlloc->DumpStats();
+			MemAlloc_DumpStats();
 		}
 	}
 
 	bool m_bCheckLeaks;
 } g_LeakDump;
 
-class CLauncherLoggingListener : public ILoggingListener
+//-----------------------------------------------------------------------------
+// Spew function!
+//-----------------------------------------------------------------------------
+SpewRetval_t LauncherDefaultSpewFunc( SpewType_t spewType, char const *pMsg )
+{
+#ifndef _CERT
+#ifdef WIN32
+	OutputDebugStringA( pMsg );
+#else
+	fprintf( stderr, "%s", pMsg );
+#endif
+	
+	switch( spewType )
+	{
+	case SPEW_MESSAGE:
+	case SPEW_LOG:
+		return SPEW_CONTINUE;
+
+	case SPEW_WARNING:
+		if ( !stricmp( GetSpewOutputGroup(), "init" ) )
+		{
+#if defined( WIN32 ) || defined( USE_SDL )
+			::MessageBox( NULL, pMsg, "Warning!", MB_OK | MB_SYSTEMMODAL | MB_ICONERROR );
+#endif
+		}
+		return SPEW_CONTINUE;
+
+	case SPEW_ASSERT:
+		if ( !ShouldUseNewAssertDialog() )
+		{
+#if defined( WIN32 ) || defined( USE_SDL )
+			::MessageBox( NULL, pMsg, "Assert!", MB_OK | MB_SYSTEMMODAL | MB_ICONERROR );
+#endif
+		}
+		return SPEW_DEBUGGER;
+	
+	case SPEW_ERROR:
+	default:
+#if defined( WIN32 ) || defined( USE_SDL )
+		::MessageBox( NULL, pMsg, "Error!", MB_OK | MB_SYSTEMMODAL | MB_ICONERROR );
+#endif
+		_exit( 1 );
+	}
+#else
+	if ( spewType != SPEW_ERROR)
+		return SPEW_CONTINUE;
+	_exit( 1 );
+#endif
+}
+
+
+//-----------------------------------------------------------------------------
+// Implementation of VCRHelpers.
+//-----------------------------------------------------------------------------
+class CVCRHelpers : public IVCRHelpers
 {
 public:
-	virtual void Log( const LoggingContext_t *pContext, const tchar *pMessage )
+	virtual void ErrorMessage( const char *pMsg )
 	{
-#if !defined( _CERT ) && !defined( _PS3 )
-#if defined ( WIN32 ) || defined( LINUX )
-		if ( pContext->m_Severity == LS_WARNING && pContext->m_ChannelID == LOG_EngineInitialization )
-		{
-			::MessageBox( NULL, pMessage, "Warning!", MB_OK | MB_SYSTEMMODAL | MB_ICONERROR );
-		}
-		else if ( pContext->m_Severity == LS_ASSERT && !ShouldUseNewAssertDialog() )
-		{
-			::MessageBox( NULL, pMessage, "Assert!", MB_OK | MB_SYSTEMMODAL | MB_ICONERROR );
-		}
-		else if ( pContext->m_Severity == LS_ERROR )
-		{
-			::MessageBox( NULL, pMessage, "Error!", MB_OK | MB_SYSTEMMODAL | MB_ICONERROR );
-		}
-#elif defined(OSX)
-		CFOptionFlags responseFlags;
-		CFStringRef message;
-		message = CFStringCreateWithCString(NULL, pMessage, CFStringGetSystemEncoding() ) ;
-		
-		if ( pContext->m_Severity == LS_WARNING && pContext->m_ChannelID == LOG_EngineInitialization )
-		{
-			CFUserNotificationDisplayAlert(0, kCFUserNotificationCautionAlertLevel, 0, 0, 0, CFSTR( "Warning" ), message, NULL, NULL, NULL, &responseFlags);
-		}
-		else if ( pContext->m_Severity == LS_ASSERT && !ShouldUseNewAssertDialog() )
-		{
-			CFUserNotificationDisplayAlert(0, kCFUserNotificationNoteAlertLevel, 0, 0, 0, CFSTR( "Assert" ), message, NULL, NULL, NULL, &responseFlags);
-		}
-		else if ( pContext->m_Severity == LS_ERROR )
-		{
-			CFUserNotificationDisplayAlert(0,  kCFUserNotificationStopAlertLevel, 0, 0, 0, CFSTR( "Error" ), message, NULL, NULL, NULL, &responseFlags);
-		}	
-		CFRelease(message);
-#else
-#warning "Popup a dialog here"
+#if defined( WIN32 ) || defined( LINUX ) || defined(PLATFORM_BSD)
+		NOVCR( ::MessageBox( NULL, pMsg, "VCR Error", MB_OK ) );
 #endif
-#endif // CERT
+	}
+
+	virtual void* GetMainWindow()
+	{
+		return NULL;
 	}
 };
 
-#if defined( _PS3 )
-const char *GetGameDirectory( void )
-{
-	return g_pPS3PathInfo->GameImagePath();
-}
-#else
+static CVCRHelpers g_VCRHelpers;
+
 //-----------------------------------------------------------------------------
 // Purpose: Return the game directory
 // Output : char
@@ -250,7 +231,6 @@ void SetGameDirectory( const char *game )
 {
 	Q_strncpy( g_szGamedir, game, sizeof(g_szGamedir) );
 }
-#endif
 
 //-----------------------------------------------------------------------------
 // Gets the executable name
@@ -269,41 +249,6 @@ bool GetExecutableName( char *out, int outSize )
 }
 
 //-----------------------------------------------------------------------------
-// Purpose: Return the executable name
-// Output : char
-//-----------------------------------------------------------------------------
-const char * GetExecutableFilename()
-{
-#ifdef _PS3
-	return "csgo";
-#else // !_PS3
-	char exepath[MAX_PATH];
-	static char filename[MAX_PATH];
-
-#ifdef WIN32
-	filename[0] = 0;
-	if ( GetExecutableName( exepath, sizeof( exepath ) ) )
-	{
-		_splitpath
-		( 
-			exepath, // Input
-			NULL,  // drive
-			NULL,  // dir
-			filename, // filename
-			NULL // extension
-		);
-	}
-
-	Q_strlower( filename );
-#else
-	filename[0] = 0;
-#endif
-	return filename;
-#endif // _PS3
-}
-
-#if !defined(_PS3)
-//-----------------------------------------------------------------------------
 // Purpose: Return the base directory
 // Output : char
 //-----------------------------------------------------------------------------
@@ -315,19 +260,12 @@ char *GetBaseDirectory( void )
 	return g_szBasedir;
 #endif
 }
-#else
-const char *GetBaseDirectory( void )
-{
-	return g_pPS3PathInfo->GameImagePath();
-}
-#endif
 
 //-----------------------------------------------------------------------------
 // Purpose: Determine the directory where this .exe is running from
 //-----------------------------------------------------------------------------
 void UTIL_ComputeBaseDir()
 {
-#ifndef _PS3
 	g_szBasedir[0] = 0;
 
 	if ( IsX360() )
@@ -371,11 +309,6 @@ void UTIL_ComputeBaseDir()
 	Q_strlower( g_szBasedir );
 #endif
 	Q_FixSlashes( g_szBasedir );
-
-#else
-	
-
-#endif
 }
 
 #ifdef WIN32
@@ -409,14 +342,6 @@ void SortResList( char const *pchFileName, char const *pchSearchPath );
 
 #define ALL_RESLIST_FILE	"all.lst"
 #define ENGINE_RESLIST_FILE  "engine.lst"
-
-#ifdef _PS3
-
-void TryToLoadSteamOverlayDLL()
-{
-}
-
-#else // !_PS3
 
 // create file to dump out to
 class CLogAllFiles
@@ -653,24 +578,34 @@ void TryToLoadSteamOverlayDLL()
 {
 #if defined( WIN32 ) && !defined( _X360 )
 	// First, check if the module is already loaded, perhaps because we were run from Steam directly
-	HMODULE hMod = GetModuleHandle( "GameOverlayRenderer.dll" );
+	HMODULE hMod = GetModuleHandle( "GameOverlayRenderer" DLL_EXT_STRING );
 	if ( hMod )
 	{
 		return;
 	}
 
-	const char *pchSteamInstallPath = SteamAPI_GetSteamInstallPath();
-	if ( pchSteamInstallPath )
+	if ( 0 == GetEnvironmentVariableA( "SteamGameId", NULL, 0 ) )
 	{
-		char rgchSteamPath[MAX_PATH];
-		V_ComposeFileName( pchSteamInstallPath, "GameOverlayRenderer.dll", rgchSteamPath, Q_ARRAYSIZE(rgchSteamPath) );
-		// This could fail, but we can't fix it if it does so just ignore failures
-		LoadLibrary( rgchSteamPath );
+		// Initializing the Steam client API has the side effect of setting up the AppId
+		// which is immediately queried in GameOverlayRenderer.dll's DllMain entry point
+		if( SteamAPI_InitSafe() )
+		{
+			const char *pchSteamInstallPath = SteamAPI_GetSteamInstallPath();
+			if ( pchSteamInstallPath )
+			{
+				char rgchSteamPath[MAX_PATH];
+				V_ComposeFileName( pchSteamInstallPath, "GameOverlayRenderer" DLL_EXT_STRING, rgchSteamPath, Q_ARRAYSIZE(rgchSteamPath) );
+				// This could fail, but we can't fix it if it does so just ignore failures
+				LoadLibrary( rgchSteamPath );
+			
+			}
+
+			SteamAPI_Shutdown();
+		}
 	}
+
 #endif
 }
-
-#endif // _PS3
 
 //-----------------------------------------------------------------------------
 // Inner loop: initialize, shutdown main systems, load steam to 
@@ -711,19 +646,12 @@ void ReportDirtyDiskNoMaterialSystem()
 #endif
 }
 
-IVJobs * g_pVJobs = NULL;
-
 
 //-----------------------------------------------------------------------------
 // Instantiate all main libraries
 //-----------------------------------------------------------------------------
 bool CSourceAppSystemGroup::Create()
 {
-	COM_TimestampedLog( "CSourceAppSystemGroup::Create()" );
-
-	double start, elapsed;
-	start = Plat_FloatTime();
-
 	IFileSystem *pFileSystem = (IFileSystem*)FindSystem( FILESYSTEM_INTERFACE_VERSION );
 	pFileSystem->InstallDirtyDiskReportFunc( ReportDirtyDiskNoMaterialSystem );
 
@@ -732,97 +660,59 @@ bool CSourceAppSystemGroup::Create()
 #endif
 
 	// Are we running in edit mode?
-	m_bEditMode = CommandLine()->CheckParm( "-edit" ) ? true : false;
+	m_bEditMode = CommandLine()->CheckParm( "-edit" );
+
+	double st = Plat_FloatTime();
 
 	AppSystemInfo_t appSystems[] = 
 	{
-#define LAUNCHER_APPSYSTEM( name ) name DLL_EXT_STRING
-#ifdef _PS3
-		{ LAUNCHER_APPSYSTEM( "vjobs" ),                VJOBS_INTERFACE_VERSION },  // Vjobs must shut down after engine and materialsystem
-#endif
-		{ LAUNCHER_APPSYSTEM( "engine" ),				CVAR_QUERY_INTERFACE_VERSION },	// NOTE: This one must be first!!
-		{ LAUNCHER_APPSYSTEM( "filesystem_stdio" ),		QUEUEDLOADER_INTERFACE_VERSION },
-#if defined( _X360 )
-		{ LAUNCHER_APPSYSTEM( "filesystem_stdio" ),		XBOXINSTALLER_INTERFACE_VERSION },
-#endif
-		{ LAUNCHER_APPSYSTEM( "inputsystem" ),			INPUTSYSTEM_INTERFACE_VERSION },
-		{ LAUNCHER_APPSYSTEM( "vphysics" ),				VPHYSICS_INTERFACE_VERSION },
-		{ LAUNCHER_APPSYSTEM( "materialsystem" ),		MATERIAL_SYSTEM_INTERFACE_VERSION },
-		{ LAUNCHER_APPSYSTEM( "datacache" ),			DATACACHE_INTERFACE_VERSION },
-		{ LAUNCHER_APPSYSTEM( "datacache" ),			MDLCACHE_INTERFACE_VERSION },
-		{ LAUNCHER_APPSYSTEM( "datacache" ),			STUDIO_DATA_CACHE_INTERFACE_VERSION },
-		{ LAUNCHER_APPSYSTEM( "studiorender" ),			STUDIO_RENDER_INTERFACE_VERSION },
-		{ LAUNCHER_APPSYSTEM( "soundemittersystem" ),	SOUNDEMITTERSYSTEM_INTERFACE_VERSION },
-		{ LAUNCHER_APPSYSTEM( "vscript" ),				VSCRIPT_INTERFACE_VERSION },
-#ifdef WIN32
-		{ LAUNCHER_APPSYSTEM("soundsystem"),			SOUNDSYSTEM_INTERFACE_VERSION },
-#endif
-
-#if !defined( _GAMECONSOLE )
-    #if defined ( AVI_VIDEO )
- 		{ LAUNCHER_APPSYSTEM( "valve_avi" ),			AVI_INTERFACE_VERSION },
-    #endif 		
-    #if defined ( BINK_VIDEO )
- 		{ LAUNCHER_APPSYSTEM( "valve_avi" ),			BIK_INTERFACE_VERSION },
- 	#endif
-	#if defined( QUICKTIME_VIDEO ) 		
- 		{ LAUNCHER_APPSYSTEM( "valve_avi" ),			QUICKTIME_INTERFACE_VERSION },
-    #endif		
-#elif defined( BINK_ENABLED_FOR_CONSOLE )
-		{ LAUNCHER_APPSYSTEM( "engine" ),				BIK_INTERFACE_VERSION },	
-#endif
+		{ "engine" DLL_EXT_STRING,			CVAR_QUERY_INTERFACE_VERSION },	// NOTE: This one must be first!!
+		{ "inputsystem" DLL_EXT_STRING,		INPUTSYSTEM_INTERFACE_VERSION },
+		{ "materialsystem" DLL_EXT_STRING,	MATERIAL_SYSTEM_INTERFACE_VERSION },
+		{ "datacache" DLL_EXT_STRING,		DATACACHE_INTERFACE_VERSION },
+		{ "datacache" DLL_EXT_STRING,		MDLCACHE_INTERFACE_VERSION },
+		{ "datacache" DLL_EXT_STRING,		STUDIO_DATA_CACHE_INTERFACE_VERSION },
+		{ "studiorender" DLL_EXT_STRING,	STUDIO_RENDER_INTERFACE_VERSION },
+		{ "vphysics" DLL_EXT_STRING,		VPHYSICS_INTERFACE_VERSION },
+		{ "video_services" DLL_EXT_STRING,  VIDEO_SERVICES_INTERFACE_VERSION },
+  
 		// NOTE: This has to occur before vgui2.dll so it replaces vgui2's surface implementation
-		{ LAUNCHER_APPSYSTEM( "vguimatsurface" ),		VGUI_SURFACE_INTERFACE_VERSION },
-		{ LAUNCHER_APPSYSTEM( "vgui2" ),				VGUI_IVGUI_INTERFACE_VERSION },
-		{ LAUNCHER_APPSYSTEM( "engine" ),				VENGINE_LAUNCHER_API_VERSION },
+		{ "vguimatsurface" DLL_EXT_STRING,	VGUI_SURFACE_INTERFACE_VERSION },
+		{ "vgui2" DLL_EXT_STRING,			VGUI_IVGUI_INTERFACE_VERSION },
+		{ "engine" DLL_EXT_STRING,			VENGINE_LAUNCHER_API_VERSION },
 
-		{ "", "" }					// Required to terminate the list
+		{ "", "" }							// Required to terminate the list
 	};
 
 #if defined( USE_SDL )
-    AddSystem( (IAppSystem *)CreateSDLMgr(),	SDLMGR_INTERFACE_VERSION );
-#elif defined( OSX )
-	AddSystem( (IAppSystem *)CreateCCocoaMgr(), COCOAMGR_INTERFACE_VERSION );
+	AddSystem( (IAppSystem *)CreateSDLMgr(), SDLMGR_INTERFACE_VERSION );
 #endif
 
 	if ( !AddSystems( appSystems ) ) 
 		return false;
-
-	// SF4 TODO
-	// Windows - See if we need to launch SF4 instead of SF3
-	// When we move entirely to SF4 this can go back in appsystems[] where it used to be
-#if defined( INCLUDE_SCALEFORM )
-   
-	if ( CommandLine()->FindParm( "-sf3" ) )
+	
+	// This will be NULL for games that don't support VR. That's ok. Just don't load the DLL
+	AppModule_t sourceVRModule = LoadModule( "sourcevr" DLL_EXT_STRING );
+	if( sourceVRModule != APP_MODULE_INVALID )
 	{
-		AppSystemInfo_t scaleformInfo[] =
-		{
-			{ LAUNCHER_APPSYSTEM( "scaleformui_3" ),		SCALEFORMUI_INTERFACE_VERSION },
-			{ "", "" }
-		};
-
-		if ( !AddSystems( scaleformInfo ) ) 
-		{
-			return false;
-		}			
+		AddSystem( sourceVRModule, SOURCE_VIRTUAL_REALITY_INTERFACE_VERSION );
 	}
-	else
-	{
-		AppSystemInfo_t scaleformInfo[] =
-		{
-			{ LAUNCHER_APPSYSTEM( "scaleformui" ),		SCALEFORMUI_INTERFACE_VERSION },
-			{ "", "" }
-		};
 
-		if ( !AddSystems( scaleformInfo ) ) 
-			return false;	
-	}
-#endif // INCLUDE_SCALEFORM
-		
+	// pull in our filesystem dll to pull the queued loader from it, we need to do it this way due to the 
+	// steam/stdio split for our steam filesystem
+	char pFileSystemDLL[MAX_PATH];
+	bool bSteam;
+	if ( FileSystem_GetFileSystemDLLName( pFileSystemDLL, MAX_PATH, bSteam ) != FS_OK )
+		return false;
+
+	AppModule_t fileSystemModule = LoadModule( pFileSystemDLL );
+	AddSystem( fileSystemModule, QUEUEDLOADER_INTERFACE_VERSION );
+
 	// Hook in datamodel and p4 control if we're running with -tools
 	if ( IsPC() && ( ( CommandLine()->FindParm( "-tools" ) && !CommandLine()->FindParm( "-nop4" ) ) || CommandLine()->FindParm( "-p4" ) ) )
 	{
-		AppModule_t p4libModule = LoadModule( "p4lib.dll" );
+#ifdef STAGING_ONLY
+		AppModule_t p4libModule = LoadModule( "p4lib" DLL_EXT_STRING );
 		IP4 *p4 = (IP4*)AddSystem( p4libModule, P4_INTERFACE_VERSION );
 		
 		// If we are running with -steam then that means the tools are being used by an SDK user. Don't exit in this case!
@@ -830,22 +720,11 @@ bool CSourceAppSystemGroup::Create()
 		{
 			return false;
 		}
-	}
+#endif // STAGING_ONLY
 
-	if ( IsPC() && IsPlatformWindows() )
-	{
-		AppModule_t vstdlibModule = LoadModule( LAUNCHER_APPSYSTEM( "vstdlib" ) );
+		AppModule_t vstdlibModule = LoadModule( "vstdlib" DLL_EXT_STRING );
 		IProcessUtils *processUtils = ( IProcessUtils* )AddSystem( vstdlibModule, PROCESS_UTILS_INTERFACE_VERSION );
 		if ( !processUtils )
-			return false;
-	}
-
-	if ( CommandLine()->FindParm( "-dev" ) )
-	{
-		// Used to guarantee precache consistency
-		AppModule_t datacacheModule = LoadModule( LAUNCHER_APPSYSTEM( "datacache" ) );
-		IResourceAccessControl *pResourceAccess = (IResourceAccessControl*)AddSystem( datacacheModule, RESOURCE_ACCESS_CONTROL_INTERFACE_VERSION );
-		if ( !pResourceAccess )
 			return false;
 	}
 
@@ -857,32 +736,30 @@ bool CSourceAppSystemGroup::Create()
 	g_pEngineAPI = (IEngineAPI*)FindSystem( VENGINE_LAUNCHER_API_VERSION );
 
 	// Load the hammer DLL if we're in editor mode
+#if defined( _WIN32 ) && defined( STAGING_ONLY )
 	if ( m_bEditMode )
 	{
-		AppModule_t hammerModule = LoadModule( LAUNCHER_APPSYSTEM( "hammer_dll" ) );
+		AppModule_t hammerModule = LoadModule( "hammer_dll" DLL_EXT_STRING );
 		g_pHammer = (IHammer*)AddSystem( hammerModule, INTERFACEVERSION_HAMMER );
 		if ( !g_pHammer )
 		{
 			return false;
 		}
 	}
+#endif // defined( _WIN32 ) && defined( STAGING_ONLY )
 
 	// Load up the appropriate shader DLL
 	// This has to be done before connection.
-	char const *pDLLName = "shaderapidx9" DLL_EXT_STRING;
-	const char* pArg = NULL;
+	char const* pDLLName = "shaderapidx9" DLL_EXT_STRING;
 	if ( CommandLine()->FindParm( "-noshaderapi" ) )
 	{
 		pDLLName = "shaderapiempty" DLL_EXT_STRING;
 	}
-	if ( CommandLine()->CheckParm( "-shaderapi", &pArg ))
-	{
-		pDLLName = pArg;
-	}
+
 	pMaterialSystem->SetShaderAPI( pDLLName );
 
-	elapsed = Plat_FloatTime() - start;
-	COM_TimestampedLog( "CSourceAppSystemGroup::Create() - Took %.4f secs to load libraries and get factories.", (float)elapsed );
+	double elapsed = Plat_FloatTime() - st;
+	COM_TimestampedLog( "LoadAppSystems:  Took %.4f secs to load libraries and get factories.", (float)elapsed );
 
 	return true;
 }
@@ -903,10 +780,6 @@ bool CSourceAppSystemGroup::PreInit()
 	if ( !g_pFullFileSystem || !g_pMaterialSystem )
 		return false;
 
-#ifdef _PS3
-	g_pVJobs = ( IVJobs* )factory( VJOBS_INTERFACE_VERSION, NULL );  // this is done only once; g_pVJobs doesn't change even after multiple reloads of VJobs.prx
-	FileSystem_AddSearchPath_Platform( g_pFullFileSystem, GetGameDirectory() );
-#else // _PS3
 	CFSSteamSetupInfo steamInfo;
 	steamInfo.m_bToolsMode = false;
 	steamInfo.m_bSetSteamDLLPath = false;
@@ -931,15 +804,6 @@ bool CSourceAppSystemGroup::PreInit()
 	if ( FileSystem_MountContent( fsInfo ) != FS_OK )
 		return false;
 
-#if defined( SUPPORT_VPK )
-	Msg( "start timing %f\n", Plat_FloatTime() );
-	char const *pVPKName = CommandLine()->ParmValue( "-vpk" );
-	if ( pVPKName )
-	{
-		fsInfo.m_pFileSystem->AddVPKFile( pVPKName );
-	}
-#endif
-
 	if ( IsPC() || !IsX360() )
 	{
 		fsInfo.m_pFileSystem->AddSearchPath( "platform", "PLATFORM" );
@@ -955,8 +819,8 @@ bool CSourceAppSystemGroup::PreInit()
 		// This will get called multiple times due to being here, but only the first one will do anything
 		reslistgenerator->Init( GetBaseDirectory(), CommandLine()->ParmValue( "-game", "hl2" ) );
 
-		// This MUST get called each time, but will actually fix up the command line as needed
-		reslistgenerator->TickAndFixupCommandLine();
+		// This will also get called each time, but will actually fix up the command line as needed
+		reslistgenerator->SetupCommandLine();
 	}
 
 	// FIXME: Logfiles is mod-specific, needs to move into the engine.
@@ -968,8 +832,6 @@ bool CSourceAppSystemGroup::PreInit()
 		g_pMaterialSystem->EnableEditorMaterials();	
 	}
 
-#endif // !_PS3
-
 	StartupInfo_t info;
 	info.m_pInstance = GetAppInstance();
 	info.m_pBaseDirectory = GetBaseDirectory();
@@ -978,7 +840,9 @@ bool CSourceAppSystemGroup::PreInit()
 	info.m_pParentAppSystemGroup = this;
 	info.m_bTextMode = g_bTextMode;
 
-	return g_pEngineAPI->SetStartupInfo( info );
+	g_pEngineAPI->SetStartupInfo( info );
+
+	return true;
 }
 
 int CSourceAppSystemGroup::Main()
@@ -988,10 +852,8 @@ int CSourceAppSystemGroup::Main()
 
 void CSourceAppSystemGroup::PostShutdown()
 {
-#ifndef _PS3
 	// FIXME: Logfiles is mod-specific, needs to move into the engine.
 	g_LogFiles.Shutdown();
-#endif // _PS3
 
 	reslistgenerator->Shutdown();
 
@@ -1006,7 +868,6 @@ void CSourceAppSystemGroup::Destroy()
 	g_pEngineAPI = NULL;
 	g_pMaterialSystem = NULL;
 	g_pHammer = NULL;
-	g_pVJobs = NULL;
 
 #ifdef WIN32
 	CoUninitialize();
@@ -1038,46 +899,9 @@ const char *CSourceAppSystemGroup::DetermineDefaultGame()
 }
 
 //-----------------------------------------------------------------------------
-// MessageBox for OSX
+// MessageBox for SDL/OSX
 //-----------------------------------------------------------------------------
-#if defined(OSX)
-#include "CoreFoundation/CoreFoundation.h"
-
-int MessageBox( HWND hWnd, const char *message, const char *header, unsigned uType )
-{
-    //convert the strings from char* to CFStringRef
-    CFStringRef header_ref      = CFStringCreateWithCString( NULL, header,     strlen(header)    );
-    CFStringRef message_ref  = CFStringCreateWithCString( NULL, message,  strlen(message) );
-
-    CFOptionFlags result;  //result code from the message box
-  
-    //launch the message box
-    CFUserNotificationDisplayAlert( 0, // no timeout
-                                    kCFUserNotificationNoteAlertLevel, //change it depending message_type flags ( MB_ICONASTERISK.... etc.)
-									NULL, //icon url, use default, you can change it depending message_type flags
-									NULL, //not used
-									NULL, //localization of strings
-									header_ref, //header text 
-									message_ref, //message text
-									NULL, //default "ok" text in button
-									NULL,
-									NULL, //other button title, null--> no other button
-									&result //response flags
-									);
-
-    //Clean up the strings
-    CFRelease( header_ref );
-    CFRelease( message_ref );
-
-    //Convert the result
-    if( result == kCFUserNotificationDefaultResponse )
-        return 0;
-    else
-        return 1;
-
-}
-
-#elif defined( LINUX )
+#if defined( USE_SDL ) && !defined( _WIN32 )
 
 int MessageBox( HWND hWnd, const char *message, const char *header, unsigned uType )
 {
@@ -1092,11 +916,10 @@ int MessageBox( HWND hWnd, const char *message, const char *header, unsigned uTy
 //-----------------------------------------------------------------------------
 #ifdef WIN32
 HANDLE g_hMutex = NULL;
-#elif defined( POSIX )
+#elif defined(POSIX)
 int g_lockfd = -1;
 char g_lockFilename[MAX_PATH];
 #endif
-
 bool GrabSourceMutex()
 {
 #ifdef WIN32
@@ -1114,16 +937,10 @@ bool GrabSourceMutex()
 		// couldn't get the mutex, we must be running another instance
 		::CloseHandle(g_hMutex);
 
-		// If there is a VPROJECT defined, we assume you are a developer and know the risks
-		// of running multiple copies of the engine
-		if ( getenv( "VPROJECT" ) && CommandLine()->FindParm( "-allowmultiple" ) )
-		{
-			return true;
-		}
-
 		return false;
 	}
-#elif defined( POSIX )
+#elif defined(POSIX)
+
 	// Under OSX use flock in /tmp/source_engine_<game>.lock, create the file if it doesn't exist
 	const char *pchGameParam = CommandLine()->ParmValue( "-game", DEFAULT_HL2_GAMEDIR );
 	CRC32_t gameCRC;
@@ -1133,10 +950,10 @@ bool GrabSourceMutex()
 
 #ifdef ANDROID
 	return true;
-#elif defined (LINUX)
+#elif defined (LINUX) || defined(PLATFORM_BSD)
 	/*
 	 * Linux
-	 */
+ 	 */
 
 	// Check TMPDIR environment variable for temp directory.
 	char *tmpdir = getenv( "TMPDIR" );
@@ -1146,7 +963,7 @@ bool GrabSourceMutex()
 	if( !tmpdir || stat( tmpdir, &buf ) || !S_ISDIR ( buf.st_mode ) )
 		tmpdir = "/tmp";
 
-	V_snprintf( g_lockFilename, sizeof(g_lockFilename), "%s/source_engine_%lu.lock", tmpdir, gameCRC );
+	V_snprintf( g_lockFilename, sizeof(g_lockFilename), "%s/source_engine_%u.lock", tmpdir, gameCRC );
 
 	g_lockfd = open( g_lockFilename, O_WRONLY | O_CREAT, 0666 );
 	if ( g_lockfd == -1 )
@@ -1154,11 +971,6 @@ bool GrabSourceMutex()
 		printf( "open(%s) failed\n", g_lockFilename );
 		return false;
 	}
-
-	// In case we have a umask setting creation to something other than 0666,
-	// force it to 0666 so we don't lock other users out of the game if
-	// the game dies etc.
-	fchmod(g_lockfd, 0666);
 
 	struct flock fl;
 	fl.l_type = F_WRLCK;
@@ -1176,9 +988,9 @@ bool GrabSourceMutex()
 #else
 	/*
 	 * OSX
-	 */
+ 	 */
+	V_snprintf( g_lockFilename, sizeof(g_lockFilename), "/tmp/source_engine_%u.lock", gameCRC );
 
-	V_snprintf( g_lockFilename, sizeof(g_lockFilename), "/tmp/source_engine_%lu.lock", gameCRC );
 	g_lockfd = open( g_lockFilename, O_CREAT | O_WRONLY | O_EXLOCK | O_NONBLOCK | O_TRUNC, 0777 );
 	if (g_lockfd >= 0)
 	{
@@ -1187,22 +999,18 @@ bool GrabSourceMutex()
 
 		// we leave the file open, under unix rules when we die we'll automatically close and remove the locks
 		return true;
-	}
+	}   		 
 
 	// We were unable to open the file, it should be because we are unable to retain a lock
 	if ( errno != EWOULDBLOCK)
 	{
 		fprintf( stderr, "unexpected error %d trying to exclusively lock %s\n", errno, g_lockFilename );
-
-		// Let them launch because we don't know what's going on and wouldn't want
-		// to stop them launching.
-		return true;
 	}
 
 	return false;
-#endif	// LINUX
+#endif // OSX
 
-#endif	// POSIX
+#endif // POSIX
 	return true;
 }
 
@@ -1215,12 +1023,12 @@ void ReleaseSourceMutex()
 		::CloseHandle( g_hMutex );
 		g_hMutex = NULL;
 	}
-#elif defined( POSIX )
+#elif defined(POSIX)
 	if ( g_lockfd != -1 )
 	{
 		close( g_lockfd );
 		g_lockfd = -1;
-		unlink( g_lockFilename );
+		unlink( g_lockFilename ); 
 	}
 #endif
 }
@@ -1252,6 +1060,29 @@ void RemoveSpuriousGameParameters()
 	}
 }
 
+/*
+============
+va
+
+does a varargs printf into a temp buffer, so I don't need to have
+varargs versions of all text functions.
+============
+*/
+static char *va( char *format, ... )
+{
+	va_list		argptr;
+	static char	string[8][512];
+	static int	curstring = 0;
+
+	curstring = ( curstring + 1 ) % 8;
+
+	va_start (argptr, format);
+	Q_vsnprintf( string[curstring], sizeof( string[curstring] ), format, argptr );
+	va_end (argptr);
+
+	return string[curstring];  
+}
+
 //-----------------------------------------------------------------------------
 // Purpose: 
 // Input  : *param - 
@@ -1280,7 +1111,7 @@ static char const *Cmd_TranslateFileAssociation(char const *param )
 		FileAssociationInfo& info = g_FileAssociations[ i ];
 
 		if ( ! Q_strcmp( extension, info.extension ) && 
-			! CommandLine()->FindParm(CFmtStr( "+%s", info.command_to_issue ) ) )
+			! CommandLine()->FindParm(va( "+%s", info.command_to_issue ) ) )
 		{
 			// Translate if haven't already got one of these commands			
 			Q_strncpy( sz, temp, sizeof( sz ) );
@@ -1325,7 +1156,7 @@ static const char *BuildCommand()
 			const char *szValue = CommandLine()->ParmValue(szParm);
 			if (szValue)
 			{
-				build.PutString(CFmtStr("%s %s;", szParm+1, szValue));
+				build.PutString(va("%s %s;", szParm+1, szValue));
 				i++;
 			}
 			else
@@ -1351,139 +1182,6 @@ static const char *BuildCommand()
 	return (const char *)build.Base();
 }
 
-DLL_IMPORT CLinkedMiniProfiler *g_pPhysicsMiniProfilers;
-DLL_IMPORT CLinkedMiniProfiler *g_pOtherMiniProfilers;
-
-CLauncherLoggingListener g_LauncherLoggingListener;
-
-
-// #define LOADING_MEMORY_WATCHDOG 100
-
-// This block enables a thread that dumps memory stats at regular 
-// intervals from the moment the thread pool is initialized until the
-// game halts. LOADING_MEMORY_WATCHDOG, if defined, specifies the 
-// interval in milliseconds
-#if LOADING_MEMORY_WATCHDOG 
-namespace
-{
-	/// a thread that's meant to run intermittently at regular intervals
-	class CThreadWatchdog : public CThread
-	{
-	public:
-		CThreadWatchdog( unsigned nIntervalInMilliseconds, const char *pszName, int nAffinity );
-
-		// You will need to call Start() and Stop() on this class externally.
-
-
-
-		// for debugging purposes -- record how long it took the payload to execute. 
-		// (circular buffer of four samples)
-		CCycleCount m_nPayloadTimers[4];
-		unsigned int m_nPayloadTimersNextIdx; //< next timer to write into.
-
-	protected:
-		virtual bool Init();
-
-		// the "run" function for this thread, gets called once every nIntervalInMilliseconds.
-		// return true to keep running, false to stop.
-		virtual bool Payload() = 0;
-
-		unsigned m_nIntervalMsec; /// the watchdog will run once every this many msec
-		int m_nAffinityMask;
-
-	private:
-		// from CThread. !!DO NOT!! override this in inheritors -- your work should be done in Payload().
-		virtual int Run();
-	};
-
-	CThreadWatchdog::CThreadWatchdog( unsigned nIntervalInMilliseconds, const char *pszName, int nAffinity ) : 
-	m_nIntervalMsec(nIntervalInMilliseconds),
-		m_nAffinityMask(nAffinity),
-		m_nPayloadTimersNextIdx(0)
-	{
-		SetName( pszName ); // the thread name must be set before calling Start(), or subsequent thread management calls will crash. I don't know why. That's just what happens.
-	}
-
-	bool CThreadWatchdog::Init()
-	{
-		if (!CThread::Init()) 
-			return false;
-
-		ThreadSetAffinity( GetThreadHandle(), m_nAffinityMask );
-		return true;
-
-	}
-
-	int CThreadWatchdog::Run()
-	{
-		bool bContinue;
-		do 
-		{
-			CFastTimer payloadtime;
-			payloadtime.Start();
-
-			bContinue = Payload();
-
-			payloadtime.End();
-			m_nPayloadTimers[ m_nPayloadTimersNextIdx++ & 3 ] = payloadtime.GetDuration();
-
-			Sleep( m_nIntervalMsec );
-		} while ( bContinue );
-		return 0;
-	}
-
-	class CLoadMemoryWatchdog : public CThreadWatchdog
-	{
-	public:
-		CLoadMemoryWatchdog( unsigned nIntervalInMilliseconds, const char *pszFilename ); // filename is assumed to be into a static COMDAT (don't make it in a temp buffer)
-
-	private:
-		bool Payload();
-
-		const char *m_pszFilename;
-	};
-
-	CLoadMemoryWatchdog::CLoadMemoryWatchdog( unsigned nIntervalInMilliseconds, const char *pszFilename ) : 
-	CThreadWatchdog( nIntervalInMilliseconds, "LoadMemWatchdog", IsX360() ? XBOX_CORE_0_HWTHREAD_1 : 0 ),
-		m_pszFilename(pszFilename)
-	{	
-	}
-
-	bool CLoadMemoryWatchdog::Payload()
-	{
-		g_pMemAlloc->DumpStatsFileBase( m_pszFilename );
-		return true;
-	}
-
-	CLoadMemoryWatchdog g_MemWatchdog( LOADING_MEMORY_WATCHDOG, "loadingmemory" );
-}
-#endif
-
-// this class automatically handles the initialization and uninitialization
-// of the vpbdm library. It's RAII because we absolutely positively have
-// to guarantee that the library cleans up after itself on shutdown, 
-// even if we early out of LauncherMain.
-#ifdef _PS3
-class ValvePS3ConsoleInitializerRAII
-{
-public:
-	ValvePS3ConsoleInitializerRAII( bool bDvdDev, bool bSpewDllInfo, bool bWaitForConsole ) 
-	{
-#pragma message("TODO: bdvddev / spewdllinfo / wait for console")
-		ValvePS3ConsoleInit( );	
-		if ( g_pValvePS3Console )
-		{
-		g_pValvePS3Console->InitConsoleMonitor( bWaitForConsole );
-	}
-	}
-
-	~ValvePS3ConsoleInitializerRAII()
-	{
-		ValvePS3ConsoleShutdown();
-	}
-};
-#endif
-
 extern void InitGL4ES();
 
 //-----------------------------------------------------------------------------
@@ -1495,35 +1193,30 @@ extern void InitGL4ES();
 // Output : int APIENTRY
 //-----------------------------------------------------------------------------
 #ifdef WIN32
-extern "C" __declspec(dllexport) int LauncherMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow )
-#elif defined( _PS3 )
-int LauncherMain( int argc, char **argv )
+DLL_EXPORT int LauncherMain( HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow )
 #else
-extern "C" DLL_EXPORT int LauncherMain( int argc, char **argv )
+DLL_EXPORT int LauncherMain( int argc, char **argv )
 #endif
 {
-#ifdef WIN32
-	SetAppInstance( hInstance );
-#endif
-
-#if defined LINUX && !defined ANDROID
-	//  fix to stop us from crashing in printf/sscanf functions that don't expect
+#if (defined(LINUX) || defined(PLATFORM_BSD)) && !defined ANDROID
+	// Temporary fix to stop us from crashing in printf/sscanf functions that don't expect
 	//  localization to mess with your "." and "," float seperators. Mac OSX also sets LANG
 	//  to en_US.UTF-8 before starting up (in info.plist I believe).
 	// We need to double check that localization for libcef is handled correctly
 	//  when we slam things to en_US.UTF-8.
 	// Also check if C.UTF-8 exists and use it? This file: /usr/lib/locale/C.UTF-8.
 	// It looks like it's only installed on Debian distros right now though.
-        const char en_US[] = "en_US.UTF-8";
+	const char en_US[] = "en_US.UTF-8";
 
-        setenv( "LC_ALL", en_US, 1 );
-        setlocale( LC_ALL, en_US );
+	setenv( "LC_ALL", en_US, 1 );
+	setlocale( LC_ALL, en_US );
 
-        const char *CurrentLocale = setlocale( LC_ALL, NULL );
-        if ( Q_stricmp( CurrentLocale, en_US ) )
-        {
-                Warning( "WARNING: setlocale('%s') failed, using locale:'%s'. International characters may not work.\n", en_US, CurrentLocale );
-        }
+	const char *CurrentLocale = setlocale( LC_ALL, NULL );
+	if ( Q_stricmp( CurrentLocale, en_US ) )
+	{
+		Msg( "WARNING: setlocale('%s') failed, using locale:'%s'. International characters may not work.\n", en_US, CurrentLocale );
+	}
+
 #endif // LINUX
 
 #ifdef USE_SDL
@@ -1536,114 +1229,91 @@ extern "C" DLL_EXPORT int LauncherMain( int argc, char **argv )
 	SDL_SetHint(SDL_HINT_VIDEO_X11_FORCE_EGL, "1");
 #endif
 
-	// Hook the debug output stuff.
-	LoggingSystem_RegisterLoggingListener( &g_LauncherLoggingListener );
+#ifdef WIN32
+	SetAppInstance( hInstance );
+#elif defined( POSIX )
+	// Store off command line for argument searching
+	Plat_SetCommandLine( BuildCmdLine( argc, argv, false ) );
 
-#ifndef _PS3
+	if( CommandLine()->CheckParm( "-sleepatstartup" ) )
+	{
+		// When launching from Steam, it can be difficult to get a debugger attached when you're
+		//	crashing quickly at startup. So add a -sleepatstartup command line and sleep for 5
+		//	seconds which should allow time to attach a debugger.
+		sleep( 5 );
+	}
+#endif
+
+	// Hook the debug output stuff.
+	SpewOutputFunc( LauncherDefaultSpewFunc );
+
 	// Quickly check the hardware key, essentially a warning shot.  
 	if ( !Plat_VerifyHardwareKeyPrompt() )
 	{
 		return -1;
 	}
-#endif // !_PS3
-
+	
+	const char *filename;
 #ifdef WIN32
-	CommandLine()->CreateCmdLine( IsPC() ? GetCommandLine() : lpCmdLine );
+	CommandLine()->CreateCmdLine( IsPC() ? VCRHook_GetCommandLine() : lpCmdLine );
 #else
 	CommandLine()->CreateCmdLine( argc, argv );
 #endif
 
-#if defined (PLATFORM_OSX) || defined (WIN32)
-	// No -dxlevel or +mat_hdr_level allowed in CSGO
+	// No -dxlevel or +mat_hdr_level allowed on POSIX
+#ifdef POSIX	
 	CommandLine()->RemoveParm( "-dxlevel" );
 	CommandLine()->RemoveParm( "+mat_hdr_level" );
 	CommandLine()->RemoveParm( "+mat_dxlevel" );
 #endif
 
-#ifndef _PS3
+	// If we're using -default command line parameters, get rid of DX8 settings. 
+	if ( CommandLine()->CheckParm( "-default" ) )
+	{
+		CommandLine()->RemoveParm( "-dxlevel" );
+		CommandLine()->RemoveParm( "-maxdxlevel" );
+		CommandLine()->RemoveParm( "+mat_dxlevel" );
+	}
+	
 	// Figure out the directory the executable is running from
 	UTIL_ComputeBaseDir();
-#endif // _PS3
-
-#if defined (CSTRIKE15)
-
-	// GS - If we didn't specify a game name then default to CSGO
-	// This is required for running from a HDD Boot Game package
-	if ( CommandLine()->CheckParm( "-game") == NULL )
-	{
-		CommandLine()->AppendParm( "-game", "csgo" );
-	}
-
-#if defined _PS3
-
-	if ( g_pPS3PathInfo->BootType() == CELL_GAME_GAMETYPE_HDD )
-	{
-		CommandLine()->AppendParm( "+sv_search_key", "testlab" );
-		CommandLine()->AppendParm( "-steamBeta", "");
-	}
-
-#endif
-
-#endif
-
-	bool bDvdDev, bSpewDllInfo, bWaitForConsole;
-	bDvdDev         = CommandLine()->CheckParm( "-dvddev"    ) != NULL;
-	bSpewDllInfo    = CommandLine()->CheckParm( "-dllinfo"   ) != NULL;
-	bWaitForConsole = CommandLine()->CheckParm( "-vxconsole" ) != NULL;
 
 #if defined( _X360 )
+	bool bSpewDllInfo = CommandLine()->CheckParm( "-dllinfo" );
+	bool bWaitForConsole = CommandLine()->CheckParm( "-vxconsole" );
 	XboxConsoleInit();
-	// sync block until vxconsole responds
-	XBX_InitConsoleMonitor( bWaitForConsole || bSpewDllInfo || bDvdDev );
-	if ( bDvdDev )
-	{
-		// just launched, signal vxconsole to sync the dvddev cache before any files get accessed
-		XBX_rSyncDvdDevCache();
-	}
-#elif defined( _PS3 )
-	ValvePS3ConsoleInitializerRAII VXBDM( bDvdDev, bSpewDllInfo, bWaitForConsole );	
+	XBX_InitConsoleMonitor( bWaitForConsole || bSpewDllInfo );
 #endif
 
-#if LOADING_MEMORY_WATCHDOG 
-	g_MemWatchdog.Start();
-#endif
 
 #if defined( _X360 )
 	if ( bWaitForConsole )
-	{
 		COM_TimestampedLog( "LauncherMain: Application Start - %s", CommandLine()->GetCmdLine() );
-	}
 	if ( bSpewDllInfo )
 	{	
 		XBX_DumpDllInfo( GetBaseDirectory() );
 		Error( "Stopped!\n" );
 	}
 
-	int storageIDs[4];
-	XboxLaunch()->GetStorageID( storageIDs );
-	for ( int k = 0; k < 4; ++ k )
+	int storageID = XboxLaunch()->GetStorageID();
+	if ( storageID != XBX_INVALID_STORAGE_ID && storageID != XBX_STORAGE_DECLINED )
 	{
-		DWORD storageID = storageIDs[k];
-		if ( XBX_DescribeStorageDevice( storageID ) )
+		// Validate the storage device
+		XDEVICE_DATA deviceData;
+		DWORD ret = XContentGetDeviceData( storageID, &deviceData );
+		if ( ret != ERROR_SUCCESS )
 		{
-			// Validate the storage device
-			XDEVICE_DATA deviceData;
-			DWORD ret = XContentGetDeviceData( storageID, &deviceData );
-			if ( ret != ERROR_SUCCESS )
-			{
-				// Device was removed
-				storageID = XBX_INVALID_STORAGE_ID;
-				XBX_QueueEvent( XEV_LISTENER_NOTIFICATION, WM_SYS_STORAGEDEVICESCHANGED, 0, 0 );
-			}
+			// Device was removed
+			storageID = XBX_INVALID_STORAGE_ID;
+			XBX_QueueEvent( XEV_LISTENER_NOTIFICATION, WM_SYS_STORAGEDEVICESCHANGED, 0, 0 );
 		}
-		XBX_SetStorageDeviceId( k, storageID );
 	}
+	XBX_SetStorageDeviceId( storageID );
 
 	int userID = XboxLaunch()->GetUserID();
-	userID = XBX_INVALID_USER_ID;			// TODO: currently game cannot recover from a restart with users signed-in
-	if ( userID == XBX_INVALID_USER_ID )
+	if ( !IsRetail() && userID == XBX_INVALID_USER_ID )
 	{
-		// didn't come from restart, start up with guest settings
+		// didn't come from appchooser, try find a valid user id for dev purposes
 		XUSER_SIGNIN_INFO info;
 		for ( int i = 0; i < 4; ++i )
 		{
@@ -1653,34 +1323,11 @@ extern "C" DLL_EXPORT int LauncherMain( int argc, char **argv )
 				break;
 			}
 		}
-
-		XBX_SetNumGameUsers( 0 );
-		XBX_SetPrimaryUserId( XBX_INVALID_USER_ID );
-		XBX_ResetUserIdSlots();
-		XBX_SetPrimaryUserIsGuest( 1 );
 	}
-	else
-	{
-		int numGameUsers;
-		char slot2ctrlr[4];
-		char slot2guest[4];
-		XboxLaunch()->GetSlotUsers( numGameUsers, slot2ctrlr, slot2guest );
-
-		XBX_SetNumGameUsers( numGameUsers );
-		XBX_SetPrimaryUserId( userID );
-		if ( numGameUsers == 1 && slot2guest[0] == 1 )
-			XBX_SetPrimaryUserIsGuest( 1 );
-		else
-			XBX_SetPrimaryUserIsGuest( 0 );
-
-		for ( int k = 0; k < 4; ++ k )
-		{
-			XBX_SetUserId( k, slot2ctrlr[k] );
-			XBX_SetUserIsGuest( k, slot2guest[k] );
-		}
-	}
-
-#ifdef PLATFORM_OSX
+	XBX_SetPrimaryUserId( userID );
+#endif // defined( _X360 )
+	
+#ifdef POSIX
 	{
 		struct stat st;
 		if ( stat( RELAUNCH_FILE, &st ) == 0 ) 
@@ -1690,81 +1337,28 @@ extern "C" DLL_EXPORT int LauncherMain( int argc, char **argv )
 	}
 #endif
 
-	DevMsg( "[X360 LAUNCH] Started with the following payload:\n" );
-	DevMsg( "              Num Game Users   = %d\n", XBX_GetNumGameUsers() );
-	for ( int k = 0; k < XUSER_MAX_COUNT; ++ k )
-	{
-		DevMsg( "              Storage Device %d = 0x%08X\n", XBX_GetStorageDeviceId( k ) );
-	}
-#endif
-
-	// check for a named executable
-	const char *exeFilename = GetExecutableFilename();
-	if ( !IsGameConsole() && exeFilename[0] && Q_strcmp( exeFilename, "hl2" ) && !CommandLine()->FindParm( "-game" ) )
-	{
-		CommandLine()->RemoveParm( "-game" );
-		CommandLine()->AppendParm( "-game", exeFilename );
-	}
-
-	// Uncomment the following code to allow multiplayer on the Xbox 360 for trade shows.
-#if 0
-#if defined( CSTRIKE15 ) && defined( _X360 ) && !defined( _CERT )
-	if ( CommandLine()->FindParm( "-xnet_bypass_security" ) == 0 )
-	{
-		CommandLine()->AppendParm( "-xnet_bypass_security", "" );
-		Warning( "adding -xnet_bypass_security to command line. Remove this for shipping!\n" );
-	}
-
-	if ( CommandLine()->FindParm( "-demo_pressbuild_play_addr" ) == 0 )
-	{
-		CommandLine()->AppendParm( "-demo_pressbuild_play_addr", "192.168.1.100:27015" );
-		Warning( "adding -demo_pressbuild_play_addr to command line. Remove this for shipping!\n" );
-	}
-#endif
-#endif
-
-#ifdef SIXENSE
-	// If the game arg is currently portal2
-	char const *game_param_val = NULL;
-	CommandLine()->CheckParm( "-game", &game_param_val );
-
-	if( game_param_val && !Q_strcmp( game_param_val, "portal2" ) )
-	{
-		// and if there is a portal2_sixense dir that contains a valid gameinfo.txt, then override the game parameter to use that instead
-		if( !CommandLine()->CheckParm( "-nosixense" ) && DoesFileExistIn( ".", "portal2_sixense/gameinfo.txt" ) ) 
-		{
-			CommandLine()->RemoveParm( "-game" );
-			CommandLine()->AppendParm( "-game", "portal2_sixense" );
-		}
-	}
-#endif
-
-#ifdef _PS3
-	if ( CommandLine()->CheckParm( "-dvddev" ) &&
-		!CommandLine()->CheckParm( "-basedir" ) )
-	{
-		CommandLine()->AppendParm( "-basedir", g_pPS3PathInfo->GameImagePath() );
-	}
-#endif
-	
-#ifndef _CERT
-	if ( CommandLine()->CheckParm( "-tslist" ) )
-	{
-		//TestThreads(1);
-		int nTests = 10000;
-		DevMsg("Running TSList tests\n");
-		RunTSListTests( nTests );
-		DevMsg("Running TSQueue tests\n");
-		RunTSQueueTests( nTests );
-		DevMsg("Running Thread Pool tests\n");
-		RunThreadPoolTests();
-	}
-#endif
-
 	// This call is to emulate steam's injection of the GameOverlay DLL into our process if we
 	// are running from the command line directly, this allows the same experience the user gets
 	// to be present when running from perforce, the call has no effect on X360
 	TryToLoadSteamOverlayDLL();
+
+	// Start VCR mode?
+	if ( CommandLine()->CheckParm( "-vcrrecord", &filename ) )
+	{
+		if ( !VCRStart( filename, true, &g_VCRHelpers ) )
+		{
+			Error( "-vcrrecord: can't open '%s' for writing.\n", filename );
+			return -1;
+		}
+	}
+	else if ( CommandLine()->CheckParm( "-vcrplayback", &filename ) )
+	{
+		if ( !VCRStart( filename, false, &g_VCRHelpers ) )
+		{
+			Error( "-vcrplayback: can't open '%s' for reading.\n", filename );
+			return -1;
+		}
+	}
 
 	// See the function for why we do this.
 	RemoveSpuriousGameParameters();
@@ -1782,29 +1376,23 @@ extern "C" DLL_EXPORT int LauncherMain( int argc, char **argv )
 	}
 #endif
 
- 	// Run in text mode? (No graphics or sound).
- 	if ( CommandLine()->CheckParm( "-textmode" ) )
- 	{
-#if defined( DEVELOPMENT_ONLY ) || defined( ALLOW_TEXT_MODE )
- 		g_bTextMode = true;
- 		InitTextMode();
-#endif
- 	}
-#ifdef WIN32
-
-#if defined( DEBUG ) && defined( ALLOW_MULTI_CLIENTS_PER_MACHINE )
-	else if ( true )
+	// Run in text mode? (No graphics or sound).
+	if ( CommandLine()->CheckParm( "-textmode" ) )
 	{
-		Warning("Skipping multiple clients from one machine check! Don't ship this way!\n");
+		g_bTextMode = true;
+		InitTextMode();
 	}
-#endif
-
-	else if ( !IsX360() )
+#ifdef WIN32
+	else
 	{
 		int retval = -1;
 		// Can only run one windowed source app at a time
 		if ( !GrabSourceMutex() )
 		{
+			// Allow the user to explicitly say they want to be able to run multiple instances of the source mutex.
+			// Useful for side-by-side comparisons of different renderers.
+			bool multiRun = CommandLine()->CheckParm( "-multirun" ) != NULL;
+
 			// We're going to hijack the existing session and load a new savegame into it. This will mainly occur when users click on links in Bugzilla that will automatically copy saves and load them
 			// directly from the web browser. The -hijack command prevents the launcher from objecting that there is already an instance of the game.
 			if (CommandLine()->CheckParm( "-hijack" ))
@@ -1842,10 +1430,14 @@ extern "C" DLL_EXPORT int LauncherMain( int argc, char **argv )
 			}
 			else
 			{
-				::MessageBox(NULL, "Only one instance of the game can be running at one time.", "Source - Warning", MB_ICONINFORMATION | MB_OK);
+				if (!multiRun) {
+					::MessageBox(NULL, "Only one instance of the game can be running at one time.", "Source - Warning", MB_ICONINFORMATION | MB_OK);
+				}
 			}
 
-			return retval;
+			if (!multiRun) {
+				return retval;
+			}
 		}
 	}
 #elif defined( POSIX )
@@ -1859,40 +1451,28 @@ extern "C" DLL_EXPORT int LauncherMain( int argc, char **argv )
 	}
 #endif
 
-	if ( !IsX360() )
-	{
 #ifdef WIN32
-		// Make low priority?
-		if ( CommandLine()->CheckParm( "-low" ) )
-		{
-			SetPriorityClass( GetCurrentProcess(), IDLE_PRIORITY_CLASS );
-		}
-		else if ( CommandLine()->CheckParm( "-high" ) )
-		{
-			SetPriorityClass( GetCurrentProcess(), HIGH_PRIORITY_CLASS );
-		}
+	// Make low priority?
+	if ( CommandLine()->CheckParm( "-low" ) )
+	{
+		SetPriorityClass( GetCurrentProcess(), IDLE_PRIORITY_CLASS );
+	}
+	else if ( CommandLine()->CheckParm( "-high" ) )
+	{
+		SetPriorityClass( GetCurrentProcess(), HIGH_PRIORITY_CLASS );
+	}
 #endif
 
-		// If game is not run from Steam then add -insecure in order to avoid client timeout message
-		if ( NULL == CommandLine()->CheckParm( "-steam" ) )
-		{
-			CommandLine()->AppendParm( "-insecure", NULL );
-		}
+	// If game is not run from Steam then add -insecure in order to avoid client timeout message
+	if ( NULL == CommandLine()->CheckParm( "-steam" ) )
+	{
+		CommandLine()->AppendParm( "-insecure", NULL );
 	}
 
-#ifndef _PS3
 	// Figure out the directory the executable is running from
 	// and make that be the current working directory
-	// on the PS3, however, there is no concept of current directories
-	_chdir( GetBaseDirectory() );
-#endif
 
-	// When building cubemaps, we don't need sound and can't afford to have async I/O - cubemap writes to the BSP can collide with async bsp reads
-	if ( CommandLine()->CheckParm( "-buildcubemaps") )
-	{
-		CommandLine()->AppendParm( "-nosound", NULL );
-		CommandLine()->AppendParm( "-noasync", NULL );
-	}
+	_chdir( GetBaseDirectory() );
 
 	g_LeakDump.m_bCheckLeaks = CommandLine()->CheckParm( "-leakcheck" ) ? true : false;
 
@@ -1903,20 +1483,8 @@ extern "C" DLL_EXPORT int LauncherMain( int argc, char **argv )
 
 		CSourceAppSystemGroup sourceSystems;
 		CSteamApplication steamApplication( &sourceSystems );
-#if defined( OSX ) && !defined( USE_SDL )
-		extern int ValveCocoaMain( CAppSystemGroup *pApp );
-		int nRetval = ValveCocoaMain( &steamApplication ); 
-#else
 		int nRetval = steamApplication.Run();
-#endif		
-#if ENABLE_HARDWARE_PROFILER 
-		// Hack fix, causes memory leak, but prevents crash due to bad coding not doing proper teardown
-		// need to ensure these list anchors don't anchor stale pointers
-		g_pPhysicsMiniProfilers = NULL;
-		g_pOtherMiniProfilers = NULL;
-#endif
-
-		if ( steamApplication.GetCurrentStage() == CSourceAppSystemGroup::INITIALIZATION )
+		if ( steamApplication.GetErrorStage() == CSourceAppSystemGroup::INITIALIZATION )
 		{
 			bRestart = (nRetval == INIT_RESTART);
 		}
@@ -1945,6 +1513,7 @@ extern "C" DLL_EXPORT int LauncherMain( int argc, char **argv )
 			CommandLine()->RemoveParm( "-window" );
 			CommandLine()->RemoveParm( "-full" );
 			CommandLine()->RemoveParm( "-fullscreen" );
+			CommandLine()->RemoveParm( "-dxlevel" );
 			CommandLine()->RemoveParm( "-autoconfig" );
 			CommandLine()->RemoveParm( "+mat_hdr_level" );
 		}
@@ -1965,7 +1534,8 @@ extern "C" DLL_EXPORT int LauncherMain( int argc, char **argv )
 	// Allow other source apps to run
 	ReleaseSourceMutex();
 
-#if	defined( WIN32 )  && !defined( _X360 )
+#if defined( WIN32 ) && !defined( _X360 )
+
 	// Now that the mutex has been released, check HKEY_CURRENT_USER\Software\Valve\Source\Relaunch URL. If there is a URL here, exec it.
 	// This supports the capability of immediately re-launching the the game via Steam in a different audio language 
 	HKEY hKey; 
@@ -1982,7 +1552,8 @@ extern "C" DLL_EXPORT int LauncherMain( int argc, char **argv )
 
 		RegCloseKey(hKey);
 	}
-#elif defined( OSX )
+
+#elif defined( OSX ) || defined( LINUX ) || defined(PLATFORM_BSD)
 	struct stat st;
 	if ( stat( RELAUNCH_FILE, &st ) == 0 ) 
 	{
@@ -1993,14 +1564,26 @@ extern "C" DLL_EXPORT int LauncherMain( int argc, char **argv )
 			int nChars = fread( szCmd, 1, sizeof(szCmd), fp );
 			if ( nChars > 0 )
 			{
+				if ( nChars > (sizeof(szCmd)-1) )
+				{
+					nChars = (sizeof(szCmd)-1);
+				}
+				szCmd[nChars] = 0;
 				char szOpenLine[ MAX_PATH ];
-				Q_snprintf( szOpenLine, sizeof(szOpenLine), "open \"%s\"", szCmd );
+				#if defined( LINUX ) || defined(PLATFORM_BSD)
+					Q_snprintf( szOpenLine, sizeof(szOpenLine), "xdg-open \"%s\"", szCmd );
+				#else
+					Q_snprintf( szOpenLine, sizeof(szOpenLine), "open \"%s\"", szCmd );
+				#endif
 				system( szOpenLine );
 			}
 			fclose( fp );
 			unlink( RELAUNCH_FILE );
 		}
 	}
+#elif defined( _X360 )
+#else
+#error
 #endif
 
 	return 0;
