@@ -34,6 +34,10 @@
 #include <vgui_controls/TextEntry.h>
 #include <vgui_controls/Controls.h>
 #include <vgui_controls/MenuItem.h>
+
+#if defined( USE_SDL )
+#include <SDL.h>
+#endif
 // memdbgon must be the last include file in a .cpp file!!!
 #include <tier0/memdbgon.h>
 
@@ -1511,7 +1515,11 @@ void TextEntry::OnMousePressed(MouseCode code)
 			BaseClass::OnMousePressed( code );
 			return;
 		}
-		
+
+#ifdef USE_SDL
+		SDL_StartTextInput();
+#endif
+
 		// move the cursor to where the mouse was pressed
 		int x, y;
 		input()->GetCursorPos(x, y);
