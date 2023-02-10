@@ -50,7 +50,7 @@ void CInputSystem::InitializeTouch( void )
 	// abort startup if user requests no touch
 	if ( CommandLine()->FindParm("-notouch") ) return;
 
-	m_nJoystickCount = 1;
+	m_nJoystickCount += 1;
 
 	SDL_AddEventWatch(TouchSDLWatcher, this);
 }
