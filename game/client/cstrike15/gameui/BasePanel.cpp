@@ -1252,7 +1252,7 @@ void CBaseModPanel::OnLevelLoadingFinished()
 	if ( GetViewPortInterface() )
 	{
 		GetViewPortInterface()->ShowPanel( PANEL_ALL, false );
-		GetViewPortInterface()->UpdateAllPanels();
+		//GetViewPortInterface()->UpdateAllPanels();
 	}
 }
 

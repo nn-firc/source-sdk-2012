@@ -612,7 +612,7 @@ bool UseOptimalBufferAllocation()
 	static bool bUseOptimalBufferAllocation = ( IsX360() || ( !IsPosix() && Q_stristr( Plat_GetCommandLine(), "-unbuffered_io" ) != NULL ) );
 	return bUseOptimalBufferAllocation;
 }
-ConVar filesystem_unbuffered_io( "filesystem_unbuffered_io", "1", 0, "" );
+ConVar filesystem_unbuffered_io( "filesystem_unbuffered_io", "0", 0, "" );
 #define UseUnbufferedIO() ( UseOptimalBufferAllocation() && filesystem_unbuffered_io.GetBool() )
 
 ConVar filesystem_native( "filesystem_native", "1", 0, "Use native FS or STDIO" );

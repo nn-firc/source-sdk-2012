@@ -114,7 +114,7 @@ void WorldStaticMeshCreate( void );
 void WorldStaticMeshDestroy( void );
 int GetScreenAspectMode( int width, int height );
 
-ConVar	r_norefresh( "r_norefresh","0");
+ConVar	r_norefresh( "r_norefresh","1");
 ConVar	r_decals( "r_decals", "2048" );
 
 ConVar	r_lightmap( "r_lightmap", "-1", FCVAR_CHEAT | FCVAR_MATERIAL_SYSTEM_THREAD );

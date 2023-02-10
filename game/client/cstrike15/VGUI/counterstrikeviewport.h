@@ -28,8 +28,6 @@ class CCSClientScoreBoard;
 class CBuyMenu;
 class CCSClientScoreBoardDialog;
 
-void PrintBuyTimeOverMessage( void );
-
 //==============================================================================
 class CounterStrikeViewport : public CBaseViewport
 {
@@ -51,35 +49,9 @@ public:
 	{
 		m_pBackGround->SetVisible( false );	// CS:S menus paint their own backgrounds...
 	}
-	//=============================================================================
-	// HPE_BEGIN:
-	// [mhansen] We want to let the team screen know if this is the first time
-	// we chose a team so we can decide what the "back" action is
-	//=============================================================================
-	bool GetChoseTeamAndClass() { return m_bChoseTeamAndClass; }
-	void SetChoseTeamAndClass( bool chose ) { m_bChoseTeamAndClass = chose; }
-	//=============================================================================
-	// HPE_END
-	//=============================================================================
-
-	virtual void FireGameEvent( IGameEvent * event );
-
-	virtual void UpdateAllPanels( void );
-
-
 
 private:
 	void CenterWindow( vgui::Frame *win );
-
-	//=============================================================================
-	// HPE_BEGIN:
-	// [mhansen] We want to let the team screen know if this is the first time
-	// we chose a team so we can decide what the "back" action is
-	//=============================================================================
-	bool m_bChoseTeamAndClass;
-	//=============================================================================
-	// HPE_END
-	//=============================================================================
 };
 
 

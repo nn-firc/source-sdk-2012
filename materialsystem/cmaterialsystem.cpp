@@ -51,7 +51,7 @@
 ConVar mat_debugalttab( "mat_debugalttab", "0", FCVAR_CHEAT );
 ConVar gpu_level( "gpu_level", "3", 0, "GPU Level - Default: High" );
 ConVar mat_force_vertexfog( "mat_force_vertexfog", "0", FCVAR_DEVELOPMENTONLY );
-static ConVar mat_forcemanagedtextureintohardware( "mat_forcemanagedtextureintohardware", "1", FCVAR_CHEAT | FCVAR_DEVELOPMENTONLY );
+static ConVar mat_forcemanagedtextureintohardware( "mat_forcemanagedtextureintohardware", "0", FCVAR_CHEAT | FCVAR_DEVELOPMENTONLY );
 ConVar mat_supportflashlight( "mat_supportflashlight", "-1", FCVAR_CHEAT | FCVAR_DEVELOPMENTONLY, "0 - do not support flashlight (don't load flashlight shader combos), 1 - flashlight is supported" );
 // Default this to zero for the press playtest!
 static ConVar mat_forcehardwaresync( "mat_forcehardwaresync", /* IsPC() ? "1" : */ "0" );

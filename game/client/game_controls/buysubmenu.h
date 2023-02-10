@@ -13,7 +13,7 @@
 
 #include <vgui_controls/WizardSubPanel.h>
 #include <vgui_controls/Button.h>
-#include <UtlVector.h>
+#include <utlvector.h>
 #include "mouseoverpanelbutton.h"
 
 class CBuyMenu;

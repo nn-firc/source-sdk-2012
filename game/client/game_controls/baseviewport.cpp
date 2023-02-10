@@ -169,6 +169,24 @@ CBaseViewport::CBaseViewport() : vgui::EditablePanel( NULL, "CBaseViewport" )
 	SetKeyBoardInputEnabled( false );
 	SetMouseInputEnabled( false );
 
+	SetScheme( "ClientScheme" );
+	SetProportional( true );
+
+	m_pAnimController = new vgui::AnimationController(this);
+	// create our animation controller
+	m_pAnimController->SetScheme( GetScheme() );
+	m_pAnimController->SetProportional(true);
+
+	// Attempt to load all hud animations
+	if ( LoadHudAnimations() == false )
+	{
+		// Fall back to just the main
+		if ( m_pAnimController->SetScriptFile( GetVPanel(), "scripts/HudAnimations.txt", true ) == false )
+		{
+			Assert(0);
+		}
+	}
+
 	m_pBackGround = NULL;
 
 	m_bHasParent = false;
@@ -604,28 +622,7 @@ void CBaseViewport::Start( IGameUIFuncs *pGameUIFuncs, IGameEventManager2 * pGam
 
 	ListenForGameEvent( "game_newmap" );
 
-	SetScheme( "ClientScheme" );
-	SetProportional( true );
-
-	if ( !IsFullscreenViewport() )
-	{
-		CreateDefaultPanels();
-	}
-
-	m_pAnimController = new vgui::AnimationController(this);
-	// create our animation controller
-	m_pAnimController->SetScheme( GetScheme() );
-	m_pAnimController->SetProportional(true);
-
-	// Attempt to load all hud animations
-	if ( LoadHudAnimations() == false )
-	{
-		// Fall back to just the main
-		if ( m_pAnimController->SetScriptFile( GetVPanel(), "scripts/HudAnimations.txt", true ) == false )
-		{
-			Assert(0);
-		}
-	}
+	CreateDefaultPanels();
 
 	m_bInitialized = true;
 }

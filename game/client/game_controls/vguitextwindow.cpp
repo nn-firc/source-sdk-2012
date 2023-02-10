@@ -633,37 +633,6 @@ void CTextWindow::ShowPanel( bool bShow )
 {
 	g_pInputSystem->SetSteamControllerMode( bShow ? "MenuControls" : NULL, this );
 
-	if (bShow) 
-		return;
-
-	if ( BaseClass::IsVisible() == bShow )
-		return;
-
-	m_pViewPort->ShowBackGround( bShow );
-
-	ShowHtmlString( sBrowserClose );
-	SetVisible( false );
-	SetMouseInputEnabled( false );
-	GetHud(0).EnableHud();
-
-	if ( !bShow && ( Plat_FloatTime() - m_dblTimeExecutedExitCommand > 1.0 ) )
-	{	// If something is trying to hide us and it's not because user clicked
-		// the OKAY button, then trigger the commands associated with OKAY button
-		m_bForcingWindowCloseRegardlessOfTime = true;
-		OnCommand( "okay" );
-	}
-
-	// reset motd
-	m_bHasMotd = false;
-}
-
-void CTextWindow::ShowPanel2( bool bShow )
-{
-	if ( (CSGameRules() && CSGameRules()->IsQueuedMatchmaking()) || sv_disable_motd.GetBool() )
-		bShow = false;
-
-	g_pInputSystem->SetSteamControllerMode( bShow ? "MenuControls" : NULL, this );
-
 	if ( BaseClass::IsVisible() == bShow )
 		return;
 
@@ -690,7 +659,20 @@ void CTextWindow::ShowPanel2( bool bShow )
 	}
 	else
 	{
-		ShowPanel( false );
+		ShowHtmlString( sBrowserClose );
+		SetVisible( false );
+		SetMouseInputEnabled( false );
+		GetHud(0).EnableHud();
+
+		if ( Plat_FloatTime() - m_dblTimeExecutedExitCommand > 1.0 )
+		{	// If something is trying to hide us and it's not because user clicked
+			// the OKAY button, then trigger the commands associated with OKAY button
+			m_bForcingWindowCloseRegardlessOfTime = true;
+			OnCommand( "okay" );
+		}
+
+		// reset motd
+		m_bHasMotd = false;
 	}
 }
 

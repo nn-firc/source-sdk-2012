@@ -180,7 +180,7 @@ ConVar sv_footstep_sound_frequency( "sv_footstep_sound_frequency", "0.97", FCVAR
 #endif
 
 #ifdef CLIENT_DLL
-ConVar mp_usehwmmodels( "mp_usehwmmodels", "0", NULL, "Enable the use of the hw morph models. (-1 = never, 1 = always, 0 = based upon GPU)" ); // -1 = never, 0 = if hasfastvertextextures, 1 = always
+ConVar mp_usehwmmodels( "mp_usehwmmodels", "-1", NULL, "Enable the use of the hw morph models. (-1 = never, 1 = always, 0 = based upon GPU)" ); // -1 = never, 0 = if hasfastvertextextures, 1 = always
 #endif
 
 extern ConVar sv_turbophysics;

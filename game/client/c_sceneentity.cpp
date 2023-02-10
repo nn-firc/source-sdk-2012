@@ -91,7 +91,7 @@ char const *C_SceneEntity::GetSceneFileName()
 }
 
 
-ConVar mp_usehwmvcds( "mp_usehwmvcds", "0", NULL, "Enable the use of the hw morph vcd(s). (-1 = never, 1 = always, 0 = based upon GPU)" ); // -1 = never, 0 = if hasfastvertextextures, 1 = always
+ConVar mp_usehwmvcds( "mp_usehwmvcds", "-1", NULL, "Enable the use of the hw morph vcd(s). (-1 = never, 1 = always, 0 = based upon GPU)" ); // -1 = never, 0 = if hasfastvertextextures, 1 = always
 ConVar scene_vcdautosave( "scene_vcdautosave", "0", 0, "Create a savegame before VCD playback" ); 
 
 bool UseHWMorphVCDs()

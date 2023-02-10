@@ -6,15 +6,15 @@
 //=============================================================================//
 
 #include "cbase.h"
-#include "BuySubMenu.h"
+#include "buysubmenu.h"
 
-#include <KeyValues.h>
+#include <keyvalues.h>
 #include <vgui_controls/WizardPanel.h>
-#include <FileSystem.h>
+#include <filesystem.h>
 #include <game/client/iviewport.h>
 #include <cdll_client_int.h>
 
-#include "MouseOverPanelButton.h"
+#include "mouseoverpanelbutton.h"
 // #include "cs_gamerules.h"
 
 // memdbgon must be the last include file in a .cpp file!!!

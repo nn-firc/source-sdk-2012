@@ -26,11 +26,10 @@
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
 
-#if !defined( CSTRIKE15 )
 
 ConVar crosshair( "crosshair", "1", FCVAR_ARCHIVE );
+#if !defined( CSTRIKE15 )
 ConVar cl_observercrosshair( "cl_observercrosshair", "1", FCVAR_ARCHIVE );
-
 #endif
 
 

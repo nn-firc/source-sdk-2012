@@ -5,7 +5,7 @@
 //=============================================================================//
 
 #include "cbase.h"
-#include <KeyValues.h>
+#include <keyvalues.h>
 #include <vgui/ISurface.h>
 #include <vgui/ISystem.h>
 #include <vgui/IScheme.h>
@@ -628,7 +628,7 @@ void CModelPanel::Paint()
 	}
 
 	Frustum dummyFrustum;
-	render->Push3DView( view, 0, NULL, dummyFrustum );
+	render->Push3DView( pRenderContext, view, 0, NULL, dummyFrustum );
 
 	modelrender->SuppressEngineLighting( true );
 	float color[3] = { 1.0f, 1.0f, 1.0f };
@@ -648,7 +648,7 @@ void CModelPanel::Paint()
 
 	modelrender->SuppressEngineLighting( false );
 	
-	render->PopView( dummyFrustum );
+	render->PopView( pRenderContext, dummyFrustum );
 
 	pRenderContext->BindLocalCubemap( NULL );
 
