@@ -63,7 +63,6 @@ projects={
 		'resourcefile',
 		'responserules/runtime',
 		'scenefilecache',
-		'serverbrowser',
 		'soundemittersystem',
 		'soundsystem/lowlevel',
 		'steamapi',
