@@ -177,6 +177,11 @@ void CPhysicsObject::Wake( void )
 	m_pObject->ensure_in_simulation();
 }
 
+void CPhysicsObject::WakeNow( void )
+{
+	m_pObject->ensure_in_simulation_now();
+}
+
 // supported
 void CPhysicsObject::Sleep( void )
 {
@@ -596,7 +601,7 @@ void CPhysicsObject::SetMass( float mass )
 	}
 
 	Assert( mass > 0 );
-	mass = clamp( mass, 0, VPHYSICS_MAX_MASS ); // NOTE: Allow zero procedurally, but not by initialization
+	mass = clamp( mass, 1.f, VPHYSICS_MAX_MASS ); // NOTE: Allow zero procedurally, but not by initialization
 	m_pObject->change_mass( mass );
 	SetVolume( m_volume );
 	RecomputeDragBases();
@@ -1039,7 +1044,7 @@ void CPhysicsObject::SetVelocityInstantaneous( const Vector *velocity, const Ang
 		return;
 	IVP_Core *core = m_pObject->get_core();
 
-	Wake();
+	WakeNow();
 
 	if ( velocity )
 	{
@@ -1408,10 +1413,10 @@ void CPhysicsObject::RemoveHinged()
 void CPhysicsObject::OutputDebugInfo() const
 {
 	Msg("-----------------\nObject: %s\n", m_pObject->get_name());
-	Msg("Mass: %.1f (inv %.3f)\n", GetMass(), GetInvMass() );
+	Msg("Mass: %.3e (inv %.3e)\n", GetMass(), GetInvMass() );
 	Vector inertia = GetInertia();
 	Vector invInertia = GetInvInertia();
-	Msg("Inertia: %.2f, %.2f, %.2f (inv %.3f, %.3f, %.3f)\n", inertia.x, inertia.y, inertia.z, invInertia.x, invInertia.y, invInertia.z );
+	Msg("Inertia: %.3e, %.3e, %.3e (inv %.3e, %.3e, %.3e)\n", inertia.x, inertia.y, inertia.z, invInertia.x, invInertia.y, invInertia.z );
 
 	Vector speed, angSpeed;
 	GetVelocity( &speed, &angSpeed );
@@ -1420,7 +1425,7 @@ void CPhysicsObject::OutputDebugInfo() const
 
 	float damp, angDamp;
 	GetDamping( &damp, &angDamp );
-	Msg("Damping %.2f linear, %.2f angular\n", damp, angDamp );
+	Msg("Damping %.3e linear, %.3e angular\n", damp, angDamp );
 
 	Msg("Linear Drag: %.2f, %.2f, %.2f (factor %.2f)\n", m_dragBasis.x, m_dragBasis.y, m_dragBasis.z, m_dragCoefficient );
 	Msg("Angular Drag: %.2f, %.2f, %.2f (factor %.2f)\n", m_angDragBasis.x, m_angDragBasis.y, m_angDragBasis.z, m_angDragCoefficient );
@@ -1476,8 +1481,7 @@ bool CPhysicsObject::IsAttachedToConstraint( bool bExternalOnly ) const
 
 static void InitObjectTemplate( IVP_Template_Real_Object &objectTemplate, int materialIndex, objectparams_t *pParams, bool isStatic )
 {
-	objectTemplate.mass = pParams->mass;
-	objectTemplate.mass = clamp( objectTemplate.mass, VPHYSICS_MIN_MASS, VPHYSICS_MAX_MASS );
+	objectTemplate.mass = clamp( pParams->mass, VPHYSICS_MIN_MASS, VPHYSICS_MAX_MASS );
 
 	if ( materialIndex >= 0 )
 	{
@@ -1509,8 +1513,8 @@ static void InitObjectTemplate( IVP_Template_Real_Object &objectTemplate, int ma
 	if ( inertia <= 0 )
 		inertia = 1.0;
 
-	if ( inertia > 1e18f )
-		inertia = 1e18f;
+	if ( inertia > 1e14f )
+		inertia = 1e14f;
 
 	objectTemplate.rot_inertia.set(inertia, inertia, inertia);
 	objectTemplate.rot_speed_damp_factor.set(pParams->rotdamping, pParams->rotdamping, pParams->rotdamping);
@@ -1866,27 +1870,29 @@ void CPhysicsObject::InitFromTemplate( CPhysicsEnvironment *pEnvironment, void *
 		EnableCollisions( true );
 	}
 
-	// will wake up the object
+	m_asleepSinceCreation = objectTemplate.asleepSinceCreation;
+
 	if ( objectTemplate.velocity.LengthSqr() != 0 || objectTemplate.angVelocity.LengthSqr() != 0 )
 	{
+		// will wake up the object
 		SetVelocityInstantaneous( &objectTemplate.velocity, &objectTemplate.angVelocity );
-		if ( objectTemplate.isAsleep )
-		{
-			Sleep();
-		}
 	}
-
-	m_asleepSinceCreation = objectTemplate.asleepSinceCreation;
-	if ( !objectTemplate.isAsleep )
+	else if( !objectTemplate.isAsleep )
 	{
 		Assert( !objectTemplate.isStatic );
-		Wake();
+		WakeNow();
+	}
+
+	if( objectTemplate.isAsleep )
+	{
+		Sleep();
 	}
 
 	if ( objectTemplate.hingeAxis )
 	{
 		BecomeHinged( objectTemplate.hingeAxis-1 );
 	}
+
 	if ( objectTemplate.hasTouchedDynamic )
 	{
 		SetTouchedDynamic();

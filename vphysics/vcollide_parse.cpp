@@ -474,7 +474,7 @@ void CVPhysicsParse::ParseVehicleWheel( vehicle_wheelparams_t &wheel )
 		}
 		else if ( !Q_stricmp( key, "inertia" ) )
 		{
-			wheel.inertia = atof( value );
+			wheel.inertia = atof(value);
 		}
 		else if ( !Q_stricmp( key, "damping" ) )
 		{

@@ -534,7 +534,6 @@ CPhysCollide *CreateVirtualMesh( const virtualmeshparams_t &params )
 
 void DestroyVirtualMesh( CPhysCollide *pMesh )
 {
-	FlushFrameLocks();
 	delete pMesh;
 }
 
@@ -549,6 +548,7 @@ IVP_SurfaceManager_VirtualMesh::IVP_SurfaceManager_VirtualMesh( CPhysCollideVirt
 
 IVP_SurfaceManager_VirtualMesh::~IVP_SurfaceManager_VirtualMesh()
 {
+	FlushFrameLocks();
 }
 
 void IVP_SurfaceManager_VirtualMesh::add_reference_to_ledge(const IVP_Compact_Ledge *ledge)
