@@ -2821,7 +2821,6 @@ void C_CSPlayer::FireGameEvent( IGameEvent *event )
 
 			////  data collection for ammo remaining at death. OGS
 			RecordAmmoForRound();
-#if defined( INCLUDE_SCALEFORM )
 			if ( IsLocalPlayer() )
 			{
 				if ( CSGameRules() && CSGameRules()->GetActiveAssassinationQuest() && IsAssassinationTarget() )
@@ -2835,11 +2834,14 @@ void C_CSPlayer::FireGameEvent( IGameEvent *event )
 						pCSRes->GetDecoratedPlayerName( entindex(), wszName, sizeof( wszName ), k_EDecoratedPlayerNameFlag_Simple );
 						g_pVGuiLocalize->ConstructString( szBuf, sizeof( szBuf ), g_pVGuiLocalize->Find( "#quest_assassination_no_longer_target" ), 1, wszName );
 
+#if defined( INCLUDE_SCALEFORM )
 						( ( SFHudInfoPanel * )pElement )->SetPriorityHintText( szBuf );
+#else
+						GetCenterPrint()->Print( szBuf );
+#endif
 					}
 				}
 			}
-#endif
 		}
 		if( CSGameRules()->IsPlayingAnyCompetitiveStrictRuleset() && !g_HltvReplaySystem.GetHltvReplayDelay() )
 		{
@@ -2933,7 +2935,6 @@ void C_CSPlayer::FireGameEvent( IGameEvent *event )
 	}
 	else if ( Q_strcmp( "assassination_target_killed", name ) == 0 )
 	{
-#if defined( INCLUDE_SCALEFORM )
         if ( CSGameRules() && CSGameRules()->GetActiveAssassinationQuest() && IsLocalPlayer() )
 		{
 			CHudElement *pElement = GetHud().FindElement( "SFHudInfoPanel" );
@@ -2944,10 +2945,13 @@ void C_CSPlayer::FireGameEvent( IGameEvent *event )
 			{
 				wchar_t szBuf[ 512 ];
 				g_pVGuiLocalize->ConstructString( szBuf, sizeof( szBuf ), g_pVGuiLocalize->Find( "#quest_assassination_target_killed" ), 1, wszName );
+#if defined( INCLUDE_SCALEFORM )
 				( ( SFHudInfoPanel * ) pElement )->SetPriorityHintText( szBuf );
+#else
+				GetCenterPrint()->Print( szBuf );
+#endif
 			}
 		}
-#endif
 	}
 	else if ( Q_strcmp( "add_bullet_hit_marker", name ) == 0 )
 	{
@@ -4763,7 +4767,6 @@ void C_CSPlayer::ClientThink()
 		UpdateTargetedWeapon();
 	}
 
-#if defined( INCLUDE_SCALEFORM )
     if ( CSGameRules() && CSGameRules()->IsPlayingCoopGuardian() && IsLocalPlayer( this ) && !inSpecMode && IsAlive() )
 	{
 		if ( m_flGuardianTooFarDistFrac > 0.2 && m_flNextGuardianTooFarWarning <= gpGlobals->curtime )
@@ -4774,14 +4777,17 @@ void C_CSPlayer::ClientThink()
 				if ( CSGameRules()->IsPlayingCoopGuardian() )
 				{
 					EmitSound( "UI.Guardian.TooFarWarning" );
+#if defined( INCLUDE_SCALEFORM )
 					( ( SFHudInfoPanel * )pElement )->SetPriorityHintText( g_pVGuiLocalize->Find( "#SFUI_Notice_GuardianModeTooFarFromBomb" ) );
+#else
+					GetCenterPrint()->Print( g_pVGuiLocalize->Find( "#SFUI_Notice_GuardianModeTooFarFromBomb" ) );
+#endif
 				}
 			}
 
 			m_flNextGuardianTooFarWarning = gpGlobals->curtime + MAX( 0.25, ( 1 - m_flGuardianTooFarDistFrac ) * 2 );
 		}
 	}
-#endif
 
 	////////////////////////////////////
 	// show player shot locations
@@ -4971,7 +4977,10 @@ void C_CSPlayer::ClientThink()
 			if ( pElement )
 			{
 				( ( SFHudInfoPanel * )pElement )->SetPriorityHintText( wszLocalized );
+
 			}
+#else
+			GetCenterPrint()->Print( wszLocalized );
 #endif
 
 			//GetCenterPrint()->Print( wszLocalized );
@@ -5021,10 +5030,12 @@ void C_CSPlayer::ClientThink()
 			}
 #if defined( INCLUDE_SCALEFORM )
 			CHudElement *pElement = GetHud().FindElement( "SFHudInfoPanel" );
-			if ( pElement )														
+			if ( pElement )						
 			{																	
-				((SFHudInfoPanel *)pElement)->SetPriorityHintText( wszLocalized );				
+				((SFHudInfoPanel *)pElement)->SetPriorityHintText( wszLocalized );
 			}
+#else
+		GetCenterPrint()->Print( wszLocalized );
 #endif
 
 			//GetCenterPrint()->Print( wszLocalized );
@@ -5046,6 +5057,8 @@ void C_CSPlayer::ClientThink()
 		{																	
 			((SFHudInfoPanel *)pElement)->SetPriorityHintText( wszLocalized );				
 		}
+#else
+		GetCenterPrint()->Print( wszLocalized );
 #endif
 	}
 	else if ( !IsAlive() && mp_use_respawn_waves.GetBool() && CSGameRules() && IsAbleToInstantRespawn() && this == GetLocalPlayer() && GetObserverMode() > OBS_MODE_FREEZECAM )
@@ -5061,6 +5074,8 @@ void C_CSPlayer::ClientThink()
 				{
 					( ( SFHudInfoPanel * )pElement )->SetPriorityHintText( g_pVGuiLocalize->Find( "#SFUI_Notice_WaitToRespawn" ) );
 				}
+#else
+				GetCenterPrint()->Print( g_pVGuiLocalize->Find( "#SFUI_Notice_WaveRespawning" ) );
 #endif
             }
 			else if ( flTimeLeft > 1.0f )

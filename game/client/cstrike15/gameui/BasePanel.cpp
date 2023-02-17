@@ -2680,11 +2680,11 @@ void CBaseModPanel::RunMenuCommand(const char *command)
 	{
 		//if ( IsGameConsole() )
 		//{
-			OnOpenDisconnectConfirmationDialog();
+		//	OnOpenDisconnectConfirmationDialog();
 		//}
 		//else
 		//{
-		//	engine->ClientCmd_Unrestricted( "disconnect" );
+			engine->ClientCmd_Unrestricted( "disconnect" );
 		//}
 	}
 	else if ( !Q_stricmp( command, "DisconnectNoConfirm" ) )
