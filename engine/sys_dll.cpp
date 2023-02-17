@@ -1199,6 +1199,7 @@ static bool LoadThisDll( char *szDllFilename, bool bServerOnly )
 {
 	CSysModule *pDLL = NULL;
 
+#ifndef NO_STEAM
 	// check signature, don't let users with modified binaries connect to secure servers, they will get VAC banned
 #ifdef ANDROID
 	if ( !bServerOnly && !Host_AllowLoadModule( szDllFilename, getenv("APP_LIB_PATH"), false ) )
@@ -1209,6 +1210,7 @@ static bool LoadThisDll( char *szDllFilename, bool bServerOnly )
 		// not supposed to load this but we will anyway
 		Host_DisallowSecureServers();
 	}
+#endif
 
 	// Load DLL, ignore if cannot
 	// ensures that the game.dll is running under Steam

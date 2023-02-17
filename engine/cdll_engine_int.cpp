@@ -2600,6 +2600,7 @@ bool ClientDLL_Load()
 {
 	Assert ( !g_ClientDLLModule );
 
+#ifndef NO_STEAM
 	// Check the signature on the client dll.  If this fails we load it anyway but put this client
 	// into insecure mode so it won't connect to secure servers and get VAC banned
 	// #if 0 the following block and rebuild engine.dll if you want to build your own noCEG client.dll and run on Steam Public in secure mode!
@@ -2612,6 +2613,7 @@ bool ClientDLL_Load()
 		// not supposed to load this but we will anyway
 		Host_DisallowSecureServers();
 	}
+#endif
 
 	// loads the client.dll, but ensures that the client dll is running under Steam
 	// this will have to be undone when we want mods to be able to run
