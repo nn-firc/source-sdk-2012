@@ -7257,7 +7257,11 @@ CSysModule *CBaseFileSystem::LoadModule( const char *pFileName, const char *pPat
 	LogFileAccess( pFileName );
 	if ( !pPathID )
 	{
+#ifdef ANDROID
+		pPathID = getenv("APP_LIB_PATH"); // default to the lib dir
+#else
 		pPathID = "EXECUTABLE_PATH"; // default to the bin dir
+#endif
 	}
 
 	char tempPathID[ MAX_PATH ];
