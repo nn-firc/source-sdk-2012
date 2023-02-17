@@ -32,5 +32,5 @@ jobs:
         cd source-sdk-android && JAVA_HOME=/usr/lib/jvm/java-8-openjdk-amd64 ANDROID_HOME=android-sdk ant debug && cd ..
     - uses: actions/upload-artifact@v3
       with:
-            name: Release Android
+            name: Debug Android
             path: /home/runner/work/source-sdk-2012/source-sdk-2012/source-sdk-android/bin/csgo-debug.apk
