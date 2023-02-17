@@ -169,7 +169,6 @@ extern ConVar cl_cloud_settings;
 
 #ifndef DEDICATED
 extern IVAudio *vaudio;
-void *g_pMilesAudioEngineRef;
 #endif
 
 #ifdef _PS3
@@ -5740,13 +5739,6 @@ void Host_Init( bool bDedicated )
 	}
 	g_pMatchFramework->GetMatchExtensions()->RegisterExtensionInterface(
 		IENGINEVOICE_INTERFACE_VERSION, pIEngineVoice );
-
-	if (vaudio)
-	{
-		//Pin miles sound system as loaded until Host_Shutdown() is caused. This prevents any
-		//possible path where MSS could unload and then somehow be reloaded.
-		g_pMilesAudioEngineRef = vaudio->CreateMilesAudioEngine();
-	}
 #endif
 
 	// Execute valve.rc
@@ -6475,13 +6467,6 @@ void Host_Shutdown(void)
 #if !defined DEDICATED
 	if ( !sv.IsDedicated() )
 	{
-		if (vaudio && g_pMilesAudioEngineRef)
-		{
-			//let miles sound system exit here.
-			vaudio->DestroyMilesAudioEngine(g_pMilesAudioEngineRef);
-			g_pMilesAudioEngineRef = nullptr;
-		}
-
 		TRACESHUTDOWN( Decal_Shutdown() );
 
 		TRACESHUTDOWN( R_Shutdown() );
