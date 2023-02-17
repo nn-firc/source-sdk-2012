@@ -1051,8 +1051,8 @@ static bool ConVarSortFunc( ConCommandBase * const &lhs, ConCommandBase * const 
 //-----------------------------------------------------------------------------
 void CCvar::Find( const CCommand &args )
 {
-	const char *search;
-	const char *subSearch;
+	const char *search = NULL;
+	const char *subSearch = NULL;
 
 	if ( args.ArgC() != 2 && args.ArgC() != 3 )
 	{
