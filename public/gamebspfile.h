@@ -277,7 +277,32 @@ struct StaticPropLumpV9_t
 	bool			m_bDisableX360;
 };
 
-// version 10
+struct StaticPropLumpV10_t
+{
+	DECLARE_BYTESWAP_DATADESC();
+	Vector			m_Origin;
+	QAngle			m_Angles;
+	unsigned short	m_PropType;
+	unsigned short	m_FirstLeaf;
+	unsigned short	m_LeafCount;
+	unsigned char	m_Solid;
+	unsigned char	m_Flags;
+	int				m_Skin;
+	float			m_FadeMinDist;
+	float			m_FadeMaxDist;
+	Vector			m_LightingOrigin;
+	float			m_flForcedFadeScale;
+	unsigned char	m_nMinCPULevel;
+	unsigned char	m_nMaxCPULevel;
+	unsigned char	m_nMinGPULevel;
+	unsigned char	m_nMaxGPULevel;
+	//	int				m_Lighting;			// index into the GAMELUMP_STATIC_PROP_LIGHTING lump
+	color32			m_DiffuseModulation;	// per instance color and alpha modulation
+	bool			m_bDisableX360;
+	int				m_FlagsEx;				// more flags (introduced in v10)
+};
+
+// version 11
 struct StaticPropLump_t
 {
 	DECLARE_BYTESWAP_DATADESC();
@@ -301,6 +326,7 @@ struct StaticPropLump_t
 	color32			m_DiffuseModulation;	// per instance color and alpha modulation
 	bool			m_bDisableX360;
 	int				m_FlagsEx;				// more flags (introduced in v10)
+	float           m_Scale;
 };
 
 struct StaticPropLeafLump_t

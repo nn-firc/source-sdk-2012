@@ -1601,6 +1601,11 @@ void CStaticPropMgr::UnserializeModels( CUtlBuffer& buf )
 			break;
 		
 		case 10:
+			buf.Get( &lump, sizeof( StaticPropLumpV10_t ) );
+			break;
+		
+		case 11:
+
 			buf.Get( &lump, sizeof( StaticPropLump_t ) );
 			break;
 		}
