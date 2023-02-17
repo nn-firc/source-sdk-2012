@@ -284,15 +284,15 @@ IViewPortPanel* CBaseViewport::CreatePanelByName(const char *szPanelName)
 	{
 		newpanel = new CTextWindow( this );
 	}
-	/*	else if ( Q_strcmp(PANEL_OVERVIEW, szPanelName) == 0 )
+/*	else if ( Q_strcmp(PANEL_OVERVIEW, szPanelName) == 0 )
 	{
 	newpanel = new CMapOverview( this );
 	}
-	*/
-	//else if ( Q_strcmp(PANEL_TEAM, szPanelName) == 0 )
-	//{
-	//	newpanel = new CTeamMenu( this );
-	//}
+*/
+	else if ( Q_strcmp(PANEL_TEAM, szPanelName) == 0 )
+	{
+		newpanel = new CTeamMenu( this );
+	}
 	else if ( Q_strcmp(PANEL_NAV_PROGRESS, szPanelName) == 0 )
 	{
 		newpanel = new CNavProgress( this );
