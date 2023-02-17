@@ -1,4 +1,4 @@
-//========= Copyright © 1996-2005, Valve Corporation, All rights reserved. ============//
+//========= Copyright ï¿½ 1996-2005, Valve Corporation, All rights reserved. ============//
 //
 // Purpose: 
 //
@@ -70,7 +70,7 @@ public:
 
 	virtual Color GetBlackBarColor( void ) { return BLACK_BAR_COLOR; }
 
-	virtual const char *GetResFile( void ) { return "Resource/UI/Spectator.res"; }
+	virtual const char *GetResFile( void ) { return "Resource/HUD/Spectator.res"; }
 	
 protected:
 

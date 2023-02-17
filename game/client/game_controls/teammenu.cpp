@@ -94,7 +94,7 @@ CTeamMenu::CTeamMenu(IViewPort *pViewPort) : Frame(NULL, PANEL_TEAM )
 #endif
 #endif
 
-	LoadControlSettings("Resource/UI/TeamMenu.res");
+	LoadControlSettings("Resource/HUD/TeamMenu.res");
 	InvalidateLayout();
 
 	m_szMapName[0] = 0;

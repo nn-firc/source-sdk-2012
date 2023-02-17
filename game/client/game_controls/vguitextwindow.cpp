@@ -150,7 +150,7 @@ void CTextWindow::ApplySchemeSettings( IScheme *pScheme )
 {
 	BaseClass::ApplySchemeSettings( pScheme );
 
-		LoadControlSettings("Resource/UI/TextWindow.res");
+		LoadControlSettings("Resource/HUD/TextWindow.res");
 
 	Reset();
 }

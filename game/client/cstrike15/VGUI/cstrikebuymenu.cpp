@@ -27,7 +27,7 @@ using namespace vgui;
 //-----------------------------------------------------------------------------
 CCSBuyMenu_CT::CCSBuyMenu_CT(IViewPort *pViewPort) : CCSBaseBuyMenu( pViewPort, "BuySubMenu_CT" )
 {
-	m_pMainMenu->LoadControlSettings( "Resource/UI/BuyMenu_CT.res" );
+	m_pMainMenu->LoadControlSettings( "Resource/HUD/MainBuyMenu.res" );
 	m_pMainMenu->SetVisible( false );
 
 	m_iTeam = TEAM_CT;
@@ -41,7 +41,7 @@ CCSBuyMenu_CT::CCSBuyMenu_CT(IViewPort *pViewPort) : CCSBaseBuyMenu( pViewPort, 
 //-----------------------------------------------------------------------------
 CCSBuyMenu_TER::CCSBuyMenu_TER(IViewPort *pViewPort) : CCSBaseBuyMenu( pViewPort, "BuySubMenu_TER" )
 {
-	m_pMainMenu->LoadControlSettings( "Resource/UI/BuyMenu_TER.res" );
+	m_pMainMenu->LoadControlSettings( "Resource/HUD/MainBuyMenu.res" );
 	m_pMainMenu->SetVisible( false );
 
 	m_iTeam = TEAM_TERRORIST;

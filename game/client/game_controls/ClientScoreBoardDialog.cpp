@@ -1,4 +1,4 @@
-//===== Copyright © 1996-2005, Valve Corporation, All rights reserved. ======//
+//===== Copyright ï¿½ 1996-2005, Valve Corporation, All rights reserved. ======//
 //
 // Purpose: 
 //
@@ -67,7 +67,7 @@ CClientScoreBoardDialog::CClientScoreBoardDialog(IViewPort *pViewPort) : Editabl
 	m_pPlayerList = new SectionedListPanel(this, "PlayerList");
 	m_pPlayerList->SetVerticalScrollbar(false);
 
-	LoadControlSettings("Resource/UI/ScoreBoard.res");
+	LoadControlSettings("Resource/HUD/ScoreBoard.res");
 	m_iDesiredHeight = GetTall();
 	m_pPlayerList->SetVisible( false ); // hide this until we load the images in applyschemesettings
 

@@ -35,7 +35,7 @@
 //#include "cstrikebuymenu.h"
 //#include "cstrikebuyequipmenu.h"
 #include "cstrikespectatorgui.h"
-//#include "cstrikeclientscoreboard.h"
+#include "cstrikeclientscoreboard.h"
 #include "clientmode_csnormal.h"
 #include "IGameUIFuncs.h"
 
@@ -171,7 +171,6 @@ CON_COMMAND_F( spec_menu, "Activates spectator menu", FCVAR_CLIENTCMD_CAN_EXECUT
 
 CON_COMMAND_F( togglescores, "Toggles score panel", FCVAR_CLIENTCMD_CAN_EXECUTE)
 {
-/*
 	if ( !GetViewPortInterface() )
 		return;
 	
@@ -189,7 +188,6 @@ CON_COMMAND_F( togglescores, "Toggles score panel", FCVAR_CLIENTCMD_CAN_EXECUTE)
 	{
 		GetViewPortInterface()->ShowPanel( scoreboard, true );
 	}
-*/
 }
 
 //-----------------------------------------------------------------------------
@@ -217,13 +215,12 @@ IViewPortPanel* CounterStrikeViewport::CreatePanelByName(const char *szPanelName
 
 	// overwrite MOD specific panel creation
 
-/*
 	if ( Q_strcmp(PANEL_SCOREBOARD, szPanelName) == 0)
 	{
 		newpanel = new CCSClientScoreBoardDialog( this );
 	}
 
-	else */ if ( Q_strcmp(PANEL_SPECGUI, szPanelName) == 0 )
+	else if ( Q_strcmp(PANEL_SPECGUI, szPanelName) == 0 )
 	{
 		newpanel = new CCSSpectatorGUI( this );	
 	}

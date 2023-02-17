@@ -223,7 +223,7 @@ void CCSClientScoreBoardDialog::ApplySchemeSettings( vgui::IScheme *pScheme )
 	// Therefore, we must make sure to delete previously allocated items.
 	//
 
-    LoadControlSettings( "Resource/UI/scoreboard.res" );
+    LoadControlSettings( "Resource/HUD/ScoreBoard.res" );
 
     //Just used for a background alpha value.  50% opacity
     m_listItemFont = pScheme->GetFont( "ScoreboardBody_1", IsProportional() );

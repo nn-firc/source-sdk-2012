@@ -160,7 +160,7 @@ void CCSFreezePanel::Init()
 
 void CCSFreezePanel::InitLayout()
 {
-	LoadControlSettings( "resource/UI/FreezePanel_Basic.res" );
+	LoadControlSettings( "resource/HUD/FreezePanel_Basic.res" );
 
 	m_pBackgroundPanel = dynamic_cast<BorderedPanel*>( FindChildByName("FreezePanelBG"));
 	m_pAvatar = dynamic_cast<CAvatarImagePanel*>( m_pBackgroundPanel->FindChildByName("AvatarImage"));

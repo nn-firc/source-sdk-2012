@@ -1,4 +1,4 @@
-//========= Copyright © 1996-2005, Valve Corporation, All rights reserved. ============//
+//========= Copyright ï¿½ 1996-2005, Valve Corporation, All rights reserved. ============//
 //
 // Purpose: 
 //
@@ -46,7 +46,7 @@ CNavProgress::CNavProgress( IViewPort *pViewPort ) : BaseClass( NULL, PANEL_NAV_
 	m_pProgressBar = new Panel( this, "ProgressBar" );
 	m_pProgressBarSizer = new Panel( this, "ProgressBarSizer" );
 
-	LoadControlSettings("Resource/UI/NavProgress.res");
+	LoadControlSettings("Resource/HUD/NavProgress.res");
 
 	Reset();
 }

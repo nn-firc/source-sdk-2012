@@ -1,4 +1,4 @@
-//========= Copyright © 1996-2005, Valve Corporation, All rights reserved. ============//
+//========= Copyright ï¿½ 1996-2005, Valve Corporation, All rights reserved. ============//
 //
 // Purpose: 
 //
@@ -33,13 +33,13 @@ CBuyMenu::CBuyMenu(IViewPort *pViewPort) : WizardPanel( NULL, PANEL_BUY )
 
 	SetAutoDelete( false ); // we reuse this panel, don't let WizardPanel delete us
 	
-	LoadControlSettings( "Resource/UI/BuyMenu.res" );
+	LoadControlSettings( "Resource/HUD/BuyMenu.res" );
 	ShowButtons( false );
 
 	m_pViewPort = pViewPort;
 
 	m_pMainMenu = new CBuySubMenu( this, "mainmenu" );
-	m_pMainMenu->LoadControlSettings( "Resource/UI/MainBuyMenu.res" );
+	m_pMainMenu->LoadControlSettings( "Resource/HUD/MainBuyMenu.res" );
 	m_pMainMenu->SetVisible( false );
 
 	int w, h;

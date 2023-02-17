@@ -23,7 +23,7 @@ CCSBuyEquipMenu_CT::CCSBuyEquipMenu_CT(IViewPort *pViewPort) : CBuyMenu( pViewPo
 	SetProportional( true );
 
 	m_pMainMenu = new CCSBuySubMenu( this, "BuySubMenu" );
-	m_pMainMenu->LoadControlSettings( "Resource/UI/BuyEquipment_CT.res" );
+	m_pMainMenu->LoadControlSettings( "Resource/HUD/BuyEquipment_CT.res" );
 	m_pMainMenu->SetVisible( false );
 
 	m_iTeam = TEAM_CT;
@@ -42,7 +42,7 @@ CCSBuyEquipMenu_TER::CCSBuyEquipMenu_TER(IViewPort *pViewPort) : CBuyMenu( pView
 	SetProportional( true );
 
 	m_pMainMenu = new CCSBuySubMenu( this, "BuySubMenu" );
-	m_pMainMenu->LoadControlSettings( "Resource/UI/BuyEquipment_TER.res" );
+	m_pMainMenu->LoadControlSettings( "Resource/HUD/BuyEquipment_TER.res" );
 	m_pMainMenu->SetVisible( false );
 
 	m_iTeam = TEAM_TERRORIST;

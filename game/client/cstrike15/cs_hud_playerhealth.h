@@ -53,7 +53,7 @@ public:
 
 	CCSHudPlayerHealth( Panel *parent, const char *name );
 
-	virtual const char *GetResFilename( void ) { return "resource/UI/FreezePanelKillerHealth.res"; }
+	virtual const char *GetResFilename( void ) { return "resource/HUD/FreezePanelKillerHealth.res"; }
 	virtual void ApplySchemeSettings( vgui::IScheme *pScheme );
 	virtual void Reset();
 

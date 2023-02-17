@@ -89,7 +89,7 @@ void WinPanel_Round::Init()
 void WinPanel_Round::InitLayout()
 {
 	// reload control settings when resolution changes to force update of proportional layout
-	LoadControlSettings("Resource/UI/Win_Round.res");
+	LoadControlSettings("Resource/HUD/Win_Round.res");
 
 	CAvatarImagePanel* pMVP_Avatar = dynamic_cast<CAvatarImagePanel*>(FindChildByName("MVP_Avatar"));
 	pMVP_Avatar->SetDefaultAvatar(scheme()->GetImage( CSTRIKE_DEFAULT_AVATAR, true));

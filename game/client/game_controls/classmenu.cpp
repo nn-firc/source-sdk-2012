@@ -1,4 +1,4 @@
-//========= Copyright © 1996-2005, Valve Corporation, All rights reserved. ============//
+//========= Copyright ï¿½ 1996-2005, Valve Corporation, All rights reserved. ============//
 //
 // Purpose: 
 //
@@ -74,7 +74,7 @@ CClassMenu::CClassMenu(IViewPort *pViewPort) : BaseClass(NULL, PANEL_CLASS)
 	// info window about this class
 	m_pPanel = new EditablePanel( this, "ClassInfo" );
 
-	LoadControlSettings( "Resource/UI/ClassMenu.res" );
+	LoadControlSettings( "Resource/HUD/ClassMenu.res" );
 }
 
 //-----------------------------------------------------------------------------
