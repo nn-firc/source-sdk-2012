@@ -58,11 +58,7 @@
 #define MdlCacheMsg		if ( !LogMdlCache() ) ; else Msg
 #define MdlCacheWarning if ( !LogMdlCache() ) ; else Warning
 
-#if defined( _X360 )
-#define AsyncMdlCache() 0	// Explicitly !!!OFF!!! for 360 (incompatible), specific compatible resources opt in individually.
-#else
-#define AsyncMdlCache() 1
-#endif
+#define AsyncMdlCache() 0
 
 #define ERROR_MODEL		"models/error.mdl"
 #define IDSTUDIOHEADER	(('T'<<24)+('S'<<16)+('D'<<8)+'I')
