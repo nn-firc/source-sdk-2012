@@ -44,7 +44,6 @@ void MP3Player_Destroy();
 vgui::IInputInternal *g_InputInternal = NULL;
 
 #include <vgui_controls/Controls.h>
-#include "cstrike15/gameui/cstrike15/steamoverlay/isteamoverlaymgr.h"
 
 // memdbgon must be the last include file in a .cpp file!!!
 #include "tier0/memdbgon.h"
@@ -476,9 +475,6 @@ void VGui_CreateGlobalPanels( void )
 	MP3Player_Create( toolParent );
 #endif
 
-	// Create Steam overlay
-	if ( IsPS3() && g_pISteamOverlayMgr )
-		g_pISteamOverlayMgr->Create( enginevgui->GetPanel( PANEL_STEAMOVERLAY ) );
 #ifdef SIXENSE
 	g_pSixenseInput->CreateGUI( gameToolParent );
 #endif
@@ -486,10 +482,6 @@ void VGui_CreateGlobalPanels( void )
 
 void VGui_Shutdown()
 {
-	// Destroy Steam overlay
-	if ( IsPS3() && g_pISteamOverlayMgr )
-		g_pISteamOverlayMgr->Destroy();
-
 #ifndef _GAMECONSOLE
 	MP3Player_Destroy();
 #endif
