@@ -2,9 +2,9 @@
 
 ## support game(s)
 * Counter-Strike: Global Offensive
-* ~~ Left 4 Dead ~~
-* ~~ Portal 2 ~~
-* ~~ Alien Swarm ~~
+* ~~Left 4 Dead~~
+* ~~Portal 2~~
+* ~~Alien Swarm~~
 
 ## Build
 ### Linux:
