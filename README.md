@@ -10,9 +10,8 @@
 ### Linux:
 
 dependencies:
-```
 fontconfig, freetype2, SDL2, libcurl
-```
+
 Build:
 ```
 0) Examine which build options are available: `./waf --help`
@@ -23,9 +22,8 @@ Build:
 ### ANDROID:
 
 dependencies:
-```
 [Android ndk r10e](https://github.com/android/ndk/wiki/Unsupported-Downloads), [clang11](https://github.com/llvm/llvm-project/releases/download/llvmorg-11.1.0/clang+llvm-11.1.0-x86_64-linux-gnu-ubuntu-16.04.tar.xz)
-```
+
 Build:
 ```
 0) export ANDROID_NDK_HOME="PATH/TO/NDK/android-ndk-r10e" and export PATH="PATH/TO/CLANG/bin:$PATH"
