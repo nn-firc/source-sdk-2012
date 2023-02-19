@@ -231,7 +231,6 @@ def build(bld):
 		'hud_pdump.cpp',
 		'hud_redraw.cpp',
 		'hud_vehicle.cpp',
-		'hud_savestatus.cpp',
 		'hud_subtitles.cpp',
 		'../shared/igamesystem.cpp',
 		'in_camera.cpp',
