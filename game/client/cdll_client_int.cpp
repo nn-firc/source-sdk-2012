@@ -4200,15 +4200,6 @@ void CHLClient::ResetHudCloseCaption()
 	}
 }
 
-void CHLClient::Hud_SaveStarted()
-{
-	CHudSaveStatus *pSaveStatus = GET_FULLSCREEN_HUDELEMENT( CHudSaveStatus );
-	if ( pSaveStatus )
-	{
-		pSaveStatus->SaveStarted();
-	}
-}
-
 void CHLClient::ShutdownMovies()
 {
 	//VGui_StopAllVideoPanels();
