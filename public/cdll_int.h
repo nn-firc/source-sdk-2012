@@ -1095,8 +1095,6 @@ public:
 	virtual bool			GetSoundSpatialization( SpatializationInfo_t& info ) = 0;
 
 	// sending a hint to the hud
-	virtual void			Hud_SaveStarted() = 0;
-
 	virtual void			ShutdownMovies() = 0;
 
 	virtual void			GetStatus( char *buffer, int bufsize ) = 0;
