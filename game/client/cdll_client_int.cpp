@@ -106,7 +106,6 @@
 #include "videocfg/videocfg.h"
 #include "tier2/tier2_logging.h"
 #include "Sprite.h"
-#include "hud_savestatus.h"
 #include "vgui_video.h"
 #if defined( CSTRIKE15 )
 #include "gametypes/igametypes.h"
