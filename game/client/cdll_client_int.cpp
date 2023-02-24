@@ -985,8 +985,6 @@ public:
 	
 	virtual void			ResetHudCloseCaption();
 
-	virtual void			Hud_SaveStarted();
-
 	virtual void			ShutdownMovies();
 
 	virtual void			GetStatus( char *buffer, int bufsize );
