@@ -18,7 +18,7 @@ jobs:
       run: |
         sudo apt-get update && sudo apt install -y git build-essential libsdl2-dev libcurlpp-dev libssl-dev libfontconfig1-dev libcurl4-openssl-dev net-tools
         ./waf configure -T release --64bits --disable-warns --prefix=/home/runner/work/source-sdk-2012/source-sdk-2012/csgo-release
-        ./waf install -j4 --strip
+        ./waf install -j2 --strip
 
     - uses: actions/upload-artifact@v3
       with:
