@@ -952,7 +952,7 @@ void VAudioInit()
 			g_pFileSystem->GetLocalCopy( "mss32.dll" ); // vaudio_miles.dll will load this...
 		}
 		
-		g_pVAudioModule = FileSystem_LoadModule( "vaudio_minimp3" );
+		g_pVAudioModule = FileSystem_LoadModule( "libvaudio_minimp3" DLL_EXT_STRING );
 		if ( g_pVAudioModule )
 		{
 			CreateInterfaceFn vaudioFactory = Sys_GetFactory( g_pVAudioModule );
