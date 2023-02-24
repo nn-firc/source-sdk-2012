@@ -1347,13 +1347,13 @@ void LoadEntityDLLs( const char *szBaseDir, bool bServerOnly )
 
 	if ( s_bIsDedicatedServer && !CommandLine()->FindParm( "-novalveds" ) )
 	{
-		Q_snprintf( szDllFilename, sizeof( szDllFilename ), "server_valve" DLL_EXT_STRING );
+		Q_snprintf( szDllFilename, sizeof( szDllFilename ), "libserver_valve" DLL_EXT_STRING );
 		LoadThisDll( szDllFilename, bServerOnly );
 	}
 
 	if ( !serverGameDLL )
 	{
-		Q_snprintf( szDllFilename, sizeof( szDllFilename ), "server" DLL_EXT_STRING );
+		Q_snprintf( szDllFilename, sizeof( szDllFilename ), "libserver" DLL_EXT_STRING );
 		LoadThisDll( szDllFilename, bServerOnly );
 	}
 
@@ -1363,16 +1363,16 @@ void LoadEntityDLLs( const char *szBaseDir, bool bServerOnly )
 #elif defined( LINUX )
 	if ( s_bIsDedicatedServer && !CommandLine()->FindParm( "-novalveds" ) )
 	{
-		Q_snprintf( szDllFilename, sizeof( szDllFilename ), "server_valve" );
+		Q_snprintf( szDllFilename, sizeof( szDllFilename ), "libserver_valve" DLL_EXT_STRING );
 		LoadThisDll( szDllFilename, bServerOnly );
 	}
 	if ( !serverGameDLL )
 	{
-		Q_snprintf( szDllFilename, sizeof( szDllFilename ), "server"  );
+		Q_snprintf( szDllFilename, sizeof( szDllFilename ), "libserver" DLL_EXT_STRING );
 		LoadThisDll( szDllFilename, bServerOnly );
 	}
 #elif defined( POSIX )
-	Q_snprintf( szDllFilename, sizeof( szDllFilename ), "server" );
+	Q_snprintf( szDllFilename, sizeof( szDllFilename ), "libserver" DLL_EXT_STRING );
 	LoadThisDll( szDllFilename, bServerOnly );
 #else
 	#error "define server.dll type"
