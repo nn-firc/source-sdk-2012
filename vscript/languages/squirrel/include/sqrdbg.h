@@ -34,7 +34,7 @@ to the following restrictions:
 #ifdef __cplusplus
 extern "C" {
 #endif
-#if !defined _GAMECONSOLE && !defined ANDROID
+#if !defined _GAMECONSOLE && !defined POSIX 
 #pragma comment(lib, "WSOCK32.LIB")
 #endif
 struct SQDbgServer;
