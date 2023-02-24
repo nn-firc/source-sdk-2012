@@ -151,10 +151,8 @@ public:
 	inline void Set( vec_t X, vec_t Y, vec_t Z, vec_t W );
 	inline void InitZero( void );
 
-#ifndef __arm__
 	inline __m128 &AsM128() { return *(__m128*)&x; }
 	inline const __m128 &AsM128() const { return *(const __m128*)&x; } 
-#endif
 
 private:
 	// No copy constructors allowed if we're in optimal mode
