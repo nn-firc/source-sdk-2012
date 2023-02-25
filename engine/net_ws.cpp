@@ -4508,9 +4508,9 @@ void NET_TerminateConnection( int sock, const ns_address &peer )
 #endif
 
 #ifdef ANDROID
-#define bswap_16 swap16
-#define bswap_32 swap32
-#define bswap_64 swap64
+#define bswap_16 __swap16
+#define bswap_32 __swap32
+#define bswap_64 __swap64
 #else
 #define bswap_16 __bswap_16
 #define bswap_32 __bswap_32
