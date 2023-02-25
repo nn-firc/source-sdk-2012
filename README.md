@@ -21,7 +21,7 @@ Build:
 ### ANDROID:
 
 dependencies:
-[Android ndk r11c](https://github.com/android/ndk/wiki/Unsupported-Downloads), [clang11](https://github.com/llvm/llvm-project/releases/download/llvmorg-11.1.0/clang+llvm-11.1.0-x86_64-linux-gnu-ubuntu-16.04.tar.xz)
+[Android ndk (r10-r13)](https://github.com/android/ndk/wiki/Unsupported-Downloads), [clang11](https://github.com/llvm/llvm-project/releases/download/llvmorg-11.1.0/clang+llvm-11.1.0-x86_64-linux-gnu-ubuntu-16.04.tar.xz)
 
 Build:
 
