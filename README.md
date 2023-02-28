@@ -1,3 +1,5 @@
+# DIE I am rewirting one https://github.com/OpenSrceng/OpenCSGO
+
 # Source SDK 2012
 
 ## support game(s)
