@@ -39,8 +39,8 @@ LINKFLAGS = {
 		'owcc':  ['-Wl,option stack=512k']
 	},
 	'sanitize': {
-		'clang': ['-fsanitize=undefined', '-fsanitize=address'],
-		'gcc':   ['-fsanitize=undefined', '-fsanitize=address'],
+		'clang': ['-fsanitize=null'],
+		'gcc':   ['-fsanitize=null'],
 	}
 }
 
@@ -76,8 +76,8 @@ CFLAGS = {
 	},
 	'sanitize': {
 		'msvc':    ['/Od', '/RTC1'],
-		'gcc':     ['-O0', '-fsanitize=undefined', '-fsanitize=address'],
-		'clang':   ['-O0', '-fsanitize=undefined', '-fsanitize=address'],
+		'gcc':     ['-O0', '-fsanitize=null'],
+		'clang':   ['-O0', '-fsanitize=null'],
 		'default': ['-O0']
 	},
 	'nooptimize': {
