@@ -1,4 +1,4 @@
-# DIE I am rewirting one https://github.com/OpenSrceng/OpenCSGO
+# DIE .See https://github.com/OpenSrceng
 
 # Source SDK 2012
 
