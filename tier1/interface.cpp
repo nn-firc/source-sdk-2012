@@ -54,9 +54,6 @@
 // ------------------------------------------------------------------------------------ //
 // InterfaceReg.
 // ------------------------------------------------------------------------------------ //
-#ifdef POSIX
-DLL_GLOBAL_EXPORT
-#endif
 InterfaceReg *s_pInterfaceRegs;
 
 InterfaceReg::InterfaceReg( InstantiateInterfaceFn fn, const char *pName ) :
