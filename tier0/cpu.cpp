@@ -599,23 +599,6 @@ static int64 CalculateClockSpeed()
 #endif
 }
 
-// see "Output of the CPUID instruction" from Intel, page 26
-static void InterpretIntelCacheDescriptors( uint32 nPackedDesc )
-{
-	if ( nPackedDesc & 0x80000000 )
-	{
-		return; // this is a wrong descriptor
-	}
-	for ( int i = 0; i < 4; ++i )
-	{
-		FindIntelCacheDesc( nPackedDesc & 0xFF, s_IntelL1DataCacheDesc, ARRAYSIZE( s_IntelL1DataCacheDesc ), s_cpuInformation.m_nL1CacheSizeKb, s_cpuInformation.m_nL1CacheDesc );
-		FindIntelCacheDesc( nPackedDesc & 0xFF, s_IntelL2DataCacheDesc, ARRAYSIZE( s_IntelL2DataCacheDesc ), s_cpuInformation.m_nL2CacheSizeKb, s_cpuInformation.m_nL2CacheDesc );
-		FindIntelCacheDesc( nPackedDesc & 0xFF, s_IntelL3DataCacheDesc, ARRAYSIZE( s_IntelL3DataCacheDesc ), s_cpuInformation.m_nL3CacheSizeKb, s_cpuInformation.m_nL3CacheDesc );
-		nPackedDesc >>= 8;
-	}
-}
-
-
 const CPUInformation& GetCPUInformation()
 {
 	static CPUInformation pi;
