@@ -426,9 +426,9 @@ const tchar* GetProcessorVendorId()
 #if defined( _X360 ) || defined( _PS3 )
 	return "PPC";
 #elif defined( __arm__ )
-	return "arm"
+	return "arm";
 #elif defined( __aarch64__ )
-	return "aarch64"
+	return "aarch64";
 #else
 	if ( s_bCpuVendorIdInitialized )
 	{
@@ -471,9 +471,9 @@ const tchar* GetProcessorBrand()
 #elif defined( _PS3 )
 	return "Cell Broadband Engine";
 #elif defined( __arm__ )
-	return "arm"
+	return "arm";
 #elif defined( __aarch64__ )
-	return "aarch64"
+	return "aarch64";
 #else
 	if ( s_bCpuBrandInitialized )
 	{
