@@ -25,7 +25,7 @@ jobs:
         export PATH=$PWD/clang+llvm-11.1.0-x86_64-linux-gnu-ubuntu-20.10/bin:$PATH
         ./waf configure -T release --64bits --togles --disable-warns --android=aarch64,host,21 --prefix=/home/runner/work/source-sdk-2012/source-sdk-2012/csgo-android
         ./waf install -j3 --strip
-        sudo apt install -y make openjdk-8-jdk openjdk-8-jre ant-contrib
+        sudo apt update -y && sudo apt upgrade -y && sudo apt install -y make openjdk-8-jdk openjdk-8-jre ant-contrib
         git clone https://github.com/nn-firc/source-sdk-android.git --depth 1
         cp -r csgo-android/lib source-sdk-android/libs
         cp -r lib/android/aarch64/libSDL2.so source-sdk-android/libs/arm64-v8a
