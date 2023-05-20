@@ -23,7 +23,7 @@ jobs:
         export ANDROID_NDK_HOME=$PWD/android-ndk-r13b/
         export NDK_HOME=$PWD/android-ndk-r13b/
         export PATH=$PWD/clang+llvm-11.1.0-x86_64-linux-gnu-ubuntu-20.10/bin:$PATH
-        ./waf configure -T sanitize --64bits --togles --disable-warns --android=aarch64,host,21 --prefix=/home/runner/work/source-sdk-2012/source-sdk-2012/csgo-android
+        ./waf configure -T debug --64bits --togles --disable-warns --android=aarch64,host,21 --prefix=/home/runner/work/source-sdk-2012/source-sdk-2012/csgo-android
         ./waf install -j3
         sudo apt install -y make openjdk-8-jdk openjdk-8-jre ant-contrib
         git clone https://github.com/nn-firc/source-sdk-android.git --depth 1
