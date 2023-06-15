@@ -798,40 +798,10 @@ int CHardwareConfig::GetMaxVertexTextureDimension() const
 
 HDRType_t CHardwareConfig::GetHDRType() const
 {
-#ifndef TOGLES
-	return (HDRType_t)NULL;
+#ifdef TOGLES
+	return (HDRType_t)0;
 #else
-	// On MacOS, this value comes down from the engine, which read it from the registry...which doesn't exist on Mac, so we're slamming to true here
-	if ( IsOpenGL() )
-	{
-		g_pHardwareConfig->SetHDREnabled( true );
-	}
-
-	bool enabled = (mat_hdr_level.GetInt() >= 2) && GetHDREnabled();
-	int dxlev = GetDXSupportLevel();
-	int dxsupp = dxlev >= 90;
-	HDRType_t caps_hdr = m_Caps.m_HDRType;
-	HDRType_t result = HDR_TYPE_NONE;
-	
-	//printf("\nCHardwareConfig::GetHDRType...");
-	if (enabled)
-	{
-		//printf("-> enabled...");
-		if (dxsupp)
-		{
-			//printf("-> supported...");
-			result = caps_hdr;
-		}
-	}
-	
-	//printf("-> result is %d.\n", result);
-	return result;
-
-/*
-	if ( m_bHDREnabled && ( GetDXSupportLevel() >= 90 ) )
-		return m_Caps.m_HDRType;
-	return HDR_TYPE_NONE;
-*/
+	return (HDRType_t)1;
 #endif
 }
 
